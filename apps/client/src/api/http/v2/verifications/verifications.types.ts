@@ -11,6 +11,7 @@ import {
 	type VerificationType,
 	VerificationTypeSchema,
 } from "@verifyafrica/api-client/http/v1/verifications/verifications.types";
+import { VERIFICATION_TYPES_BY_PRODUCT } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export type { VerificationStatus, VerificationType };
 export { VerificationStatusSchema, VerificationTypeSchema };
