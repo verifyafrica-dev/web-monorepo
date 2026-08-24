@@ -58,6 +58,12 @@ export const UserRegisterSchema = z.object({
 
 export type UserRegisterPayload = z.infer<typeof UserRegisterSchema>;
 
+/** Form schema (no tenant_email — set from the user's email on submit). */
+export const UserRegisterFormSchema = UserRegisterSchema.omit({
+	tenant_email: true,
+});
+export type UserRegisterFormValues = z.infer<typeof UserRegisterFormSchema>;
+
 export const UserActivateAccountSchema = z.object({
 	email: z.email({ message: "Invalid email address" }),
 	code: z

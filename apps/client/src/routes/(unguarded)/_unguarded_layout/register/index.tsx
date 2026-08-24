@@ -9,10 +9,12 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { z } from "zod";
 
 import { useUserV2RegisterMutation } from "#/api/http/v2/users/users.hooks";
-import { UserRegisterSchema } from "#/api/http/v2/users/users.types";
+import {
+	UserRegisterFormSchema,
+	type UserRegisterFormValues,
+} from "#/api/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -25,10 +27,6 @@ import {
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
 import { AuthPageShell } from "../-components";
-
-const RegisterFormSchema = UserRegisterSchema.omit({ tenant_email: true });
-
-type RegisterFormValues = z.infer<typeof RegisterFormSchema>;
 
 export const Route = createFileRoute(
 	"/(unguarded)/_unguarded_layout/register/",
@@ -55,9 +53,9 @@ function RegisterPage() {
 			last_name: "",
 			email: "",
 			password: "",
-		} satisfies RegisterFormValues,
+		} satisfies UserRegisterFormValues,
 		validators: {
-			onSubmit: RegisterFormSchema,
+			onSubmit: UserRegisterFormSchema,
 		},
 		onSubmit: async ({ value }) => {
 			setFormErrors([]);

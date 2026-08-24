@@ -2,6 +2,9 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+/* Scan shared UI package — outside the Vite app root, so not auto-detected */
+@source '../../../packages/ui/src';
+
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 

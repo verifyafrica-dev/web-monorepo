@@ -43,6 +43,10 @@ export const VerificationTypeSchema = z.enum([
 ]);
 export type VerificationType = z.infer<typeof VerificationTypeSchema>;
 
+/** Precomputed option lists (keep next to schema defs to avoid SSR chunk TDZ). */
+export const VERIFICATION_TYPE_OPTIONS = VerificationTypeSchema.options;
+export const VERIFICATION_STATUS_OPTIONS = VerificationStatusSchema.options;
+
 export const VerificationRequestsListQuerySchema = z.object({
 	tenant_id: z.string().uuid(),
 	batch_id: z.string().uuid().optional(),

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 import {
-	VerificationStatusSchema,
-	VerificationTypeSchema,
+	VERIFICATION_STATUS_OPTIONS,
+	VERIFICATION_TYPE_OPTIONS,
 } from "#/api/http/v1/verifications/verifications.types";
 import type {
 	VerificationBatchListQuery,
@@ -144,8 +144,8 @@ export function buildReportsListQuery(
 	return query as VerificationListQuery;
 }
 
-export const REPORTS_VERIFICATION_TYPES = VerificationTypeSchema.options;
-export const REPORTS_VERIFICATION_STATUSES = VerificationStatusSchema.options;
+export const REPORTS_VERIFICATION_TYPES = VERIFICATION_TYPE_OPTIONS;
+export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS
 
 export function formatVerificationTypeLabel(type: string) {
 	return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
