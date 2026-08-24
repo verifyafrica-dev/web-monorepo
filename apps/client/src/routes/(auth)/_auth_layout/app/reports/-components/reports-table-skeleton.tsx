@@ -1,4 +1,4 @@
-import { TablePaginationSkeleton } from "#/components/table-pagination";
+import { TablePaginationSkeleton } from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import {
 	Table,

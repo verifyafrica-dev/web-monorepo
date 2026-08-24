@@ -16,7 +16,7 @@ import {
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
@@ -37,8 +37,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { cn } from "#/lib/utils.ts";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { DashboardOnboarding } from "../../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../../-data";
 import {

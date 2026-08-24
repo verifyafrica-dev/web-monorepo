@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isISODate, isPhoneNumber, isURL } from "#/lib/validators";
+import { isISODate, isPhoneNumber, isURL } from "@verifyafrica/ui/lib/validators";
 
 export interface UploadedDocument {
 	id: string;

@@ -37,7 +37,7 @@ import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
 import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldError,

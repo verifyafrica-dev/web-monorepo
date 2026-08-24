@@ -21,7 +21,7 @@ import {
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
@@ -35,7 +35,7 @@ import {
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useCurrentTenant } from "../team/-data";
 import { AddCreditsDialog } from "./-components/add-credits-dialog";
 import { ExportTransactionsDialog } from "./-components/export-transactions-dialog";

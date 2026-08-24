@@ -6,8 +6,8 @@ import {
 } from "@phosphor-icons/react";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { formatAdminNumber } from "../../-data";
 import type { TenantStats } from "../-data";
 

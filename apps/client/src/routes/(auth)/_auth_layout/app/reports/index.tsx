@@ -8,7 +8,7 @@ import { VERIFICATIONS_V2_QUERY_KEYS } from "#/api/http/v2/verifications/verific
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { DashboardOnboarding } from "../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../-data";
 import { useCurrentTenant } from "../team/-data";

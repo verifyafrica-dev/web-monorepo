@@ -42,8 +42,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import type {
 	AdminDashboardAlert,
 	AdminDashboardData,

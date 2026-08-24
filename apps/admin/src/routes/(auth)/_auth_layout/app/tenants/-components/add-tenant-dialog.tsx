@@ -33,7 +33,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { getBillingPlanLabel } from "../-data";
 
 type AddTenantFormState = {

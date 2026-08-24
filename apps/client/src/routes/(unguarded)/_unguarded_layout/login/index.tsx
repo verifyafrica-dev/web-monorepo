@@ -13,8 +13,8 @@ import {
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
-import { deleteAllCookies } from "#/lib/cookies";
-import { getPostLoginPath } from "#/lib/redirect";
+import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
+import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
 import { normalizeUserTenants } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { useAuthStore } from "#/stores/auth-store";
 import type { V2AxiosError } from "#/api/http/shared";

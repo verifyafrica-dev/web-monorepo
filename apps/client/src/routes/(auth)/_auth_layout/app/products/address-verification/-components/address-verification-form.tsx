@@ -20,7 +20,7 @@ import {
 } from "@verifyafrica/ui/components/ui/select";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldDescription,

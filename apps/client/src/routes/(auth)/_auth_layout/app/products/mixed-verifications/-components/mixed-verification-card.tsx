@@ -14,7 +14,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@verifyafrica/ui/components/ui/card";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { formatVerificationTypeLabel } from "../-data";
 
 type MixedVerificationCardProps = {

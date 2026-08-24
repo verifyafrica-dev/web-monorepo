@@ -2,7 +2,8 @@ import type { InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
 
 import { StatusCodes } from "http-status-codes";
-import { deleteAllCookies, getCookie, setCookie } from "#/lib/cookies";
+import { configureHttpClient } from "@verifyafrica/api-client/http/client";
+import { deleteAllCookies, getCookie, setCookie } from "@verifyafrica/ui/lib/cookies";
 import { useAuthStore } from "#/stores/auth-store";
 import type { V2SuccessResponse } from "#/api/http/shared";
 import { env } from "../../config/env";
@@ -208,5 +209,7 @@ $http.interceptors.response.use(
 		return Promise.reject(error);
 	},
 );
+
+configureHttpClient($http);
 
 export default $http;

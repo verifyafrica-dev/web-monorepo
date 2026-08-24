@@ -33,9 +33,9 @@ import {
 } from "@verifyafrica/ui/components/ui/select";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
-import { getCountryCode, getCountrySelectOptions } from "#/lib/country-state-city";
+import { getCountryCode, getCountrySelectOptions } from "@verifyafrica/ui/lib/country-state-city";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export function KycSectionHeader({
 	title,

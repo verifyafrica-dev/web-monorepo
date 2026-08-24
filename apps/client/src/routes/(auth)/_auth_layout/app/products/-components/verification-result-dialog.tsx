@@ -10,7 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
-import type { HostedLinkResult } from "#/lib/verification-links";
+import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 
 import { HostedVerificationLinkCard } from "./hosted-verification-link-card";
 

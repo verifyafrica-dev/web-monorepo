@@ -12,8 +12,8 @@ import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Spinner } from "@verifyafrica/ui/components/ui/spinner";
 import { PhoneCountryFlag } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import { ProofFileUpload } from "#/components/ui-extended/proof-file-upload";
-import { getCountryCode, getCountryName } from "#/lib/country-state-city";
-import { cn } from "#/lib/utils.ts";
+import { getCountryCode, getCountryName } from "@verifyafrica/ui/lib/country-state-city";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 import {
 	InstructionAvoidBlurArt,

@@ -37,7 +37,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useCurrentTenant } from "./team/-data";
 import { DashboardOnboarding } from "./-components/dashboard-onboarding";
 import {

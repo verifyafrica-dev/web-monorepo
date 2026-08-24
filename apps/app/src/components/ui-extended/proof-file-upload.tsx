@@ -21,9 +21,9 @@ import { Field, FieldLabel } from "@verifyafrica/ui/components/ui/field";
 import {
 	UPLOAD_ALLOWED_MIME_TYPES,
 	UPLOAD_MAX_FILE_SIZE,
-} from "#/lib/file-upload-storage";
-import { isPasswordProtectedPdf } from "#/lib/pdf-file";
-import { cn } from "#/lib/utils.ts";
+} from "@verifyafrica/api-client/lib/file-upload-storage";
+import { isPasswordProtectedPdf } from "@verifyafrica/ui/lib/pdf-file";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export type ProofFileUploadHelpers = {
 	onProgress: (progress: number) => void;

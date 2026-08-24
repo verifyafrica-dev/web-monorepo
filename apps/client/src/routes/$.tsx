@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { NotFoundPage } from "#/components/not-found-page";
+import { NotFoundPage } from "@verifyafrica/ui/components/ui-extended/not-found-page";
 
 export const Route = createFileRoute("/$")({
 	head: () => ({

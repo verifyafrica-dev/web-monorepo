@@ -14,11 +14,11 @@
   "menuColor": "default",
   "menuAccent": "subtle",
   "aliases": {
-    "components": "#/components",
-    "utils": "#/lib/utils",
-    "ui": "#/components/ui",
-    "lib": "#/lib",
-    "hooks": "#/hooks"
+    "components": "@verifyafrica/ui/components",
+    "utils": "@verifyafrica/ui/lib/utils",
+    "ui": "@verifyafrica/ui/components/ui",
+    "lib": "@verifyafrica/ui/lib",
+    "hooks": "@verifyafrica/ui/hooks"
   },
   "registries": {
     "@shadcnblocks": {

@@ -1,7 +1,7 @@
 import { CheckIcon, XIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import type { KycSection } from "../-data";
 import { SECTION_NAMES } from "../-data";
 import { isKycSectionCompleted } from "../-utils";

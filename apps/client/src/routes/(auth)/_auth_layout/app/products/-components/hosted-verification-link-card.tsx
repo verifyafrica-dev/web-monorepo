@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useSendVerificationEmailV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
-import type { HostedLinkResult } from "#/lib/verification-links";
+import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 
 type HostedVerificationLinkCardProps = {
 	linkResult: HostedLinkResult;

@@ -8,7 +8,7 @@ import type { ComponentType } from "react";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { CountryStateCityFields } from "@verifyafrica/ui/components/ui-extended/country-state-city-fields";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import type { BillingFormState } from "../-data";
 
 function IconField({

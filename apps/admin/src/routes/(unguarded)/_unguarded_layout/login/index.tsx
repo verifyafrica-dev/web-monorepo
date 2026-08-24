@@ -13,8 +13,8 @@ import {
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
-import { deleteAllCookies } from "#/lib/cookies";
-import { getPostLoginPath } from "#/lib/redirect";
+import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
+import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
 import { getV2FormErrors } from "#/api/http/shared";
 import { Field, FieldError, FieldGroup } from "@verifyafrica/ui/components/ui/field";

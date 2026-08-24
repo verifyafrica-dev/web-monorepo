@@ -19,9 +19,9 @@ import {
 	TooltipTrigger,
 } from "@verifyafrica/ui/components/ui/tooltip";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
-import { useClipboard } from "#/hooks/use-clipboard";
-import { buildNewVerifyUrl } from "#/lib/verification-links";
-import { cn } from "#/lib/utils.ts";
+import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
+import { buildNewVerifyUrl } from "@verifyafrica/api-client/lib/verification-links";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export const NEW_VERIFY_SUPPORT_EMAIL = "support@verifyafrica.io";
 

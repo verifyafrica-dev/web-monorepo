@@ -13,8 +13,8 @@ import {
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { useBrandedPdfDownload } from "#/hooks/use-branded-pdf-download";
-import { cn } from "#/lib/utils.ts";
+import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	formatInvoiceAmount,
 	formatInvoiceDate,

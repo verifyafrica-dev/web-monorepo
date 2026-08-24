@@ -6,7 +6,7 @@ import {
 	uploadFileToStorage,
 	validateUploadFile,
 	type VerificationStorageName,
-} from "#/lib/file-upload-storage";
+} from "@verifyafrica/api-client/lib/file-upload-storage";
 
 export const PRODUCT_UPLOAD_VERIFICATIONS = {
 	documentVerification: "Document Verification",

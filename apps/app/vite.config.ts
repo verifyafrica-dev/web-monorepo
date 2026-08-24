@@ -33,7 +33,7 @@ const config = defineConfig({
 				find: /^country-state-city$/,
 				replacement: path.resolve(
 					import.meta.dirname,
-					"src/lib/country-state-city.ts",
+					"../../packages/ui/src/lib/country-state-city.ts",
 				),
 			},
 			{

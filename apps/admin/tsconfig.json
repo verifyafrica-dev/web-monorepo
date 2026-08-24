@@ -5,7 +5,8 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "paths": {
-      "country-state-city": ["./src/lib/country-state-city.ts"],
+      "country-state-city": ["../../packages/ui/src/lib/country-state-city.ts"],
+      "@verifyafrica/ui/*": ["../../packages/ui/src/*"],
       "#/*": ["./src/*"],
       "@/*": ["./src/*"]
     },

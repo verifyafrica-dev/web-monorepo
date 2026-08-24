@@ -1,6 +1,6 @@
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import type { DocumentVerificationResponsePayload } from "#/api/http/v2/verifications/verifications.types";
 import { asNonEmptyString, asRecord } from "../../-utils";
 import { ReportDetailField } from "../report-detail-field";

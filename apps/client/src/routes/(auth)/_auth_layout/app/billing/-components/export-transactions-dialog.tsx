@@ -16,7 +16,7 @@ import {
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@verifyafrica/ui/components/ui/radio-group";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	downloadTransactionsCsv,
 	EXPORT_DURATION_OPTIONS,

@@ -14,9 +14,9 @@ import {
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { useBrandedPdfDownload } from "#/hooks/use-branded-pdf-download";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
-import { cn } from "#/lib/utils.ts";
+import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	type VerificationRequestDetail,
 	VERIFICATION_TYPES_BY_PRODUCT,

@@ -13,8 +13,8 @@ import { useCreateNewVerifyV2Mutation } from "#/api/http/v2/verifications/new-ve
 import { useCreateVerificationRequestV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import type { VerificationRequest } from "#/api/http/v2/verifications/verifications.types";
 import type { V2AxiosError } from "#/api/http/shared";
-import type { HostedLinkResult } from "#/lib/verification-links";
-import { buildLinkResult } from "#/lib/verification-links";
+import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
+import { buildLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -30,7 +30,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldDescription,

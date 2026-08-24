@@ -6,7 +6,7 @@ import { VerificationStatusSchema } from "#/api/http/v1/verifications/verificati
 import type { VerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { extractHostedVerificationUrl } from "#/lib/verification-links";
+import { extractHostedVerificationUrl } from "@verifyafrica/api-client/lib/verification-links";
 import {
 	formatReportDate,
 	formatVerificationType,

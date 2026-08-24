@@ -11,7 +11,7 @@ import {
 } from "@verifyafrica/ui/components/ui/hover-card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 const MAX_GRID_ROWS = 8;
 const MAX_GRID_COLS = 8;

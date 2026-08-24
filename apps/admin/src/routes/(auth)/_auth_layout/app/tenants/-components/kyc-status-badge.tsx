@@ -3,7 +3,7 @@ import {
 	XCircleIcon,
 } from "@phosphor-icons/react";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import type { KycDisplayStatus } from "../-data";
 
 const KYC_STATUS_CONFIG: Record<

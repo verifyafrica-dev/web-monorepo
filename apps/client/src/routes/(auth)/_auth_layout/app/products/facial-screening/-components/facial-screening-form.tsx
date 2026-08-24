@@ -19,7 +19,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldDescription,

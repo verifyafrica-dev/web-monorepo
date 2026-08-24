@@ -8,7 +8,7 @@ import {
 	UPLOAD_MAX_FILE_SIZE,
 	uploadFileToStorage,
 	validateUploadFile,
-} from "#/lib/file-upload-storage";
+} from "@verifyafrica/api-client/lib/file-upload-storage";
 
 export const KYC_ALLOWED_MIME_TYPES = UPLOAD_ALLOWED_MIME_TYPES;
 export const KYC_SIGNATURE_MIME_TYPES = IMAGE_UPLOAD_MIME_TYPES;

@@ -16,7 +16,7 @@ import {
 	type NewVerifyIdDocumentFormValues,
 	type NewVerifySession,
 	type ShuftiDocumentSupportedType,
-} from "#/api/http/v2/verifications/new-verify/new-verify.types";
+} from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -29,8 +29,8 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import documentVerificationCountries from "#/data/verification-countries/id_document_verification_countries.json";
-import { uploadNewVerifyProofFile } from "#/lib/new-verify-proof-upload";
-import { cn } from "#/lib/utils.ts";
+import { uploadNewVerifyProofFile } from "@verifyafrica/api-client/lib/new-verify-proof-upload";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { KycDatePicker } from "../../../../../(auth)/_auth_layout/app/kyc/-components/kyc-form-primitives";
 
 import {

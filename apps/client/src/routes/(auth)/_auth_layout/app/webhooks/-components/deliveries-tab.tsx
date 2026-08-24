@@ -6,7 +6,7 @@ import type { TenantWebhookEvent } from "#/api/http/v2/tenants/tenants.types";
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -25,7 +25,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useCurrentTenant } from "../../team/-data";
 import {
 	formatWebhookEventDate,

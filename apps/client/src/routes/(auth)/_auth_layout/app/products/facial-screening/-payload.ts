@@ -1,6 +1,6 @@
 import type { VerificationRequestCreatePayload } from "#/api/http/v2/verifications/verifications.types";
 import type { VerificationType } from "#/api/http/v2/verifications/verifications.types";
-import { SHUFTI_CHOICES } from "#/lib/constants";
+import { SHUFTI_CHOICES } from "@verifyafrica/ui/lib/constants";
 
 const FACIAL_VERIFICATION_TYPE = "face_match" satisfies VerificationType;
 

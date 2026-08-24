@@ -1,4 +1,4 @@
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { ROLE_LABELS, type TenantUserRole } from "../-data";
 
 export function getRoleBadgeClassName(role: TenantUserRole) {

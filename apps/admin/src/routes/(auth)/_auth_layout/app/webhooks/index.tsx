@@ -10,11 +10,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { WebhookEvent } from "#/api/http/v2/webhooks/webhooks.hooks";
 import { useAllWebhookEventsV2Query } from "#/api/http/v2/webhooks/webhooks.hooks";
-import { DateFilterPicker } from "#/components/date-filter-picker";
+import { DateFilterPicker } from "@verifyafrica/ui/components/ui-extended/date-filter-picker";
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -28,9 +28,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { cn } from "#/lib/utils";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
 	buildWebhookEventsListQuery,
 	formatWebhookEventData,

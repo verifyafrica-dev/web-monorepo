@@ -9,8 +9,8 @@ import type {
 	InvoiceListItem,
 } from "#/api/http/v2/billing/billing.types";
 import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
-import { normalizeCountryCode } from "#/lib/country-state-city";
-import { pickChangedFields } from "#/lib/pick-changed-fields";
+import { normalizeCountryCode } from "@verifyafrica/ui/lib/country-state-city";
+import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 
 export type BillingFormState = {
 	billing_name: string;

@@ -7,7 +7,7 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Switch } from "@verifyafrica/ui/components/ui/switch";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { groupCountriesByRegion } from "../-data";
 
 export function EnabledCountriesTab({

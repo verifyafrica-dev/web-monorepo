@@ -1,7 +1,7 @@
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { cn } from "#/lib/utils.ts";
-import { isPlainObject } from "#/lib/validators";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { isPlainObject } from "@verifyafrica/ui/lib/validators";
 import type {
 	AmlScreeningResponsePayload,
 	AmlScreeningVerificationRequestDetail,

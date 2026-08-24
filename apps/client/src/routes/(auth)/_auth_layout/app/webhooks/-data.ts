@@ -6,7 +6,7 @@ import type {
 	TenantWebhookUpdatePayload,
 	WebhookDeliveryStatus,
 } from "#/api/http/v2/tenants/tenants.types";
-import { pickChangedFields } from "#/lib/pick-changed-fields";
+import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 
 export const webhooksSearchSchema = z.object({
 	tab: z.enum(["configuration", "deliveries"]).optional(),

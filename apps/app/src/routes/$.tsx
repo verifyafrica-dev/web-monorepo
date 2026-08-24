@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { NotFoundPage } from "#/components/not-found-page";
+import { NotFoundPage } from "@verifyafrica/ui/components/ui-extended/not-found-page";
+
+function AppNotFoundPage() {
+	return <NotFoundPage ctaHref="/" ctaLabel="Go to Verification" />;
+}
 
 export const Route = createFileRoute("/$")({
 	head: () => ({
@@ -12,5 +16,5 @@ export const Route = createFileRoute("/$")({
 			},
 		],
 	}),
-	component: NotFoundPage,
+	component: AppNotFoundPage,
 });

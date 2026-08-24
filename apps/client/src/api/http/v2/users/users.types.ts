@@ -9,7 +9,7 @@ import type {
 import {
 	isBlockedregisterEmailDomain,
 	PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,
-} from "#/lib/validators";
+} from "@verifyafrica/ui/lib/validators";
 
 export const UserRoleSchema = z.enum(["admin", "member"]);
 export type UserRole = z.infer<typeof UserRoleSchema>;

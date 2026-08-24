@@ -22,8 +22,8 @@ import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Switch } from "@verifyafrica/ui/components/ui/switch";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
-import { pickChangedFields } from "#/lib/pick-changed-fields";
-import { cn } from "#/lib/utils.ts";
+import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldError,

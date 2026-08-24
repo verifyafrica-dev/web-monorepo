@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTenantVerificationRequestsV2Query } from "#/api/http/v2/verifications/verifications.hooks";
-import { TablePagination } from "#/components/table-pagination";
-import { TypeBadge } from "#/components/type-badge";
+import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
+import { TypeBadge } from "@verifyafrica/ui/components/ui-extended/type-badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Table,
@@ -14,8 +14,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { cn } from "#/lib/utils.ts";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	formatReportDate,
 	formatVerificationType,

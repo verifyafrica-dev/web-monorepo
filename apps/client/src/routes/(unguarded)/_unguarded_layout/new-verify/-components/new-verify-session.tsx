@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { NewVerifySession } from "#/api/http/v2/verifications/new-verify/new-verify.types";
+import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 
 import { IdDocumentVerification } from "./verifications/id-document-verification";
 import { NewVerifyChrome } from "./new-verify-chrome";

@@ -15,7 +15,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
-import { hasChangedFields } from "#/lib/pick-changed-fields";
+import { hasChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 import {
 	type BillingFormState,
 	EMPTY_BILLING_FORM,

@@ -29,7 +29,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldError,

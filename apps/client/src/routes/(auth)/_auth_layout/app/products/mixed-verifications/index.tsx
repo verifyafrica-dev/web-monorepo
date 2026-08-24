@@ -9,11 +9,11 @@ import type {
 } from "#/api/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
 	buildLinkResult,
 	type HostedLinkResult,
-} from "#/lib/verification-links";
+} from "@verifyafrica/api-client/lib/verification-links";
 import { useCurrentTenant } from "../../team/-data";
 import { VerificationResultDialog } from "../-components/verification-result-dialog";
 import { getProduct } from "../-data";

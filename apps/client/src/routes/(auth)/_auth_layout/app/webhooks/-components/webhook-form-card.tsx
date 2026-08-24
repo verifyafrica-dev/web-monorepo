@@ -30,9 +30,9 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Switch } from "@verifyafrica/ui/components/ui/switch";
-import { useClipboard } from "#/hooks/use-clipboard";
-import { hasChangedFields } from "#/lib/pick-changed-fields";
-import { cn } from "#/lib/utils.ts";
+import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
+import { hasChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useCurrentTenant } from "../../team/-data";
 import {
 	EMPTY_WEBHOOK_FORM,

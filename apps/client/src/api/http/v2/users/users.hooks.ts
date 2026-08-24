@@ -8,7 +8,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import type { UserDetail } from "#/api/http/v1/users/users.types";
-import { deleteAllCookies } from "#/lib/cookies";
+import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { useAuthStore } from "#/stores/auth-store";
 import { setAccessToken } from "../../xhr";
 import { useOrganizationQueryKey } from "../organization-query";

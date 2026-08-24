@@ -10,12 +10,12 @@ import type {
 	VerificationRequestCreatePayload,
 } from "../verifications.types";
 import { VERIFICATIONS_V2_QUERY_KEYS } from "../verifications.hooks";
-import { NEW_VERIFY_V2_API } from "./new-verify.api";
+import { NEW_VERIFY_V2_API } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.api";
 import type {
 	NewVerifyDocumentSubmitPayload,
 	NewVerifyPresignPayload,
 	NewVerifySession,
-} from "./new-verify.types";
+} from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 
 const NEW_VERIFY_V2_STALE_TIME = 60_000;
 

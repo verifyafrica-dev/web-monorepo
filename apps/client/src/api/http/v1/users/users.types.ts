@@ -4,7 +4,7 @@ import type { UserTenantMembership } from "#/api/http/v1/tenants/tenants.types";
 import {
 	isBlockedregisterEmailDomain,
 	PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,
-} from "#/lib/validators";
+} from "@verifyafrica/ui/lib/validators";
 
 export const UserLoginSchema = z.object({
 	email: z

@@ -16,8 +16,8 @@ import { useTenantsAllV2Query } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
@@ -40,8 +40,8 @@ import {
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
 import { getUserInitials } from "#/lib/user.ts";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { AddTenantDialog } from "./-components/add-tenant-dialog";
 import { KycStatusBadge } from "./-components/kyc-status-badge";
 import {

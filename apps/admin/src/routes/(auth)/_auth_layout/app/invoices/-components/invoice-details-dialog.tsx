@@ -18,7 +18,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "#/lib/utils";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	formatInvoiceLongDate,
 	getInvoiceBalanceDue,

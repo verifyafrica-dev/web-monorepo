@@ -25,7 +25,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@verifyafrica/ui/components/ui/popover";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export type AsyncComboboxOption = {
 	value: string;

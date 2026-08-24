@@ -6,11 +6,11 @@ import {
 	useTenantVerificationRequestsV2Query,
 	useVerificationBatchDetailV2Query,
 } from "#/api/http/v2/verifications/verifications.hooks";
-import { TablePagination } from "#/components/table-pagination";
+import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { TypeBadge } from "#/components/type-badge";
+import { TypeBadge } from "@verifyafrica/ui/components/ui-extended/type-badge";
 import {
 	Table,
 	TableBody,
@@ -19,8 +19,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { useCurrentTenant } from "../../../team/-data";
 import { ReportsTableShell } from "../../-components/reports-table-shell";
 import {

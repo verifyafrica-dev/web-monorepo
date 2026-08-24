@@ -14,7 +14,7 @@ import {
 	paginateItems,
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -33,14 +33,14 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@verifyafrica/ui/components/ui/tooltip";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { cn } from "#/lib/utils";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
 	formatTenantMoney,
 	getInvoiceTotalAmount,
 } from "../tenants/$tenantId/-data";
-import { DateFilterPicker } from "#/components/date-filter-picker";
+import { DateFilterPicker } from "@verifyafrica/ui/components/ui-extended/date-filter-picker";
 import { InvoiceDetailsDialog } from "./-components/invoice-details-dialog";
 import {
 	downloadInvoice,

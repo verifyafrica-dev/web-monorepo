@@ -10,8 +10,8 @@ import {
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
-import { useBrandedPdfDownload } from "#/hooks/use-branded-pdf-download";
-import { cn } from "#/lib/utils.ts";
+import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { formatSignedAmount, type Transaction } from "../-data";
 
 export function TransactionDetailsDialog({

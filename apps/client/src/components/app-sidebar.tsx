@@ -44,7 +44,7 @@ import {
 	SidebarMenuSubItem,
 	useSidebar,
 } from "@verifyafrica/ui/components/ui/sidebar";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	getUserInitials,
 	ROLE_LABELS,

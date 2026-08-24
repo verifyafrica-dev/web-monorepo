@@ -9,7 +9,7 @@ import { useTenantActivityLogsV2Query } from "#/api/http/v2/activity-logs/activi
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -29,8 +29,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
 	downloadCsv,
 	formatTenantDate,

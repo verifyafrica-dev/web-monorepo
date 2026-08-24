@@ -13,7 +13,7 @@ import type { TenantDetail } from "#/api/http/v2/tenants/tenants.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { KycProvider, useKycTenantId } from "./-components/kyc-provider";
 import { KycSectionContent } from "./-components/kyc-section-content";
 import { KycSectionList } from "./-components/kyc-section-list";

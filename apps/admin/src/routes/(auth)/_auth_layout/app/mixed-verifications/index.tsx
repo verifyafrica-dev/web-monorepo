@@ -30,8 +30,8 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@verifyafrica/ui/components/ui/tooltip";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { DeleteMixedVerificationDialog } from "./-components/delete-mixed-verification-dialog";
 import { MixedVerificationFormDialog } from "./-components/mixed-verification-form-dialog";
 import {

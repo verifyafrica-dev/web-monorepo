@@ -4,8 +4,8 @@ import { VERIFICATIONS_V2_API } from "#/api/http/v2/verifications/verifications.
 import type { VerificationProofs } from "#/api/http/v2/verifications/verifications.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
-import { cn } from "#/lib/utils.ts";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { ReportDetailField } from "../report-detail-field";
 import { ProofImagePreviewDialog } from "./proof-image-preview-dialog";
 import {

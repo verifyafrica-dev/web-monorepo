@@ -3,7 +3,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./http/*": "./src/http/*",
+    "./lib/*": "./src/lib/*"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@verifyafrica/ui": "workspace:*",
+    "axios": "^1.18.0",
+    "zod": "^4.3.6"
+  }
 }

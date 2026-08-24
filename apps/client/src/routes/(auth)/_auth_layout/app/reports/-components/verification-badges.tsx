@@ -1,4 +1,4 @@
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export function getVerificationStatusBadgeClassName(status: string) {
 	const baseClasses =

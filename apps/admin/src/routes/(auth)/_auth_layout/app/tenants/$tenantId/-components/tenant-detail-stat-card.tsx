@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export function TenantDetailStatCard({
 	icon: Icon,

@@ -25,7 +25,7 @@ import {
 } from "@verifyafrica/ui/components/ui/button-group";
 import { RichTextEditorLinkPopover } from "#/components/ui-extended/rich-text-editor-link-popover";
 import { RichTextEditorTablePicker } from "#/components/ui-extended/rich-text-editor-table-picker";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 type RichTextEditorProps = {
 	id?: string;

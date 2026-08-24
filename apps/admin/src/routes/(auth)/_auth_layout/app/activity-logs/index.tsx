@@ -13,7 +13,7 @@ import { useUserV2DetailQuery } from "#/api/http/v2/users/users.hooks";
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
@@ -34,8 +34,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { formatTenantDate } from "../tenants/-data";
 import { getUserDisplayName } from "../users/-data";
 import {

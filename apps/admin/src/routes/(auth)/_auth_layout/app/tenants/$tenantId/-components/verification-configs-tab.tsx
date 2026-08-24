@@ -12,7 +12,7 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Switch } from "@verifyafrica/ui/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
 	VERIFICATION_PROVIDER_TABS,
 	type VerificationProviderTab,

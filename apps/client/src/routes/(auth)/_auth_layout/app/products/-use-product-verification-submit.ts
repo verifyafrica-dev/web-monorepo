@@ -10,7 +10,7 @@ import type { V2AxiosError } from "#/api/http/shared";
 import {
 	buildLinkResult,
 	type HostedLinkResult,
-} from "#/lib/verification-links";
+} from "@verifyafrica/api-client/lib/verification-links";
 
 import { useCurrentTenant } from "../team/-data";
 

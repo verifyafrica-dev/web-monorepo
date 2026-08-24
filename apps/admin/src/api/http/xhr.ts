@@ -2,8 +2,8 @@ import type { InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
 
 import { StatusCodes } from "http-status-codes";
-import { deleteAllCookies, getCookie, setCookie } from "#/lib/cookies";
-import { buildLoginRedirectUrl } from "#/lib/redirect";
+import { deleteAllCookies, getCookie, setCookie } from "@verifyafrica/ui/lib/cookies";
+import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
 import type { V2SuccessResponse } from "#/api/http/shared";
 import { env } from "../../config/env";

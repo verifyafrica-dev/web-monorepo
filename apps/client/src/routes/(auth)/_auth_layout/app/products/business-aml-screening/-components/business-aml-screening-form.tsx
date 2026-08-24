@@ -30,7 +30,7 @@ import {
 } from "@verifyafrica/ui/components/ui/select";
 import { Slider } from "@verifyafrica/ui/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import {
 	Field,

@@ -17,7 +17,7 @@ import type {
 import {
 	TablePagination,
 	TablePaginationSkeleton,
-} from "#/components/table-pagination";
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
@@ -46,10 +46,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "#/hooks/use-debounced-value";
+import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { getUserInitials } from "#/lib/user.ts";
-import { cn } from "#/lib/utils.ts";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { useAuthStore } from "#/stores/auth-store";
 import { getTenantAvatarColor } from "../tenants/-data";
 import { ResetPasswordDialog } from "./-components/reset-password-dialog";

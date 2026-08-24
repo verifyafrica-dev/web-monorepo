@@ -15,7 +15,7 @@ import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { createSkeletonKeys } from "#/lib/skeleton-keys";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { getBillingPlanLabel } from "../../-data";
 import { KycStatusBadge } from "../../-components/kyc-status-badge";
 import {

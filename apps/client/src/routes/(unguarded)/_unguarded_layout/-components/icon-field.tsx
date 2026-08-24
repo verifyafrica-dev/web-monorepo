@@ -1,7 +1,7 @@
 import type { ComponentProps, ComponentType } from "react";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
-import { cn } from "#/lib/utils.ts";
+import { cn } from "@verifyafrica/ui/lib/utils";
 
 export function IconField({
 	id,

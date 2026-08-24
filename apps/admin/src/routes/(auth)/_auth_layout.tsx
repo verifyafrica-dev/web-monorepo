@@ -23,8 +23,8 @@ import {
 	SidebarTrigger,
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { AppSidebar } from "#/components/app-sidebar";
-import { deleteAllCookies } from "#/lib/cookies";
-import { buildLoginRedirectUrl } from "#/lib/redirect";
+import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
+import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
 import { getUserInitials } from "#/lib/user";
 
