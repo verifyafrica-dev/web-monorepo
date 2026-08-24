@@ -3,7 +3,6 @@ import axios from "axios";
 
 import { StatusCodes } from "http-status-codes";
 import { deleteAllCookies, getCookie, setCookie } from "#/lib/cookies";
-import { buildLoginRedirectUrl } from "#/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
 import type { V2SuccessResponse } from "#/api/http/shared";
 import { env } from "../../config/env";
@@ -80,7 +79,6 @@ const clearTokensAndLogout = () => {
 
 	deleteAllCookies();
 	useAuthStore.getState().clearAuth();
-	window.location.href = buildLoginRedirectUrl(location.pathname);
 };
 
 const $http = axios.create({

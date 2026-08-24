@@ -34,7 +34,7 @@ export function NotFoundPage() {
 						asChild
 						className="mt-2 min-w-[160px] cursor-pointer"
 					>
-						<a href="/login">Go to Login</a>
+						<a href="/">Go to Verification</a>
 					</Button>
 				</CardContent>
 			</Card>

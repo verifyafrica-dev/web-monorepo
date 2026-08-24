@@ -3,11 +3,14 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
 	head: () => ({
 		meta: [
-			{ title: "Home | VerifyAfrica" },
-			{ name: "description", content: "Enter VerifyAfrica and continue to your verification workspace." },
+			{ title: "VerifyAfrica" },
+			{
+				name: "description",
+				content: "Complete your identity verification with your VerifyAfrica link.",
+			},
 		],
 	}),
 	beforeLoad: () => {
-		throw redirect({ to: "/login", replace: true });
+		throw redirect({ to: "/new-verify", replace: true });
 	},
 });
