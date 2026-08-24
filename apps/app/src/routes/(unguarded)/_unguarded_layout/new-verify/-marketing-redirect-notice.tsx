@@ -14,7 +14,7 @@ export function MarketingRedirectNotice({
 	return (
 		<div className="flex min-h-screen items-center justify-center px-4">
 			<Card className="w-full max-w-lg border-[rgba(2,77,77,0.12)] bg-white/90 shadow-[0_18px_60px_rgba(10,37,64,0.08)]">
-				<CardContent className="flex flex-col items-center gap-4 pt-8 text-center">
+				<CardContent className="flex flex-col items-center gap-4 py-8 text-center">
 					<img
 						src="/assets/brand/logo.svg"
 						alt="VerifyAfrica"
