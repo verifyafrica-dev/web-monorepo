@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+echo '🚧👷 Running linting, testing, and building tasks before committing...'
+
+bunx lint-staged
+
+if [ $? -eq 0 ]; then
+  echo '✅ Linting and testing passed. Building your project...'
+  echo '✅✅✅✅ Ready to commit. ✅✅✅✅'
+else
+  echo '❌ Linting or testing failed. Please fix the issues before committing.'
+  exit 1
+fi

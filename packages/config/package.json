@@ -1,0 +1,9 @@
+{
+  "name": "@verifyafrica/config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": "./biome.base.json",
+    "./tsconfig": "./tsconfig.base.json"
+  }
+}

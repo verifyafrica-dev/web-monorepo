@@ -1,0 +1,17 @@
+{
+  "name": "verifyafrica-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:app": "cd apps/app && bun run dev",
+    "dev:client": "cd apps/client && bun run dev",
+    "dev:admin": "cd apps/admin && bun run dev",
+    "build": "bun run --filter='./apps/*' build",
+    "build:app": "bun run --filter='@verifyafrica/app' build",
+    "build:client": "bun run --filter='@verifyafrica/client' build",
+    "build:admin": "bun run --filter='@verifyafrica/admin' build"
+  }
+}

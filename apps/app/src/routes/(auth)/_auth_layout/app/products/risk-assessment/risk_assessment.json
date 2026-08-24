@@ -1,0 +1,98 @@
+[
+  {
+    "id": "7f0a4c91-0e7e-4a8a-9c58-8e4b39d7c3b9",
+    "name": "gaming_gambling",
+    "title": "Gaming/Gambling",
+    "description": "Assesses gaming or gambling operators to ensure adherence to regulations, responsible gaming standards, and fraud prevention controls.",
+    "risk_reference": "3miTFA",
+    "mode": "live"
+  },
+  {
+    "id": "f1dcb7c5-6a9d-4a3e-9f8c-3d7b7c1a1e2d",
+    "name": "crypto_nft_defi",
+    "title": "Crypto/NFT/DeFi",
+    "description": "Evaluates cryptocurrency, NFT, and decentralized finance businesses for compliance risks, fraud exposure, and regulatory alignment.",
+    "risk_reference": "iSSH1t",
+    "mode": "live"
+  },
+  {
+    "id": "9b3e7d2c-2f62-4a9e-b0c4-2cfa6f8b61f7",
+    "name": "banking_finance_fintech_investments",
+    "title": "Banking/Finance/FinTech/Investments",
+    "description": "Reviews financial institutions and fintech platforms for regulatory compliance, AML controls, and financial crime exposure.",
+    "risk_reference": "m8bcQM",
+    "mode": "live"
+  },
+  {
+    "id": "b8d6f1d2-5b7c-4fbb-b9a0-91b37a8db15a",
+    "name": "trading_risk",
+    "title": "Trading Risk",
+    "description": "Assesses exposure to risks related to trading activities including securities, commodities, or derivatives. Identifies potential market abuse or regulatory violations.",
+    "risk_reference": "oDPp6l",
+    "mode": "live"
+  },
+  {
+    "id": "b7f26df7-1b4e-4c4d-93d9-698fdd8680c2",
+    "name": "trading_risk_assessment",
+    "title": "Trading Risk Assessment",
+    "description": "Comprehensive evaluation of an entity's trading-related regulatory exposure, financial manipulation risks, and compliance adherence across securities, commodities, and derivatives markets.",
+    "risk_reference": "G1uc7d",
+    "mode": "live"
+  },
+  {
+    "id": "acc20bc8-5dca-4e9d-a1c6-852da0f079a0",
+    "name": "risk_management",
+    "title": "Risk Management",
+    "description": "Evaluates operational, financial, and compliance risk profiles across multiple industries to identify control weaknesses and support informed risk mitigation decisions.",
+    "risk_reference": "cY0m7x",
+    "mode": "live"
+  },
+  {
+    "id": "cce45083-ca45-42d1-a28d-9d9f2840c4a6",
+    "name": "trading_risk",
+    "title": "Trading Risk",
+    "description": "Assesses exposure to risks related to trading activities including securities, commodities, or derivatives. Identifies potential market abuse or regulatory violations.",
+    "risk_reference": "ztAXkW",
+    "mode": "test"
+  },
+  {
+    "id": "2f3a9f5d-66d2-4b7d-8e5f-73e5f3e6c0c9",
+    "name": "crypto_nft_defi_test",
+    "title": "Crypto/NFT/DeFi (60)",
+    "description": "Test configuration of crypto risk checks validating scoring thresholds, fraud signals, and compliance indicators.",
+    "risk_reference": "l0pTug",
+    "mode": "test"
+  },
+  {
+    "id": "c7f4d0c9-8d63-4a4f-8b77-8a0b3a4df61d",
+    "name": "gaming_gambling_test",
+    "title": "Gaming/Gambling (47)",
+    "description": "Test configuration for gambling risk evaluation rules including fraud detection and compliance checks.",
+    "risk_reference": "fADCPw",
+    "mode": "test"
+  },
+  {
+    "id": "e1a8a3d0-b0a6-4db8-9f7b-72b92b6b3c71",
+    "name": "trading_risk_assessment",
+    "title": "Trading Risk Assessment",
+    "description": "Comprehensive evaluation of trading related regulatory exposure, financial manipulation risk, and compliance adherence.",
+    "risk_reference": "F6gwzI",
+    "mode": "test"
+  },
+  {
+    "id": "d3c1a1e9-3b72-46e3-8a44-0db0f6c7c2ab",
+    "name": "risk_management",
+    "title": "Risk Management",
+    "description": "General purpose risk assessment used to evaluate operational, financial, and compliance risks across multiple industries.",
+    "risk_reference": "vqnJEF",
+    "mode": "test"
+  },
+  {
+    "id": "5a9c7b6f-2d9e-4a7c-9b51-3d0f9b5e8f2e",
+    "name": "banking_finance_fintech_investments_test",
+    "title": "Banking/Finance/FinTech/Investments",
+    "description": "Test configuration for financial services compliance checks including AML, KYC, and fraud detection logic.",
+    "risk_reference": "WjyFnq",
+    "mode": "test"
+  }
+]
