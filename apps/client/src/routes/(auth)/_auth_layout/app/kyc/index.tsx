@@ -7,8 +7,8 @@ import {
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { useKycTenantQuery } from "#/api/http/v1/kyc/kyc.hooks";
-import { normalizeComplianceData } from "#/api/http/v1/kyc/kyc.types";
+import { useKycTenantQuery } from "#/api/http/v2/kyc/kyc.hooks";
+import { normalizeComplianceData } from "#/api/http/v2/kyc/kyc.types";
 import type { TenantDetail } from "#/api/http/v2/tenants/tenants.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";

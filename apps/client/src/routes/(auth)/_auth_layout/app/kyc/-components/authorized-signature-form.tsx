@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
 	KycAuthorizedSignatureFormSchema,
 	type KycAuthorizedSignatureFormValues,
-} from "#/api/http/v1/kyc/kyc.types";
+} from "#/api/http/v2/kyc/kyc.types";
 import {
 	Select,
 	SelectContent,

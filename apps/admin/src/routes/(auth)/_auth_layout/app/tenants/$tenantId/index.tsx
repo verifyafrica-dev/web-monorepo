@@ -12,7 +12,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useTenantBillingInformationV2Query } from "#/api/http/v2/billing/billing.hooks";
 import {
 	useSupportedCountriesV2Query,

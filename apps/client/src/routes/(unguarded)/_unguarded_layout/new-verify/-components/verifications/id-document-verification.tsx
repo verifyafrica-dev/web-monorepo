@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useSubmitNewVerifyDocumentV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 import {
 	createNewVerifyIdDocumentFormSchema,

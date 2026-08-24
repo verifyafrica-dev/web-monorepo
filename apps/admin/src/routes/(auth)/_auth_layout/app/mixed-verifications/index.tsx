@@ -7,7 +7,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
 	useAllMixedVerificationsV2Query,
 	useUpdateMixedVerificationV2Mutation,

@@ -5,13 +5,13 @@ import { Loader2Icon } from "lucide-react";
 import { type ComponentProps, useEffect } from "react";
 import { toast } from "sonner";
 
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useCreateTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import { TenantSelfServiceCreateSchema } from "#/api/http/v2/tenants/tenants.types";
 import { USER_V2_QUERY_KEYS } from "#/api/http/v2/users/users.hooks";
 import { USERS_V2_API } from "#/api/http/v2/users/users.api";
 import type { UserSession } from "#/api/http/v2/users/users.types";
-import type { UserDetail } from "#/api/http/v1/users/users.types";
+import type { UserDetail } from "#/api/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

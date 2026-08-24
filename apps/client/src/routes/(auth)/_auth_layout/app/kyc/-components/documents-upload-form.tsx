@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type {
 	KYBDocuments,
 	UploadedDocument,
-} from "#/api/http/v1/kyc/kyc.types";
+} from "#/api/http/v2/kyc/kyc.types";
 import { useRegisterTenantComplianceDocumentV2Mutation, useDeleteTenantComplianceDocumentV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import type { KycDocumentKey } from "#/api/http/v2/tenants/tenants.types";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";

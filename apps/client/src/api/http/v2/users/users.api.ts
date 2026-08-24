@@ -2,7 +2,7 @@ import {
 	unwrapV2Data,
 	unwrapV2Message,
 	unwrapV2Paginated,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	AdminUser,

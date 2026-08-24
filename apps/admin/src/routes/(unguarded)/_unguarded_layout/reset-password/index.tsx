@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getV2FormErrors } from "#/api/http/shared";
+import { getV2FormErrors } from "@verifyafrica/api-client/http/shared";
 import { useAdminResetPasswordWithOtpV2Mutation } from "#/api/http/v2/users/users.hooks";
 import {
 	AdminResetPasswordWithOtpFormSchema,

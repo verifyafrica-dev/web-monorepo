@@ -1,7 +1,7 @@
 import { FloppyDiskIcon } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useUpdateTenantVerificationConfigsV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import type { TenantVerificationConfigRow } from "#/api/http/v2/tenants/tenants.types";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";

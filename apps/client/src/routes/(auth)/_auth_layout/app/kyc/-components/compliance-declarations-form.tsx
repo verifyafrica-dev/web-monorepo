@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import {
 	KycComplianceDeclarationsFormSchema,
 	type KycComplianceDeclarationsFormValues,
-} from "#/api/http/v1/kyc/kyc.types";
+} from "#/api/http/v2/kyc/kyc.types";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Field, FieldError, FieldGroup } from "@verifyafrica/ui/components/ui/field";

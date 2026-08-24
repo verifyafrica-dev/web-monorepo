@@ -2,7 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useSendCustomMessageV2Mutation } from "#/api/http/v2/mail/mail.hooks";
 import { USERS_V2_API } from "#/api/http/v2/users/users.api";
 import type { AdminUser } from "#/api/http/v2/users/users.types";

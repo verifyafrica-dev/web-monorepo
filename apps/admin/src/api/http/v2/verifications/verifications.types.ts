@@ -1,16 +1,15 @@
 import { z } from "zod";
-
+import {
+	type VerificationStatus,
+	type VerificationType,
+	VerificationStatusSchema,
+	VerificationTypeSchema,
+} from "@verifyafrica/api-client/http/v1/verifications/verifications.types";
 import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
-import {
-	VerificationStatusSchema,
-	VerificationTypeSchema,
-	type VerificationStatus,
-	type VerificationType,
-} from "#/api/http/v1/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/shared";
 
 export type { VerificationStatus, VerificationType };
 export { VerificationStatusSchema, VerificationTypeSchema };

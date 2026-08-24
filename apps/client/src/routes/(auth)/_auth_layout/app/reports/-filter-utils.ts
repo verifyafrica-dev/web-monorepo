@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
 	VERIFICATION_STATUS_OPTIONS,
 	VERIFICATION_TYPE_OPTIONS,
-} from "#/api/http/v1/verifications/verifications.types";
+} from "#/api/http/v2/verifications/verifications.types";
 import type {
 	VerificationBatchListQuery,
 	VerificationListQuery,

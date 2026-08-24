@@ -9,9 +9,14 @@ import type {
 	V2MessageSuccessResponse,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 
-export type { SupportedCountry } from "#/api/http/v1/tenants/tenants.types";
+export interface SupportedCountry {
+	code: string;
+	name: string;
+	region: string;
+	flag_png: string | null;
+}
 
 export const TenantRoleSchema = z.enum(["admin", "member"]);
 export type TenantRole = z.infer<typeof TenantRoleSchema>;
@@ -482,7 +487,7 @@ export type TenantInvitationListResponse =
 	V2PaginatedSuccessResponse<TenantInvitation>;
 export type TenantUserListResponse = V2PaginatedSuccessResponse<TenantUser>;
 export type SupportedCountryListResponse = V2SuccessResponse<
-	import("#/api/http/v1/tenants/tenants.types").SupportedCountry[]
+	SupportedCountry[]
 >;
 export type TenantAPIKeyResponse = V2SuccessResponse<TenantAPIKey>;
 export type TenantWebhookResponse = V2SuccessResponse<TenantWebhook>;
@@ -527,6 +532,3 @@ export interface PaginatedTenantUserListResult {
 }
 
 export type TenantApiErrorResponse = V2AxiosError;
-
-// References still consumed from the v1 types module.
-export type { PaginatedResponse, UserTenantMembership, PaginationQuery, BillingInformation } from "#/api/http/v1/tenants/tenants.types";

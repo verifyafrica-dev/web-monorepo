@@ -2,8 +2,7 @@ import {
 	unwrapV2Data,
 	unwrapV2Message,
 	unwrapV2Paginated,
-} from "#/api/http/shared";
-import type { SupportedCountry } from "#/api/http/v1/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	KycComplianceSection,

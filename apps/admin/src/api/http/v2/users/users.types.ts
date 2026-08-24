@@ -5,7 +5,7 @@ import type {
 	V2MessageSuccessResponse,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 import {
 	isBlockedregisterEmailDomain,
 	PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,
@@ -340,6 +340,19 @@ export interface UserTenantMembership {
 	date_added: string;
 }
 
+export interface UserDetail {
+	id: string;
+	email: string;
+	first_name?: string;
+	last_name?: string;
+	phone_number?: string;
+	avatar_url?: string;
+	tenants: UserTenantMembership | UserTenantMembership[] | null;
+	is_active?: boolean;
+	last_login?: string | null;
+	created_at: string;
+}
+
 export interface UserSession {
 	id: string;
 	email: string;
@@ -420,6 +433,3 @@ export interface UserLoginError {
 }
 
 export type UserApiErrorResponse = V2AxiosError;
-
-// References still consumed from the v1 types module.
-export type { UserDetail } from "#/api/http/v1/users/users.types";

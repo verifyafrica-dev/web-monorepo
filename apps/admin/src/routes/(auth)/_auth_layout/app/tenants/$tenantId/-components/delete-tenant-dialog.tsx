@@ -1,7 +1,7 @@
 import { WarningIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useDeleteTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {

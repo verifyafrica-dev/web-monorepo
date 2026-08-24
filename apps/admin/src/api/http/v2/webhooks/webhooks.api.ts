@@ -1,4 +1,4 @@
-import { unwrapV2Paginated } from "#/api/http/shared";
+import { unwrapV2Paginated } from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	PaginatedWebhookEventListResult,

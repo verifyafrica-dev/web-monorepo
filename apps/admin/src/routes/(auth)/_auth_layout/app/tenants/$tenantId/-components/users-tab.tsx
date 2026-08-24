@@ -5,7 +5,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
 	useRemoveTenantUserV2Mutation,
 	useTenantUsersV2Query,

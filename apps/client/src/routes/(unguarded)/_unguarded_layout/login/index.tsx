@@ -17,7 +17,7 @@ import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
 import { normalizeUserTenants } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { useAuthStore } from "#/stores/auth-store";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { Field, FieldError, FieldGroup } from "@verifyafrica/ui/components/ui/field";
 import { AuthPageShell } from "../-components";
 

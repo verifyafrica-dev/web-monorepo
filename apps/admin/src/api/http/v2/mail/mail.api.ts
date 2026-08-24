@@ -1,4 +1,4 @@
-import { unwrapV2Data } from "#/api/http/shared";
+import { unwrapV2Data } from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	CustomMessageRequestPayload,

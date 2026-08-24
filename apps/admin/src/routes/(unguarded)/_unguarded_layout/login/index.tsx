@@ -16,7 +16,7 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
-import { getV2FormErrors } from "#/api/http/shared";
+import { getV2FormErrors } from "@verifyafrica/api-client/http/shared";
 import { Field, FieldError, FieldGroup } from "@verifyafrica/ui/components/ui/field";
 import { AuthPageShell } from "../-components";
 

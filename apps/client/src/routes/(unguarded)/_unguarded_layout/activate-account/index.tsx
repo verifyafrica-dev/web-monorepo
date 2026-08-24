@@ -26,7 +26,7 @@ import {
 } from "@verifyafrica/ui/components/ui/input-otp";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { Field, FieldError } from "@verifyafrica/ui/components/ui/field";
 import { AuthPageShell } from "../-components";
 

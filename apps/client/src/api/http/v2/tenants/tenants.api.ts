@@ -2,8 +2,7 @@ import {
 	unwrapV2Data,
 	unwrapV2Message,
 	unwrapV2Paginated,
-} from "#/api/http/shared";
-import type { SupportedCountry } from "#/api/http/v1/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	KycComplianceSection,
@@ -61,6 +60,8 @@ const TENANTS_V2_ENDPOINTS = {
 	invitations: "/v2/tenants/invitations/",
 	invitationResend: (invitationId: string) =>
 		`/v2/tenants/invitations/${invitationId}/resend/`,
+	invitationDelete: (invitationId: string) =>
+		`/v2/tenants/invitations/${invitationId}/`,
 	invitationAccept: "/v2/tenants/invitations/accept/",
 	invitationCreateUser: "/v2/tenants/invitations/create-user/",
 	verifyInvitation: "/v2/tenants/verify-invitation/",
@@ -216,6 +217,14 @@ export const TENANTS_V2_API = {
 				withTenantHeader(tenantId),
 			)
 			.then((res) => unwrapV2Data<TenantInvitation>(res)),
+
+	INVITATION_DELETE: async (tenantId: string, invitationId: string) =>
+		await $http
+			.delete(
+				TENANTS_V2_ENDPOINTS.invitationDelete(invitationId),
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<string>(res)),
 
 	INVITATION_ACCEPT: async (
 		data: TenantInvitationAcceptPayload,

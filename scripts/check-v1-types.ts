@@ -3,7 +3,7 @@ import { dirname, extname, join, normalize, relative, resolve } from "node:path"
 
 const root = resolve(import.meta.dir, "..");
 const writeChanges = process.argv.includes("--write");
-const apps = ["admin", "client"];
+const apps = ["app", "admin", "client"];
 
 type SymbolReference = { name: string; typeOnly: boolean };
 type Reference = { file: string; symbols: SymbolReference[] };

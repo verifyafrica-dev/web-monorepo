@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useUpdateUserV2DetailMutation } from "#/api/http/v2/users/users.hooks";
 import type { AdminUser } from "#/api/http/v2/users/users.types";
 import {

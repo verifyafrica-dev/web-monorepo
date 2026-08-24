@@ -5,7 +5,7 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useCreateTenantInvitationV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	TenantInvitationCreateSchema,

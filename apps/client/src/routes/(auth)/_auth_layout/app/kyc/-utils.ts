@@ -1,6 +1,6 @@
 import type { KycStatus } from "#/api/http/v2/tenants/tenants.types";
 import type { SectionRejectedReason } from "#/api/http/v2/tenants/tenants.types";
-import type { KYBApplication } from "#/api/http/v1/kyc/kyc.types";
+import type { KYBApplication } from "#/api/http/v2/kyc/kyc.types";
 import type { KycSectionPath } from "./-data";
 import { SECTION_NAMES } from "./-data";
 

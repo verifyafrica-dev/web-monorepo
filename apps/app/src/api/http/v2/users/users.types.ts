@@ -1,6 +1,6 @@
 import type { AxiosError } from "axios";
 import { z } from "zod";
-import type { UserTenantMembership } from "#/api/http/v1/tenants/tenants.types";
+import type { UserTenantMembership } from "#/api/http/v2/tenants/tenants.types";
 import {
 	isBlockedregisterEmailDomain,
 	PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,

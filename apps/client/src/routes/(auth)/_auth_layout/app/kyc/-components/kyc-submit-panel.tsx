@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { useSubmitKycForReviewMutation } from "#/api/http/v1/kyc/kyc.hooks";
+import { useSubmitKycForReviewMutation } from "#/api/http/v2/kyc/kyc.hooks";
 import type { SectionRejectedReason } from "#/api/http/v2/tenants/tenants.types";
 import { Alert, AlertDescription, AlertTitle } from "@verifyafrica/ui/components/ui/alert";
 import { Button } from "@verifyafrica/ui/components/ui/button";

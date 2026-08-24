@@ -29,7 +29,7 @@ import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Spinner } from "@verifyafrica/ui/components/ui/spinner";
 import { useAuthStore } from "#/stores/auth-store";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import {
 	Field,
 	FieldError,

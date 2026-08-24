@@ -4,13 +4,13 @@ import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 import {
 	type VerificationStatus,
 	VerificationStatusSchema,
 	type VerificationType,
 	VerificationTypeSchema,
-} from "#/api/http/v1/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v1/verifications/verifications.types";
 
 export type { VerificationStatus, VerificationType };
 export { VerificationStatusSchema, VerificationTypeSchema };

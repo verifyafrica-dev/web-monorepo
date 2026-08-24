@@ -5,7 +5,7 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 
 import {
 	useOrganizationQueryKey,
@@ -427,6 +427,20 @@ export const useCreateTenantInvitationV2Mutation = (tenantId: string) => {
 	return useMutation({
 		mutationFn: (payload: TenantInvitationCreatePayload) =>
 			TENANTS_V2_API.INVITATION_CREATE(tenantId, payload),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["tenants-v2", "invitations", tenantId],
+			});
+		},
+	});
+};
+
+export const useDeleteTenantInvitationMutation = (tenantId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (invitationId: string) =>
+			TENANTS_V2_API.INVITATION_DELETE(tenantId, invitationId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ["tenants-v2", "invitations", tenantId],

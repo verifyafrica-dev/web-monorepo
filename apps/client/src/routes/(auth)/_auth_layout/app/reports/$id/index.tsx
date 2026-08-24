@@ -37,7 +37,7 @@ import { RiskAssessmentReport } from "../-components/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";
 import { VerificationProofsSection } from "../-components/verification-proofs/verification-proofs-section";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
-import { VerificationStatusSchema } from "#/api/http/v1/verifications/verifications.types";
+import { VerificationStatusSchema } from "#/api/http/v2/verifications/verifications.types";
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/reports/$id/")({
 	head: () => ({

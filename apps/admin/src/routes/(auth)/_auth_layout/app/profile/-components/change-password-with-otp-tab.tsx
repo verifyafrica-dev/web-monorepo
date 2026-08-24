@@ -2,7 +2,7 @@ import { EyeIcon, EyeSlashIcon, LockIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getV2FormErrors } from "#/api/http/shared";
+import { getV2FormErrors } from "@verifyafrica/api-client/http/shared";
 import {
 	useAdminChangePasswordWithOtpV2Mutation,
 	useAdminRequestChangePasswordOtpV2Mutation,

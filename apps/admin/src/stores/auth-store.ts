@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { UserDetail } from "#/api/http/v1/users/users.types";
+import type { UserDetail } from "#/api/http/v2/users/users.types";
 
 type AuthStoreState = {
 	access_token: string | null;

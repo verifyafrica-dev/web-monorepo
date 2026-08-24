@@ -2,7 +2,7 @@ import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { VerificationStatusSchema } from "#/api/http/v1/verifications/verifications.types";
+import { VerificationStatusSchema } from "#/api/http/v2/verifications/verifications.types";
 import type { VerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";

@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useDeleteTenantInvitationMutation } from "#/api/http/v1/tenants/tenants.hooks";
+import { useDeleteTenantInvitationMutation } from "#/api/http/v2/tenants/tenants.hooks";
 import { useRemoveTenantUserV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	AlertDialog,

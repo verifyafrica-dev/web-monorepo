@@ -9,11 +9,11 @@ import { toast } from "sonner";
 
 import {
 	useSaveKycSectionMutation,
-} from "#/api/http/v1/kyc/kyc.hooks";
+} from "#/api/http/v2/kyc/kyc.hooks";
 import {
 	normalizeComplianceData,
 	type KYBApplication,
-} from "#/api/http/v1/kyc/kyc.types";
+} from "#/api/http/v2/kyc/kyc.types";
 import type {
 	KycComplianceSection,
 	KycSectionUpdatePayload,

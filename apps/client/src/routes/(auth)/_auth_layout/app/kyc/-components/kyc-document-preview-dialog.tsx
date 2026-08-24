@@ -5,7 +5,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
-import type { UploadedDocument } from "#/api/http/v1/kyc/kyc.types";
+import type { UploadedDocument } from "#/api/http/v2/kyc/kyc.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

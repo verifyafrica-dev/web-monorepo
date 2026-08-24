@@ -2,7 +2,7 @@ import { useForm, useStore } from "@tanstack/react-form";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { getV2ErrorMessage } from "#/api/http/shared";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useCreateWalletCreditV2Mutation } from "#/api/http/v2/wallet/wallet.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {

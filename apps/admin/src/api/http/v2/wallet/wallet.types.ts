@@ -4,7 +4,7 @@ import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 
 export const WalletListQuerySchema = z.object({
 	page: z.number().int().positive().optional(),

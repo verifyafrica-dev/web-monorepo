@@ -12,7 +12,7 @@ import { z } from "zod";
 import { useCreateNewVerifyV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 import { useCreateVerificationRequestV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import type { VerificationRequest } from "#/api/http/v2/verifications/verifications.types";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { buildLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";

@@ -3,7 +3,7 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getV2FormErrors } from "#/api/http/shared";
+import { getV2FormErrors } from "@verifyafrica/api-client/http/shared";
 import { useAdminForgotPasswordV2Mutation } from "#/api/http/v2/users/users.hooks";
 import {
 	AdminRequestPasswordOtpSchema,
@@ -119,4 +119,3 @@ function ForgotPasswordPage() {
 		</AuthPageShell>
 	);
 }
-

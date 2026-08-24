@@ -4,16 +4,18 @@ import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "#/api/http/shared";
+} from "@verifyafrica/api-client/http/shared";
 import {
 	type VerificationStatus,
 	VerificationStatusSchema,
 	type VerificationType,
 	VerificationTypeSchema,
-} from "#/api/http/v1/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v1/verifications/verifications.types";
 
 export type { VerificationStatus, VerificationType };
 export { VerificationStatusSchema, VerificationTypeSchema };
+export const VERIFICATION_STATUS_OPTIONS = VerificationStatusSchema.options;
+export const VERIFICATION_TYPE_OPTIONS = VerificationTypeSchema.options;
 export {
 	VERIFICATION_TYPES_BY_PRODUCT,
 	VerificationRequestCreateSchema,
@@ -497,6 +499,3 @@ export function isGovernmentRegistryChecksVerificationDetail(
 		verification.verification_type as GovernmentRegistryChecksVerificationType,
 	);
 }
-
-// References still consumed from the v1 types module.
-export { VERIFICATION_STATUS_OPTIONS, VERIFICATION_TYPE_OPTIONS } from "#/api/http/v1/verifications/verifications.types";

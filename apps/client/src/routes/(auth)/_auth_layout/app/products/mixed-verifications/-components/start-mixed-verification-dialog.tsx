@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { V2AxiosError } from "#/api/http/shared";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useStartMixedVerificationV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import type {
 	MixedVerification,
