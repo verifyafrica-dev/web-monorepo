@@ -497,3 +497,6 @@ export function isGovernmentRegistryChecksVerificationDetail(
 		verification.verification_type as GovernmentRegistryChecksVerificationType,
 	);
 }
+
+// References still consumed from the v1 types module.
+export { VERIFICATION_STATUS_OPTIONS, VERIFICATION_TYPE_OPTIONS } from "#/api/http/v1/verifications/verifications.types";

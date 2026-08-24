@@ -586,3 +586,6 @@ export interface PaginatedTenantWebhookEventListResult {
 }
 
 export type TenantApiErrorResponse = V2AxiosError;
+
+// References still consumed from the v1 types module.
+export type { PaginatedResponse, AdminTenantCreatePayload, InvitationAcceptPayload, InvitationCompletePayload, InvitationCreatePayload, PaginationQuery, TenantAPIKeyRotatePayload, UserRoleUpdatePayload, AdminTenantCreateResponse, Invitation, PaginatedInvitationListResponse, PaginatedTenantListResponse, PaginatedTenantManageListResponse, Tenant, TenantCreateAndUpdate, TenantDeleteResponse, TenantWebHook, UserTenantMembership, BillingInformation } from "#/api/http/v1/tenants/tenants.types";

@@ -6,6 +6,8 @@
     "packages/*"
   ],
   "scripts": {
+    "check:v1-types": "bun scripts/check-v1-types.ts",
+    "sync:v1-types": "bun scripts/check-v1-types.ts --write",
     "dev:app": "cd apps/app && bun run dev",
     "dev:client": "cd apps/client && bun run dev",
     "dev:admin": "cd apps/admin && bun run dev",

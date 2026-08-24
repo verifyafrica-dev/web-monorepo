@@ -250,6 +250,7 @@
       "dependencies": {
         "@verifyafrica/ui": "workspace:*",
         "axios": "^1.18.0",
+        "http-status-codes": "^2.3.0",
         "zod": "^4.3.6",
       },
     },

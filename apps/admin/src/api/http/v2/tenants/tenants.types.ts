@@ -527,3 +527,6 @@ export interface PaginatedTenantUserListResult {
 }
 
 export type TenantApiErrorResponse = V2AxiosError;
+
+// References still consumed from the v1 types module.
+export type { PaginatedResponse, UserTenantMembership, PaginationQuery, BillingInformation } from "#/api/http/v1/tenants/tenants.types";

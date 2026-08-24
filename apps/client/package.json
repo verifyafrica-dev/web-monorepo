@@ -15,7 +15,8 @@
     "test": "vitest run",
     "lint": "biome lint --unsafe",
     "lint:fix": "biome lint --unsafe --fix",
-    "check": "biome check"
+    "check": "biome check",
+    "check:v1-types": "bun ../../scripts/check-v1-types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

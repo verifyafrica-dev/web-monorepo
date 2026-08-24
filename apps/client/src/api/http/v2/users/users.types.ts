@@ -348,3 +348,6 @@ export interface UserLoginError {
 }
 
 export type UserApiErrorResponse = V2AxiosError;
+
+// References still consumed from the v1 types module.
+export type { UserDetail, PaginatedUserDetailListResponse } from "#/api/http/v1/users/users.types";
