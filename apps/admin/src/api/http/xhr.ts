@@ -1,3 +1,4 @@
+import { getAuthTokenPrefix } from "@verifyafrica/config/domains";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
 import { createHttpClient, AUTH_APP_HEADER } from "@verifyafrica/api-client/http/xhr";
 import { useAuthStore } from "#/stores/auth-store";
@@ -5,19 +6,11 @@ import { env } from "../../config/env";
 
 export const AUTH_APP = "admin" as const;
 
-const getTokenPrefix = (host: string) => {
-	if (host.includes("localhost")) return "local:";
-	if (host.includes("test.admin.verifyafrica.io")) return "test-admin:";
-	if (host.includes("dashboard.verifyafrica.io")) return "dashboard:";
-	if (host.includes("admin.verifyafrica.io")) return "admin:";
-	return "local:";
-};
-
 const { http, getAccessTokenKey, setAccessToken, setTokens } = createHttpClient({
 	baseURL: env.apiBaseUrl,
 	isDevelopment: env.isDevelopment,
 	authApp: AUTH_APP,
-	getTokenPrefix,
+	getTokenPrefix: getAuthTokenPrefix,
 	publicRouteFragments: [
 		"/v2/users/register/",
 		"/v2/users/login/",

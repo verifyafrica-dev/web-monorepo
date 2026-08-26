@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resolveApiBaseUrl } from "@verifyafrica/config/app-env";
 
 const envSchema = z.object({
 	VITE_API_BASE_URL: z.url(),
@@ -27,17 +28,14 @@ if (!parsed.success) {
 
 const data = parsed.data;
 
-const DEV_API_PORT = 8300;
-
-function getDevApiBaseUrl() {
-	const hostname = import.meta.env.VITE_DEV_NETWORK_IP || "127.0.0.1";
-	return `http://${hostname}:${DEV_API_PORT}/api`;
-}
-
 export const env = {
 	...parsed.data,
 	// Backward-compatible app config accessors
-	apiBaseUrl: import.meta.env.DEV ? getDevApiBaseUrl() : data.VITE_API_BASE_URL,
+	apiBaseUrl: resolveApiBaseUrl({
+		isViteDev: import.meta.env.DEV,
+		viteApiBaseUrl: data.VITE_API_BASE_URL,
+		devNetworkIp: import.meta.env.VITE_DEV_NETWORK_IP,
+	}),
 	appName: data.VITE_APP_NAME,
 	appEnvironment: data.VITE_APP_ENVIRONMENT,
 	siteType: data.VITE_SITE_TYPE,

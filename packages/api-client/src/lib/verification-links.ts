@@ -1,4 +1,8 @@
 import type { VerificationLink, VerificationRequest } from "../http/v2/verifications/verifications.types";
+import {
+	buildHostedVerificationUrl as buildHostedVerificationUrlFromDomains,
+	buildNewVerifyUrl as buildNewVerifyUrlFromDomains,
+} from "@verifyafrica/config/domains";
 
 export type HostedLinkResult = {
 	verificationUrl: string;
@@ -16,11 +20,11 @@ export function buildNewVerifyPath(linkToken: string) {
 }
 
 export function buildHostedVerificationUrl(linkToken: string) {
-	return `${window.location.origin}${buildHostedVerificationPath(linkToken)}`;
+	return buildHostedVerificationUrlFromDomains(linkToken);
 }
 
 export function buildNewVerifyUrl(linkToken: string) {
-	return `${window.location.origin}${buildNewVerifyPath(linkToken)}`;
+	return buildNewVerifyUrlFromDomains(linkToken);
 }
 
 export function extractHostedVerificationUrl(

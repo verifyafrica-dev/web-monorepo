@@ -6,7 +6,7 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "portless client.verifyafrica.localhost vite --host 0.0.0.0 --port 8010",
+    "dev": "portless app.verifyafrica.localhost vite --host 0.0.0.0 --port 8010",
     "dev:app": "vite dev --host 0.0.0.0 --port 8010",
     "generate-routes": "tsr generate",
     "build": "vite build",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@base-ui/react": "^1.5.0",
     "@verifyafrica/api-client": "workspace:*",
+    "@verifyafrica/config": "workspace:*",
     "@verifyafrica/ui": "workspace:*",
     "@fontsource-variable/outfit": "^5.2.8",
     "@phosphor-icons/react": "^2.1.10",

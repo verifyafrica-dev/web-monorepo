@@ -5,18 +5,15 @@
  * All variables must be prefixed with VITE_ to be accessible in the browser.
  */
 
-const DEV_API_PORT = 8300;
-
-function getDevApiBaseUrl() {
-  const hostname = import.meta.env.VITE_DEV_NETWORK_IP || "127.0.0.1";
-  return `http://${hostname}:${DEV_API_PORT}/api`;
-}
+import { resolveApiBaseUrl } from "@verifyafrica/config/app-env";
 
 export const env = {
   // API Configuration
-  apiBaseUrl: import.meta.env.DEV
-    ? getDevApiBaseUrl()
-    : import.meta.env.VITE_API_BASE_URL,
+  apiBaseUrl: resolveApiBaseUrl({
+    isViteDev: import.meta.env.DEV,
+    viteApiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+    devNetworkIp: import.meta.env.VITE_DEV_NETWORK_IP,
+  }),
 
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'Verify Africa',

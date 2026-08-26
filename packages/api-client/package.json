@@ -8,6 +8,7 @@
     "./lib/*": "./src/lib/*"
   },
   "dependencies": {
+    "@verifyafrica/config": "workspace:*",
     "@verifyafrica/ui": "workspace:*",
     "axios": "^1.18.0",
     "http-status-codes": "^2.3.0",

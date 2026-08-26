@@ -1,3 +1,4 @@
+import { PORTLESS_HOSTS } from "@verifyafrica/config/domains";
 import os from "node:os";
 import path from "node:path";
 // import babel from "@rolldown/plugin-babel";
@@ -24,7 +25,7 @@ process.env.VITE_DEV_NETWORK_IP ??= getNetworkIPv4();
 
 const config = defineConfig({
 	server: {
-		allowedHosts: ["admin.verifyafrica.localhost"],
+		allowedHosts: [PORTLESS_HOSTS.admin],
 	},
 	resolve: {
 		tsconfigPaths: true,

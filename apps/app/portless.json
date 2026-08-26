@@ -1,6 +1,6 @@
 {
-  "name": "client.verifyafrica",
+  "name": "app.verifyafrica",
   "apps": {
-    ".": { "name": "client.verifyafrica" }
+    ".": { "name": "app.verifyafrica" }
   }
 }
