@@ -66,7 +66,7 @@ export function NewVerifyChrome({ children, token }: NewVerifyChromeProps) {
 	}
 
 	return (
-		<div className="flex min-h-dvh flex-col md:items-center">
+		<div className="flex h-full flex-col md:items-center">
 			<div
 				className={cn(
 					"flex w-full flex-1 flex-col bg-white",

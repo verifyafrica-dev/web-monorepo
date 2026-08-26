@@ -18,7 +18,6 @@ import { Route as unguardedUnguarded_layoutActivateAccountIndexRouteImport } fro
 import { Route as unguardedUnguarded_layoutForgotPasswordIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/forgot-password/index'
 import { Route as unguardedUnguarded_layoutInviteIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/invite/index'
 import { Route as unguardedUnguarded_layoutLoginIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/login/index'
-import { Route as unguardedUnguarded_layoutNewVerifyIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/new-verify/index'
 import { Route as unguardedUnguarded_layoutRegisterIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/register/index'
 import { Route as unguardedUnguarded_layoutResetPasswordIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/reset-password/index'
 import { Route as unguardedUnguarded_layoutVerificationResultRouteImport } from './routes/(unguarded)/_unguarded_layout/verification/result'
@@ -31,7 +30,6 @@ import { Route as authAuth_layoutAppProfileIndexRouteImport } from './routes/(au
 import { Route as authAuth_layoutAppReportsIndexRouteImport } from './routes/(auth)/_auth_layout/app/reports/index'
 import { Route as authAuth_layoutAppTeamIndexRouteImport } from './routes/(auth)/_auth_layout/app/team/index'
 import { Route as authAuth_layoutAppWebhooksIndexRouteImport } from './routes/(auth)/_auth_layout/app/webhooks/index'
-import { Route as unguardedUnguarded_layoutNewVerifyTokenIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/new-verify/$token/index'
 import { Route as unguardedUnguarded_layoutVerifyLinkIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/verify/$link/index'
 import { Route as authAuth_layoutAppProductsAddressVerificationIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/address-verification/index'
 import { Route as authAuth_layoutAppProductsAmlScreeningIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/aml-screening/index'
@@ -94,12 +92,6 @@ const unguardedUnguarded_layoutLoginIndexRoute =
   unguardedUnguarded_layoutLoginIndexRouteImport.update({
     id: '/login/',
     path: '/login/',
-    getParentRoute: () => unguardedUnguarded_layoutRoute,
-  } as any)
-const unguardedUnguarded_layoutNewVerifyIndexRoute =
-  unguardedUnguarded_layoutNewVerifyIndexRouteImport.update({
-    id: '/new-verify/',
-    path: '/new-verify/',
     getParentRoute: () => unguardedUnguarded_layoutRoute,
   } as any)
 const unguardedUnguarded_layoutRegisterIndexRoute =
@@ -173,12 +165,6 @@ const authAuth_layoutAppWebhooksIndexRoute =
     id: '/app/webhooks/',
     path: '/app/webhooks/',
     getParentRoute: () => authAuth_layoutRoute,
-  } as any)
-const unguardedUnguarded_layoutNewVerifyTokenIndexRoute =
-  unguardedUnguarded_layoutNewVerifyTokenIndexRouteImport.update({
-    id: '/new-verify/$token/',
-    path: '/new-verify/$token/',
-    getParentRoute: () => unguardedUnguarded_layoutRoute,
   } as any)
 const unguardedUnguarded_layoutVerifyLinkIndexRoute =
   unguardedUnguarded_layoutVerifyLinkIndexRouteImport.update({
@@ -281,7 +267,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password/': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/invite/': typeof unguardedUnguarded_layoutInviteIndexRoute
   '/login/': typeof unguardedUnguarded_layoutLoginIndexRoute
-  '/new-verify/': typeof unguardedUnguarded_layoutNewVerifyIndexRoute
   '/register/': typeof unguardedUnguarded_layoutRegisterIndexRoute
   '/reset-password/': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
   '/app/apikeys/': typeof authAuth_layoutAppApikeysIndexRoute
@@ -292,7 +277,6 @@ export interface FileRoutesByFullPath {
   '/app/reports/': typeof authAuth_layoutAppReportsIndexRoute
   '/app/team/': typeof authAuth_layoutAppTeamIndexRoute
   '/app/webhooks/': typeof authAuth_layoutAppWebhooksIndexRoute
-  '/new-verify/$token/': typeof unguardedUnguarded_layoutNewVerifyTokenIndexRoute
   '/verify/$link/': typeof unguardedUnguarded_layoutVerifyLinkIndexRoute
   '/app/products/address-verification/': typeof authAuth_layoutAppProductsAddressVerificationIndexRoute
   '/app/products/aml-screening/': typeof authAuth_layoutAppProductsAmlScreeningIndexRoute
@@ -319,7 +303,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/invite': typeof unguardedUnguarded_layoutInviteIndexRoute
   '/login': typeof unguardedUnguarded_layoutLoginIndexRoute
-  '/new-verify': typeof unguardedUnguarded_layoutNewVerifyIndexRoute
   '/register': typeof unguardedUnguarded_layoutRegisterIndexRoute
   '/reset-password': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
   '/app/apikeys': typeof authAuth_layoutAppApikeysIndexRoute
@@ -330,7 +313,6 @@ export interface FileRoutesByTo {
   '/app/reports': typeof authAuth_layoutAppReportsIndexRoute
   '/app/team': typeof authAuth_layoutAppTeamIndexRoute
   '/app/webhooks': typeof authAuth_layoutAppWebhooksIndexRoute
-  '/new-verify/$token': typeof unguardedUnguarded_layoutNewVerifyTokenIndexRoute
   '/verify/$link': typeof unguardedUnguarded_layoutVerifyLinkIndexRoute
   '/app/products/address-verification': typeof authAuth_layoutAppProductsAddressVerificationIndexRoute
   '/app/products/aml-screening': typeof authAuth_layoutAppProductsAmlScreeningIndexRoute
@@ -360,7 +342,6 @@ export interface FileRoutesById {
   '/(unguarded)/_unguarded_layout/forgot-password/': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/(unguarded)/_unguarded_layout/invite/': typeof unguardedUnguarded_layoutInviteIndexRoute
   '/(unguarded)/_unguarded_layout/login/': typeof unguardedUnguarded_layoutLoginIndexRoute
-  '/(unguarded)/_unguarded_layout/new-verify/': typeof unguardedUnguarded_layoutNewVerifyIndexRoute
   '/(unguarded)/_unguarded_layout/register/': typeof unguardedUnguarded_layoutRegisterIndexRoute
   '/(unguarded)/_unguarded_layout/reset-password/': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
   '/(auth)/_auth_layout/app/apikeys/': typeof authAuth_layoutAppApikeysIndexRoute
@@ -371,7 +352,6 @@ export interface FileRoutesById {
   '/(auth)/_auth_layout/app/reports/': typeof authAuth_layoutAppReportsIndexRoute
   '/(auth)/_auth_layout/app/team/': typeof authAuth_layoutAppTeamIndexRoute
   '/(auth)/_auth_layout/app/webhooks/': typeof authAuth_layoutAppWebhooksIndexRoute
-  '/(unguarded)/_unguarded_layout/new-verify/$token/': typeof unguardedUnguarded_layoutNewVerifyTokenIndexRoute
   '/(unguarded)/_unguarded_layout/verify/$link/': typeof unguardedUnguarded_layoutVerifyLinkIndexRoute
   '/(auth)/_auth_layout/app/products/address-verification/': typeof authAuth_layoutAppProductsAddressVerificationIndexRoute
   '/(auth)/_auth_layout/app/products/aml-screening/': typeof authAuth_layoutAppProductsAmlScreeningIndexRoute
@@ -400,7 +380,6 @@ export interface FileRouteTypes {
     | '/forgot-password/'
     | '/invite/'
     | '/login/'
-    | '/new-verify/'
     | '/register/'
     | '/reset-password/'
     | '/app/apikeys/'
@@ -411,7 +390,6 @@ export interface FileRouteTypes {
     | '/app/reports/'
     | '/app/team/'
     | '/app/webhooks/'
-    | '/new-verify/$token/'
     | '/verify/$link/'
     | '/app/products/address-verification/'
     | '/app/products/aml-screening/'
@@ -438,7 +416,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/invite'
     | '/login'
-    | '/new-verify'
     | '/register'
     | '/reset-password'
     | '/app/apikeys'
@@ -449,7 +426,6 @@ export interface FileRouteTypes {
     | '/app/reports'
     | '/app/team'
     | '/app/webhooks'
-    | '/new-verify/$token'
     | '/verify/$link'
     | '/app/products/address-verification'
     | '/app/products/aml-screening'
@@ -478,7 +454,6 @@ export interface FileRouteTypes {
     | '/(unguarded)/_unguarded_layout/forgot-password/'
     | '/(unguarded)/_unguarded_layout/invite/'
     | '/(unguarded)/_unguarded_layout/login/'
-    | '/(unguarded)/_unguarded_layout/new-verify/'
     | '/(unguarded)/_unguarded_layout/register/'
     | '/(unguarded)/_unguarded_layout/reset-password/'
     | '/(auth)/_auth_layout/app/apikeys/'
@@ -489,7 +464,6 @@ export interface FileRouteTypes {
     | '/(auth)/_auth_layout/app/reports/'
     | '/(auth)/_auth_layout/app/team/'
     | '/(auth)/_auth_layout/app/webhooks/'
-    | '/(unguarded)/_unguarded_layout/new-verify/$token/'
     | '/(unguarded)/_unguarded_layout/verify/$link/'
     | '/(auth)/_auth_layout/app/products/address-verification/'
     | '/(auth)/_auth_layout/app/products/aml-screening/'
@@ -579,13 +553,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof unguardedUnguarded_layoutLoginIndexRouteImport
       parentRoute: typeof unguardedUnguarded_layoutRoute
     }
-    '/(unguarded)/_unguarded_layout/new-verify/': {
-      id: '/(unguarded)/_unguarded_layout/new-verify/'
-      path: '/new-verify'
-      fullPath: '/new-verify/'
-      preLoaderRoute: typeof unguardedUnguarded_layoutNewVerifyIndexRouteImport
-      parentRoute: typeof unguardedUnguarded_layoutRoute
-    }
     '/(unguarded)/_unguarded_layout/register/': {
       id: '/(unguarded)/_unguarded_layout/register/'
       path: '/register'
@@ -669,13 +636,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/webhooks/'
       preLoaderRoute: typeof authAuth_layoutAppWebhooksIndexRouteImport
       parentRoute: typeof authAuth_layoutRoute
-    }
-    '/(unguarded)/_unguarded_layout/new-verify/$token/': {
-      id: '/(unguarded)/_unguarded_layout/new-verify/$token/'
-      path: '/new-verify/$token'
-      fullPath: '/new-verify/$token/'
-      preLoaderRoute: typeof unguardedUnguarded_layoutNewVerifyTokenIndexRouteImport
-      parentRoute: typeof unguardedUnguarded_layoutRoute
     }
     '/(unguarded)/_unguarded_layout/verify/$link/': {
       id: '/(unguarded)/_unguarded_layout/verify/$link/'
@@ -861,10 +821,8 @@ interface unguardedUnguarded_layoutRouteChildren {
   unguardedUnguarded_layoutForgotPasswordIndexRoute: typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   unguardedUnguarded_layoutInviteIndexRoute: typeof unguardedUnguarded_layoutInviteIndexRoute
   unguardedUnguarded_layoutLoginIndexRoute: typeof unguardedUnguarded_layoutLoginIndexRoute
-  unguardedUnguarded_layoutNewVerifyIndexRoute: typeof unguardedUnguarded_layoutNewVerifyIndexRoute
   unguardedUnguarded_layoutRegisterIndexRoute: typeof unguardedUnguarded_layoutRegisterIndexRoute
   unguardedUnguarded_layoutResetPasswordIndexRoute: typeof unguardedUnguarded_layoutResetPasswordIndexRoute
-  unguardedUnguarded_layoutNewVerifyTokenIndexRoute: typeof unguardedUnguarded_layoutNewVerifyTokenIndexRoute
   unguardedUnguarded_layoutVerifyLinkIndexRoute: typeof unguardedUnguarded_layoutVerifyLinkIndexRoute
 }
 
@@ -882,14 +840,10 @@ const unguardedUnguarded_layoutRouteChildren: unguardedUnguarded_layoutRouteChil
       unguardedUnguarded_layoutInviteIndexRoute,
     unguardedUnguarded_layoutLoginIndexRoute:
       unguardedUnguarded_layoutLoginIndexRoute,
-    unguardedUnguarded_layoutNewVerifyIndexRoute:
-      unguardedUnguarded_layoutNewVerifyIndexRoute,
     unguardedUnguarded_layoutRegisterIndexRoute:
       unguardedUnguarded_layoutRegisterIndexRoute,
     unguardedUnguarded_layoutResetPasswordIndexRoute:
       unguardedUnguarded_layoutResetPasswordIndexRoute,
-    unguardedUnguarded_layoutNewVerifyTokenIndexRoute:
-      unguardedUnguarded_layoutNewVerifyTokenIndexRoute,
     unguardedUnguarded_layoutVerifyLinkIndexRoute:
       unguardedUnguarded_layoutVerifyLinkIndexRoute,
   }
