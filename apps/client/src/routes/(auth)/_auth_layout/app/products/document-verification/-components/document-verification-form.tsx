@@ -1,11 +1,10 @@
 import {
 	LinkIcon,
-	LinkSimpleIcon,
 	MagnifyingGlassIcon,
 	PaperPlaneTiltIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -46,7 +45,6 @@ import { useCurrentTenant } from "../../../team/-data";
 import {
 	buildDocumentVerificationDirectPayload,
 	buildDocumentVerificationLinkPayload,
-	buildDocumentVerificationNewLinkPayload,
 } from "../-data";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
@@ -56,44 +54,37 @@ import {
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
 
-type DocumentVerificationMode = VerificationMode | "newLink";
-
-const DOCUMENT_VERIFICATION_MODES = [
-	...VERIFICATION_MODES,
-	{ value: "newLink" as const, label: "New Link" },
-] satisfies Array<{ value: DocumentVerificationMode; label: string }>;
-
-const newLinkCollectFieldsSchema = z.object({
+const linkCollectFieldsSchema = z.object({
 	dob: z.boolean(),
 	age: z.boolean(),
 	gender: z.boolean(),
 	backsideProofRequired: z.boolean(),
 });
 
-const NEW_LINK_COLLECT_FIELD_LABELS = {
+const LINK_COLLECT_FIELD_LABELS = {
 	dob: "Date of birth",
 	age: "Age",
 	gender: "Gender",
 	backsideProofRequired: "Require Backside",
 } as const satisfies Record<
-	keyof z.infer<typeof newLinkCollectFieldsSchema>,
+	keyof z.infer<typeof linkCollectFieldsSchema>,
 	string
 >;
 
-const NEW_LINK_COLLECT_FIELDS = (
-	Object.keys(newLinkCollectFieldsSchema.shape) as Array<
-		keyof z.infer<typeof newLinkCollectFieldsSchema>
+const LINK_COLLECT_FIELDS = (
+	Object.keys(linkCollectFieldsSchema.shape) as Array<
+		keyof z.infer<typeof linkCollectFieldsSchema>
 	>
 ).map((name) => ({
 	name,
-	label: NEW_LINK_COLLECT_FIELD_LABELS[name],
+	label: LINK_COLLECT_FIELD_LABELS[name],
 }));
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	consent: verificationConsentSchema,
-	...newLinkCollectFieldsSchema.shape,
+	...linkCollectFieldsSchema.shape,
 	verificationInstructions: z.string(),
 });
 
@@ -106,9 +97,7 @@ const directFormSchema = z.object({
 });
 
 export function DocumentVerificationForm() {
-	const [mode, setMode] = useState<DocumentVerificationMode>("link");
-	const modeRef = useRef(mode);
-	modeRef.current = mode;
+	const [mode, setMode] = useState<VerificationMode>("link");
 	const [documentProofUrl, setDocumentProofUrl] = useState<string | null>(null);
 	const [isDocumentUploading, setIsDocumentUploading] = useState(false);
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
@@ -127,7 +116,7 @@ export function DocumentVerificationForm() {
 		payload: ReturnType<typeof buildDocumentVerificationLinkPayload>,
 		options:
 			| {
-					mode: "link" | "newLink";
+					mode: "link";
 					email: string;
 					urlLimit: string;
 			  }
@@ -142,7 +131,7 @@ export function DocumentVerificationForm() {
 
 		try {
 			const verification =
-				options.mode === "newLink"
+				options.mode === "link"
 					? await createNewVerifyMutation.mutateAsync({
 							tenantId,
 							payload,
@@ -152,7 +141,7 @@ export function DocumentVerificationForm() {
 							payload,
 						});
 
-			if (options.mode === "link" || options.mode === "newLink") {
+			if (options.mode === "link") {
 				setLinkResult(
 					buildLinkResult(
 						verification,
@@ -190,17 +179,11 @@ export function DocumentVerificationForm() {
 			onSubmit: linkFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			const currentMode = modeRef.current === "newLink" ? "newLink" : "link";
-			await submitVerification(
-				currentMode === "newLink"
-					? buildDocumentVerificationNewLinkPayload(value)
-					: buildDocumentVerificationLinkPayload(value),
-				{
-					mode: currentMode,
-					email: value.email,
-					urlLimit: value.urlLimit,
-				},
-			);
+			await submitVerification(buildDocumentVerificationLinkPayload(value), {
+				mode: "link",
+				email: value.email,
+				urlLimit: value.urlLimit,
+			});
 		},
 	});
 
@@ -287,7 +270,7 @@ export function DocumentVerificationForm() {
 									return;
 								}
 
-								setMode(value as DocumentVerificationMode);
+								setMode(value as VerificationMode);
 
 								if (value !== "direct") {
 									setDocumentProofUrl(null);
@@ -298,13 +281,11 @@ export function DocumentVerificationForm() {
 							spacing={0}
 							className="w-full sm:w-auto"
 						>
-							{DOCUMENT_VERIFICATION_MODES.map((option) => {
+							{VERIFICATION_MODES.map((option) => {
 								const Icon =
 									option.value === "link"
 										? LinkIcon
-										: option.value === "newLink"
-											? LinkSimpleIcon
-											: MagnifyingGlassIcon;
+										: MagnifyingGlassIcon;
 
 								return (
 									<ToggleGroupItem
@@ -377,7 +358,7 @@ export function DocumentVerificationForm() {
 								)}
 							</linkForm.Field>
 
-							{mode === "newLink" ? (
+							{mode === "link" ? (
 								<>
 									<Field className="gap-3">
 										<FieldLabel>Collect additional fields</FieldLabel>
@@ -386,7 +367,7 @@ export function DocumentVerificationForm() {
 											of document is always required.
 										</FieldDescription>
 										<div className="grid gap-3 sm:grid-cols-2">
-											{NEW_LINK_COLLECT_FIELDS.map(({ name, label }) => (
+											{LINK_COLLECT_FIELDS.map(({ name, label }) => (
 												<linkForm.Field
 													key={name}
 													name={name}
@@ -394,14 +375,14 @@ export function DocumentVerificationForm() {
 													{(field) => (
 														<div className="flex items-center gap-2">
 															<Checkbox
-																id={`new-link-${name}`}
+																id={`link-${name}`}
 																checked={field.state.value}
 																onCheckedChange={(checked) =>
 																	field.handleChange(checked === true)
 																}
 															/>
 															<Label
-																htmlFor={`new-link-${name}`}
+																htmlFor={`link-${name}`}
 																className="text-sm font-normal"
 															>
 																{label}
@@ -415,11 +396,11 @@ export function DocumentVerificationForm() {
 									<linkForm.Field name="verificationInstructions">
 										{(field) => (
 											<Field className="gap-1.5">
-												<FieldLabel htmlFor="new-link-verification-instructions">
+												<FieldLabel htmlFor="link-verification-instructions">
 													Verification instructions
 												</FieldLabel>
 												<Textarea
-													id="new-link-verification-instructions"
+													id="link-verification-instructions"
 													placeholder="Optional instructions shown to the end user"
 													value={field.state.value}
 													onBlur={field.handleBlur}

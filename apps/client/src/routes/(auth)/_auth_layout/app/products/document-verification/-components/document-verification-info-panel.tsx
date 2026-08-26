@@ -19,9 +19,9 @@ export function DocumentVerificationInfoPanel() {
 								Link Mode
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								A secure verification URL is sent to the customer&apos;s email.
-								They capture their own document through the link, which expires
-								based on the Verification URL Limit you set.
+								Share a secure verification URL with your customer. They capture
+								their own document through the link, which expires based on the
+								Verification URL Limit you set.
 							</p>
 						</div>
 
@@ -31,9 +31,8 @@ export function DocumentVerificationInfoPanel() {
 								Direct Mode
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Upload the document image directly as a base64 proof. Use this
-								when you already have the customer&apos;s identity document on
-								hand.
+								Upload the document image directly. We accept the request
+								immediately and process the verification in the background.
 							</p>
 						</div>
 					</div>

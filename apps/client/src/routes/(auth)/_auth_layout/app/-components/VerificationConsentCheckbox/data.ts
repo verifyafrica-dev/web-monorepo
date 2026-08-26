@@ -3,8 +3,8 @@ import { z } from "zod";
 export type VerificationMode = "link" | "direct";
 
 export const VERIFICATION_MODES = [
-	{ value: "link" as const, label: "Link" },
-	{ value: "direct" as const, label: "Direct" },
+	{ value: "link" as const, label: "Link Mode" },
+	{ value: "direct" as const, label: "Direct Mode" },
 ] satisfies Array<{ value: VerificationMode; label: string }>;
 
 export const VERIFICATION_URL_LIMITS = [

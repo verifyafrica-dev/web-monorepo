@@ -7,9 +7,6 @@ const DOCUMENT_VERIFICATION_TYPE = "id_document" satisfies VerificationType;
 type LinkFormValues = {
 	email: string;
 	urlLimit: string;
-};
-
-type NewLinkFormValues = LinkFormValues & {
 	dob: boolean;
 	age: boolean;
 	gender: boolean;
@@ -51,21 +48,6 @@ function buildDocumentBlock(direct?: {
 
 export function buildDocumentVerificationLinkPayload(
 	values: LinkFormValues,
-): VerificationRequestCreatePayload {
-	return {
-		verification_type: DOCUMENT_VERIFICATION_TYPE,
-		method_type: "onsite",
-		input_data: {
-			language: "EN",
-			email: values.email.trim(),
-			ttl: Number(values.urlLimit),
-			document: buildDocumentBlock(),
-		},
-	};
-}
-
-export function buildDocumentVerificationNewLinkPayload(
-	values: NewLinkFormValues,
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: DOCUMENT_VERIFICATION_TYPE,

@@ -40,7 +40,7 @@ function VerifyResultPage() {
 
 					<Button
 						type="button"
-						className="mt-2 min-w-[180px] cursor-pointer rounded-full bg-[#024d4d] px-6 hover:bg-[#013a3a]"
+						className="mt-2 min-w-45 cursor-pointer rounded-full bg-[#024d4d] px-6 hover:bg-[#013a3a]"
 						onClick={() => window.close()}
 					>
 						Close Page

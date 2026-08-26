@@ -46,8 +46,8 @@ export function HostedVerificationLinkCard({
 		<Card className="border-emerald-200 bg-emerald-50/40">
 			<CardContent className="space-y-4 pt-0">
 				<p className="text-sm text-emerald-900">
-					A verification link has been created and emailed to your customer.
-					You can still copy the URL or resend the email.
+					A verification link has been created. Copy the URL to share it with
+					your customer, or send it by email when you are ready.
 				</p>
 
 				<div className="grid gap-4 sm:grid-cols-2">

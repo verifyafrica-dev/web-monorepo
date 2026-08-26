@@ -33,6 +33,20 @@ export function VerificationResultDialog({
 }: VerificationResultDialogProps) {
 	const verificationId =
 		verification?.id ?? linkResult?.hostedLink?.verification_id ?? null;
+	const verificationStatus = (verification?.status ?? "").toLowerCase();
+	const isPendingVerification =
+		Boolean(verification) &&
+		(verificationStatus === "pending" || verificationStatus === "");
+	const directResultMessage = isPendingVerification
+		? "We have received this verification and processing is ongoing. You can follow progress from the report."
+		: verificationStatus === "failed" || verificationStatus === "error"
+			? "Verification finished with an unsuccessful result. View the report for details."
+			: "Verification completed successfully. View the report for the full result.";
+	const dialogDescription = verification
+		? isPendingVerification
+			? "We have received this verification and it is being processed."
+			: description
+		: description;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,15 +55,14 @@ export function VerificationResultDialog({
 					<DialogTitle className="font-semibold">
 						Verification Request Submitted
 					</DialogTitle>
-					<DialogDescription>{description}</DialogDescription>
+					<DialogDescription>{dialogDescription}</DialogDescription>
 				</DialogHeader>
 
 				{linkResult ? <HostedVerificationLinkCard linkResult={linkResult} /> : null}
 
 				{verification ? (
 					<div className="rounded-md border border-emerald-200 bg-emerald-50/40 p-4 text-sm text-emerald-900">
-						Verification completed successfully. View the report for the full
-						result.
+						{directResultMessage}
 					</div>
 				) : null}
 
