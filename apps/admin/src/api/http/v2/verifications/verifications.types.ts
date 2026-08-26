@@ -136,6 +136,7 @@ export interface VerificationRequest {
 	source?: string;
 	link?: VerificationLink | null;
 	email_sent_at?: string | null;
+	submitted_at?: string | null;
 }
 
 export interface VerificationRequestDetail extends VerificationRequest {

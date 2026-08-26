@@ -9,6 +9,7 @@ type ReportOverviewCardProps = {
 	verificationType: string;
 	reference?: string | null;
 	createdAt: string;
+	submittedAt?: string;
 	verificationEvent?: string;
 	customerEmail?: string;
 	customerUniqueId?: string;
@@ -42,6 +43,7 @@ export function ReportOverviewCard({
 	verificationType,
 	reference,
 	createdAt,
+	submittedAt,
 	verificationEvent,
 	customerEmail,
 	customerUniqueId,
@@ -73,6 +75,12 @@ export function ReportOverviewCard({
 					label="Created At"
 					value={createdAt}
 				/>
+				{submittedAt ? (
+					<ReportDetailField
+						label="Submitted At"
+						value={submittedAt}
+					/>
+				) : null}
 				{country ? (
 					<ReportDetailField
 						label="Country"

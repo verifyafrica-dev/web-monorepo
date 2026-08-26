@@ -83,6 +83,12 @@ export function VerificationMetadataCard({
 					label="Created At"
 					value={formatReportDate(verification.created_at)}
 				/>
+				{verification.submitted_at ? (
+					<ReportDetailField
+						label="Submitted At"
+						value={formatReportDate(verification.submitted_at)}
+					/>
+				) : null}
 				{verification.reference ? (
 					<ReportDetailField
 						label="Reference"

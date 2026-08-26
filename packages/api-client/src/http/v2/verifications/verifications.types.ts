@@ -45,6 +45,7 @@ export interface VerificationRequest {
 	source?: string;
 	link?: VerificationLink | null;
 	email_sent_at?: string | null;
+	submitted_at?: string | null;
 }
 
 export const VERIFICATION_TYPES_BY_PRODUCT = {

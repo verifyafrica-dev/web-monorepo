@@ -27,6 +27,11 @@ export function DocumentVerificationReport({
 				)}
 				reference={verification.reference}
 				createdAt={new Date(verification.created_at).toLocaleString()}
+				submittedAt={
+					verification.submitted_at
+						? new Date(verification.submitted_at).toLocaleString()
+						: undefined
+				}
 				verificationEvent={verification.response_data.event}
 				customerEmail={verification.input_data.email}
 				customerUniqueId={verification.input_data.customer_unique_id as string}
