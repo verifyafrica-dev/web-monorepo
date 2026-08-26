@@ -5,6 +5,10 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "@tanstack/react-query": "5.102.0",
+    "@tanstack/query-core": "5.102.0"
+  },
   "scripts": {
     "check:v1-types": "bun scripts/check-v1-types.ts",
     "sync:v1-types": "bun scripts/check-v1-types.ts --write",
