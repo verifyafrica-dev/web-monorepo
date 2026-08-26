@@ -10,7 +10,11 @@ import {
 	useMeV2Query,
 	useUserV2LogoutMutation,
 } from "#/api/http/v2/users/users.hooks";
-import { Avatar, AvatarFallback, AvatarImage } from "@verifyafrica/ui/components/ui/avatar";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Popover,
@@ -32,7 +36,11 @@ export const Route = createFileRoute("/(auth)/_auth_layout")({
 	head: () => ({
 		meta: [
 			{ title: "Admin Workspace | VerifyAfrica" },
-			{ name: "description", content: "Access authenticated admin pages and manage platform operations." },
+			{
+				name: "description",
+				content:
+					"Access authenticated admin pages and manage platform operations.",
+			},
 		],
 	}),
 	component: AuthLayout,
@@ -45,7 +53,7 @@ function AuthLayout() {
 
 	if (getUserQuery.isLoading) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
+			<div className="flex min-h-dvh items-center justify-center">
 				<Loader2Icon className="size-8 animate-spin text-primary" />
 			</div>
 		);

@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { useVerificationLinkDetailV2Query } from "#/api/http/v2/verifications/verifications.hooks";
-import { Alert, AlertDescription, AlertTitle } from "@verifyafrica/ui/components/ui/alert";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@verifyafrica/ui/components/ui/alert";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Spinner } from "@verifyafrica/ui/components/ui/spinner";
 
@@ -11,7 +15,11 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Verification Link | VerifyAfrica" },
-			{ name: "description", content: "Complete identity verification securely using your unique link." },
+			{
+				name: "description",
+				content:
+					"Complete identity verification securely using your unique link.",
+			},
 		],
 	}),
 	component: VerifyLinkPage,
@@ -26,7 +34,7 @@ function VerifyLinkPage() {
 		: "Verification link";
 
 	return (
-		<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(0,140,140,0.14),transparent_28%),linear-gradient(180deg,#f5fbfb_0%,#edf6f6_100%)] px-4 py-6 md:px-8 md:py-8">
+		<div className="flex-1 bg-[radial-gradient(circle_at_top_left,rgba(0,140,140,0.14),transparent_28%),linear-gradient(180deg,#f5fbfb_0%,#edf6f6_100%)] px-4 py-6 md:px-8 md:py-8">
 			<div className="mx-auto flex max-w-7xl flex-col gap-6">
 				<Card className="border-[rgba(2,77,77,0.12)] bg-white/90 shadow-[0_18px_60px_rgba(10,37,64,0.08)] backdrop-blur-xl">
 					<CardContent className="flex flex-col gap-4 pt-6 md:flex-row md:items-center md:justify-between">

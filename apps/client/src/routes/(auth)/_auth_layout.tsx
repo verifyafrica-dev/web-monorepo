@@ -1,9 +1,23 @@
-import { createFileRoute, Link, Navigate, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	Navigate,
+	Outlet,
+	useLocation,
+	useNavigate,
+} from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
-import { useMeV2Query, useUserV2LogoutMutation } from "#/api/http/v2/users/users.hooks";
+import {
+	useMeV2Query,
+	useUserV2LogoutMutation,
+} from "#/api/http/v2/users/users.hooks";
 import { AppSidebar } from "#/components/app-sidebar";
 import { NoOrganizationState } from "#/components/no-organization-state";
-import { Avatar, AvatarFallback, AvatarImage } from "@verifyafrica/ui/components/ui/avatar";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Popover,
@@ -33,7 +47,11 @@ export const Route = createFileRoute("/(auth)/_auth_layout")({
 	head: () => ({
 		meta: [
 			{ title: "Workspace | VerifyAfrica" },
-			{ name: "description", content: "Access authenticated pages for your VerifyAfrica organization." },
+			{
+				name: "description",
+				content:
+					"Access authenticated pages for your VerifyAfrica organization.",
+			},
 		],
 	}),
 	component: AuthLayout,
@@ -47,7 +65,7 @@ function AuthLayout() {
 
 	if (getUserQuery.isLoading) {
 		return (
-			<div className="flex min-h-screen items-center justify-center">
+			<div className="flex min-h-dvh items-center justify-center">
 				<Loader2Icon className="size-8 animate-spin text-primary" />
 			</div>
 		);
@@ -56,7 +74,12 @@ function AuthLayout() {
 	if (!getUserQuery.isLoading && !getUserQuery.data?.id) {
 		deleteAllCookies();
 		useAuthStore.getState().clearAuth();
-		return <Navigate to={buildLoginRedirectUrl(location.pathname)} replace />;
+		return (
+			<Navigate
+				to={buildLoginRedirectUrl(location.pathname)}
+				replace
+			/>
+		);
 	}
 
 	const user = getUserQuery.data;
@@ -69,7 +92,7 @@ function AuthLayout() {
 
 	if (tenants.length === 0) {
 		return (
-			<div className="flex min-h-screen flex-col">
+			<div className="flex min-h-dvh flex-col">
 				<header className="flex min-h-14 items-center justify-end border-b px-4">
 					<Button
 						variant="ghost"
@@ -103,7 +126,10 @@ function AuthLayout() {
 							>
 								<Avatar>
 									{user?.avatar_url ? (
-										<AvatarImage src={user.avatar_url} alt={displayName} />
+										<AvatarImage
+											src={user.avatar_url}
+											alt={displayName}
+										/>
 									) : null}
 									<AvatarFallback>{initials}</AvatarFallback>
 								</Avatar>
@@ -115,7 +141,10 @@ function AuthLayout() {
 								</div>
 							</button>
 						</PopoverTrigger>
-						<PopoverContent align="end" className="w-40 gap-0 p-1">
+						<PopoverContent
+							align="end"
+							className="w-40 gap-0 p-1"
+						>
 							<nav className="flex flex-col">
 								{userMenuLinks.map((item) => (
 									<Link

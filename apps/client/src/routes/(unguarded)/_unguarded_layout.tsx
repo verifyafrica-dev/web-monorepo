@@ -4,7 +4,10 @@ export const Route = createFileRoute("/(unguarded)/_unguarded_layout")({
 	head: () => ({
 		meta: [
 			{ title: "Authentication | VerifyAfrica" },
-			{ name: "description", content: "Access public authentication and verification entry pages." },
+			{
+				name: "description",
+				content: "Access public authentication and verification entry pages.",
+			},
 		],
 	}),
 	component: GuestLayout,
@@ -12,7 +15,7 @@ export const Route = createFileRoute("/(unguarded)/_unguarded_layout")({
 
 function GuestLayout() {
 	return (
-		<div className="min-h-screen bg-[#eef2f6]">
+		<div className="min-h-dvh bg-[#eef2f6] flex flex-col">
 			<Outlet />
 		</div>
 	);

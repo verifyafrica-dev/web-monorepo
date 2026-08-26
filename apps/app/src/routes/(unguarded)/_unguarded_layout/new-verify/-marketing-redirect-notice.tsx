@@ -12,7 +12,7 @@ export function MarketingRedirectNotice({
 	description,
 }: MarketingRedirectNoticeProps) {
 	return (
-		<div className="flex min-h-screen items-center justify-center px-4">
+		<div className="flex min-h-dvh items-center justify-center px-4">
 			<Card className="w-full max-w-lg border-[rgba(2,77,77,0.12)] bg-white/90 shadow-[0_18px_60px_rgba(10,37,64,0.08)]">
 				<CardContent className="flex flex-col items-center gap-4 py-8 text-center">
 					<img

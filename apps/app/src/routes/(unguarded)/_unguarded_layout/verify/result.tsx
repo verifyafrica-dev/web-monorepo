@@ -10,7 +10,10 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Verification Result | VerifyAfrica" },
-			{ name: "description", content: "Review the result of your submitted verification process." },
+			{
+				name: "description",
+				content: "Review the result of your submitted verification process.",
+			},
 		],
 	}),
 	component: VerifyResultPage,
@@ -18,7 +21,7 @@ export const Route = createFileRoute(
 
 function VerifyResultPage() {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(0,140,140,0.14),transparent_28%),linear-gradient(180deg,#f5fbfb_0%,#edf6f6_100%)] px-4 py-8">
+		<div className="flex flex-1 items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(0,140,140,0.14),transparent_28%),linear-gradient(180deg,#f5fbfb_0%,#edf6f6_100%)] px-4 py-8">
 			<Card className="w-full max-w-xl border-[rgba(2,77,77,0.12)] bg-white/95 text-center shadow-[0_24px_80px_rgba(10,37,64,0.12)]">
 				<CardContent className="flex flex-col items-center gap-4 px-6 py-10 md:px-10 md:py-12">
 					<CheckCircleIcon
@@ -37,7 +40,7 @@ function VerifyResultPage() {
 
 					<Button
 						type="button"
-						className="mt-2 min-w-[180px] cursor-pointer rounded-full bg-[#024d4d] px-6 hover:bg-[#013a3a]"
+						className="mt-2 min-w-45 cursor-pointer rounded-full bg-[#024d4d] px-6 hover:bg-[#013a3a]"
 						onClick={() => window.close()}
 					>
 						Close Page

@@ -15,7 +15,7 @@ export function NotFoundPage({
 	ctaLabel = "Go to Login",
 }: NotFoundPageProps) {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-[#eef2f6] px-4 py-12">
+		<div className="flex min-h-dvh items-center justify-center bg-[#eef2f6] px-4 py-12">
 			<Card className="w-full max-w-md shadow-lg">
 				<CardContent className="flex flex-col items-center gap-4 p-6 text-center">
 					<WarningCircleIcon
