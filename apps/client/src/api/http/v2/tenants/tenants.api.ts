@@ -37,6 +37,8 @@ import type {
 	TenantUserListQuery,
 	TenantUserMembershipUpdatePayload,
 	TenantUserRoleUpdatePayload,
+	TenantProductSettingListData,
+	TenantProductSettingUpdatePayload,
 	TenantVerificationConfigListData,
 	TenantVerificationConfigUpdatePayload,
 	TenantWebhook,
@@ -70,6 +72,7 @@ const TENANTS_V2_ENDPOINTS = {
 	userMembership: (userId: string) => `/v2/tenants/users/${userId}/membership/`,
 	userRole: (userId: string) => `/v2/tenants/users/${userId}/role/`,
 	verificationConfigs: "/v2/tenants/verification-configs/",
+	productSettings: "/v2/tenants/product-settings/",
 	webhook: "/v2/tenants/webhook/",
 	webhookEvents: "/v2/tenants/webhook/events/",
 } as const;
@@ -322,6 +325,25 @@ export const TENANTS_V2_API = {
 				withTenantHeader(tenantId),
 			)
 			.then((res) => unwrapV2Data<TenantVerificationConfigListData>(res)),
+
+	PRODUCT_SETTINGS: async (
+		tenantId: string,
+	): Promise<TenantProductSettingListData> =>
+		await $http
+			.get(TENANTS_V2_ENDPOINTS.productSettings, withTenantHeader(tenantId))
+			.then((res) => unwrapV2Data<TenantProductSettingListData>(res)),
+
+	UPDATE_PRODUCT_SETTINGS: async (
+		tenantId: string,
+		data: TenantProductSettingUpdatePayload,
+	): Promise<TenantProductSettingListData> =>
+		await $http
+			.patch(
+				TENANTS_V2_ENDPOINTS.productSettings,
+				data,
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantProductSettingListData>(res)),
 
 	WEBHOOK: async (tenantId: string): Promise<TenantWebhook> =>
 		await $http

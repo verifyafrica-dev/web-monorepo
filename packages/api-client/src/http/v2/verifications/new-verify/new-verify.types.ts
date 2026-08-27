@@ -73,6 +73,7 @@ export interface NewVerifySession {
 	expires_at: string | null;
 	supported_types: ShuftiDocumentSupportedType[];
 	collect: NewVerifyCollectConfig;
+	allow_file_upload?: boolean;
 }
 
 export interface NewVerifyPresignPayload {

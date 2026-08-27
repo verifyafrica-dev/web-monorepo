@@ -80,6 +80,8 @@ type IdDocumentCaptureProps = {
 	onComplete: (result: IdDocumentCaptureResult) => void | Promise<void>;
 	/** Disables back, file changes, and Next while proof is uploading. */
 	isSubmitting?: boolean;
+	/** When false, camera capture is required and file upload is hidden. */
+	allowFileUpload?: boolean;
 };
 
 /**
@@ -93,6 +95,7 @@ export function IdDocumentCapture({
 	onBack,
 	onComplete,
 	isSubmitting = false,
+	allowFileUpload = true,
 }: IdDocumentCaptureProps) {
 	const [mode, setMode] = useState<"requesting" | "camera" | "upload">(
 		"requesting",
@@ -119,7 +122,9 @@ export function IdDocumentCapture({
 
 		const timeoutId = window.setTimeout(() => {
 			if (!cancelled) {
-				setMode("upload");
+				if (allowFileUpload) {
+					setMode("upload");
+				}
 				setIsInstructionsOpen(false);
 			}
 		}, CAMERA_PERMISSION_TIMEOUT_MS);
@@ -127,7 +132,9 @@ export function IdDocumentCapture({
 		async function requestCamera() {
 			if (!navigator.mediaDevices?.getUserMedia) {
 				window.clearTimeout(timeoutId);
-				setMode("upload");
+				if (allowFileUpload) {
+					setMode("upload");
+				}
 				setIsInstructionsOpen(false);
 				return;
 			}
@@ -149,7 +156,9 @@ export function IdDocumentCapture({
 			} catch {
 				if (!cancelled) {
 					window.clearTimeout(timeoutId);
-					setMode("upload");
+					if (allowFileUpload) {
+						setMode("upload");
+					}
 					setIsInstructionsOpen(false);
 				}
 			}
@@ -164,7 +173,7 @@ export function IdDocumentCapture({
 				stopMediaStream(mediaStream);
 			}
 		};
-	}, []);
+	}, [allowFileUpload]);
 
 	useEffect(() => {
 		const video = videoRef.current;
@@ -205,6 +214,9 @@ export function IdDocumentCapture({
 	}, [previewFile]);
 
 	function handleUploadInstead() {
+		if (!allowFileUpload) {
+			return;
+		}
 		setPreviewFile(null);
 		setMode("upload");
 		setIsInstructionsOpen(false);
@@ -314,7 +326,7 @@ export function IdDocumentCapture({
 				<span className="size-8" />
 			</div>
 
-			{mode === "upload" ? (
+			{mode === "upload" && allowFileUpload ? (
 				<IdDocumentUploadForm
 					requireBackside={requireBackside}
 					frontFile={frontFile}
@@ -350,6 +362,7 @@ export function IdDocumentCapture({
 							onClose={() => setIsInstructionsOpen(false)}
 							onUploadInstead={handleUploadInstead}
 							isRequesting={mode === "requesting"}
+							allowFileUpload={allowFileUpload}
 						/>
 					) : (
 						<>
@@ -384,15 +397,17 @@ export function IdDocumentCapture({
 										Take photo
 									</Button>
 								)}
-								<Button
-									type="button"
-									variant="ghost"
-									className="text-white hover:bg-white/10 hover:text-white"
-									onClick={handleUploadInstead}
-									disabled={isBusy}
-								>
-									Upload instead
-								</Button>
+								{allowFileUpload ? (
+									<Button
+										type="button"
+										variant="ghost"
+										className="text-white hover:bg-white/10 hover:text-white"
+										onClick={handleUploadInstead}
+										disabled={isBusy}
+									>
+										Upload instead
+									</Button>
+								) : null}
 							</div>
 						</>
 					)}
@@ -581,10 +596,12 @@ function IdDocumentInstructions({
 	onClose,
 	onUploadInstead,
 	isRequesting,
+	allowFileUpload,
 }: {
 	onClose: () => void;
 	onUploadInstead: () => void;
 	isRequesting: boolean;
+	allowFileUpload: boolean;
 }) {
 	return (
 		<div className="absolute inset-x-0 bottom-0 top-10 z-10 flex flex-col rounded-t-3xl bg-white px-5 pb-5 pt-4 shadow-[0_-12px_40px_rgba(10,37,64,0.12)]">
@@ -627,18 +644,22 @@ function IdDocumentInstructions({
 
 			<div className="mt-5 flex flex-col items-center gap-2">
 				{isRequesting ? (
-					<p className="text-center text-xs text-muted-foreground">
-						Allow camera access to continue, or upload a file instead.
+					<p className="text-center text-xs text-muted-foreground text-pretty">
+						{allowFileUpload
+							? "Allow camera access to continue, or upload a file instead."
+							: "Allow camera access to continue. File upload is not available for this verification."}
 					</p>
 				) : null}
-				<Button
-					type="button"
-					variant="outline"
-					className="rounded-full"
-					onClick={onUploadInstead}
-				>
-					Upload instead
-				</Button>
+				{allowFileUpload ? (
+					<Button
+						type="button"
+						variant="outline"
+						className="rounded-full"
+						onClick={onUploadInstead}
+					>
+						Upload instead
+					</Button>
+				) : null}
 			</div>
 		</div>
 	);

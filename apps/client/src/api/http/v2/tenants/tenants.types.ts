@@ -316,6 +316,33 @@ export interface TenantVerificationConfigListData {
 	configs: TenantVerificationConfigRow[];
 }
 
+export type HostedCaptureVerificationType =
+	| "id_document"
+	| "face_match"
+	| "address_verification";
+
+export interface TenantProductSettingRow {
+	verification_type: HostedCaptureVerificationType | string;
+	allow_file_upload: boolean;
+}
+
+export interface TenantProductSettingListData {
+	settings: TenantProductSettingRow[];
+}
+
+export const TenantProductSettingUpdateSchema = z.object({
+	verification_type: z.enum([
+		"id_document",
+		"face_match",
+		"address_verification",
+	]),
+	allow_file_upload: z.boolean(),
+});
+
+export type TenantProductSettingUpdatePayload = z.infer<
+	typeof TenantProductSettingUpdateSchema
+>;
+
 export interface TenantComplianceDataPayload {
 	compliance_data: ComplianceData | Record<string, unknown>;
 	completion_status: KycCompletionStatus;
@@ -557,6 +584,8 @@ export type TenantInvitationAcceptResponse =
 	V2SuccessResponse<TenantInvitationAcceptData>;
 export type TenantVerificationConfigListResponse =
 	V2SuccessResponse<TenantVerificationConfigListData>;
+export type TenantProductSettingListResponse =
+	V2SuccessResponse<TenantProductSettingListData>;
 export type TenantUserResponse = V2SuccessResponse<TenantUser>;
 export type MessageResponse = V2MessageSuccessResponse;
 

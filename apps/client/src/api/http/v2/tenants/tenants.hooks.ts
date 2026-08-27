@@ -41,6 +41,8 @@ import type {
 	TenantUserListQuery,
 	TenantUserMembershipUpdatePayload,
 	TenantUserRoleUpdatePayload,
+	TenantProductSettingListData,
+	TenantProductSettingUpdatePayload,
 	TenantVerificationConfigListData,
 	TenantVerificationConfigUpdatePayload,
 	TenantWebhook,
@@ -80,6 +82,8 @@ export const TENANTS_V2_QUERY_KEYS = {
 		["tenants-v2", "users", tenantId, params ?? {}] as const,
 	verificationConfigs: (tenantId: string) =>
 		["tenants-v2", "verification-configs", tenantId] as const,
+	productSettings: (tenantId: string) =>
+		["tenants-v2", "product-settings", tenantId] as const,
 	verifyInvitation: (token: string) =>
 		["tenants-v2", "verify-invitation", token] as const,
 } as const;
@@ -274,6 +278,26 @@ export const useTenantVerificationConfigsV2Query = (
 			}
 
 			return TENANTS_V2_API.VERIFICATION_CONFIGS(tenantId);
+		},
+		enabled: enabled && Boolean(tenantId),
+		staleTime: TENANTS_V2_STALE_TIME,
+	});
+};
+
+export const useTenantProductSettingsV2Query = (
+	tenantId: string | undefined,
+	enabled = true,
+): UseQueryResult<TenantProductSettingListData> => {
+	return useQuery<TenantProductSettingListData>({
+		queryKey: useOrganizationQueryKey(
+			TENANTS_V2_QUERY_KEYS.productSettings(tenantId ?? ""),
+		),
+		queryFn: () => {
+			if (!tenantId) {
+				throw new Error("Tenant ID is required");
+			}
+
+			return TENANTS_V2_API.PRODUCT_SETTINGS(tenantId);
 		},
 		enabled: enabled && Boolean(tenantId),
 		staleTime: TENANTS_V2_STALE_TIME,
@@ -543,6 +567,21 @@ export const useUpdateTenantUserRoleV2Mutation = (
 			queryClient.invalidateQueries({
 				queryKey: ["tenants-v2", "users", tenantId],
 			});
+		},
+	});
+};
+
+export const useUpdateTenantProductSettingsV2Mutation = (tenantId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: TenantProductSettingUpdatePayload) =>
+			TENANTS_V2_API.UPDATE_PRODUCT_SETTINGS(tenantId, payload),
+		onSuccess: (data) => {
+			queryClient.setQueryData(
+				withOrganizationId(TENANTS_V2_QUERY_KEYS.productSettings(tenantId)),
+				data,
+			);
 		},
 	});
 };

@@ -8,11 +8,16 @@ import {
 
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
+import { ProductFileUploadSettingSection } from "../../-components/product-file-upload-setting-section";
 
 export function FacialScreeningInfoPanel() {
 	return (
 		<Card className="h-fit bg-muted/30">
 			<CardContent className="flex flex-col gap-6 pt-0">
+				<ProductFileUploadSettingSection verificationType="face_match" />
+
+				<Separator />
+
 				<section className="space-y-4">
 					<h2 className="text-sm font-semibold text-secondary">How It Works</h2>
 

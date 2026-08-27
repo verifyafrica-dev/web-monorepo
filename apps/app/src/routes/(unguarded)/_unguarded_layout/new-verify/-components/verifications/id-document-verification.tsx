@@ -196,6 +196,7 @@ export function IdDocumentVerification({
 								title={documentOption.captureTitle}
 								requireBackside={collect.backside_proof_required}
 								isSubmitting={isSubmitting}
+								allowFileUpload={session.allow_file_upload !== false}
 								onBack={() => setStep("select")}
 								onComplete={(result) =>
 									handleProofComplete(result, values)
