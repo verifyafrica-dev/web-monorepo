@@ -74,6 +74,8 @@ export interface NewVerifySession {
 	supported_types: ShuftiDocumentSupportedType[];
 	collect: NewVerifyCollectConfig;
 	allow_file_upload?: boolean;
+	country?: string;
+	full_address?: string;
 }
 
 export interface NewVerifyPresignPayload {
@@ -106,6 +108,16 @@ export interface NewVerifyDocumentSubmitData {
 	status: string;
 }
 
+export interface NewVerifyAddressSubmitPayload {
+	proof: string;
+}
+
+export interface NewVerifyAddressSubmitData {
+	reference: string;
+	event: string | null;
+	status: string;
+}
+
 export interface NewVerifyFeedbackSubmitPayload {
 	email: string;
 	message: string;
@@ -119,5 +131,7 @@ export type NewVerifySessionResponse = V2SuccessResponse<NewVerifySession>;
 export type NewVerifyPresignResponse = V2SuccessResponse<NewVerifyPresignData>;
 export type NewVerifyDocumentSubmitResponse =
 	V2SuccessResponse<NewVerifyDocumentSubmitData>;
+export type NewVerifyAddressSubmitResponse =
+	V2SuccessResponse<NewVerifyAddressSubmitData>;
 export type NewVerifyFeedbackSubmitResponse =
 	V2SuccessResponse<NewVerifyFeedbackSubmitData>;

@@ -5,6 +5,8 @@ import type {
 	VerificationRequestCreatePayload,
 } from "../verifications.types";
 import type {
+	NewVerifyAddressSubmitData,
+	NewVerifyAddressSubmitPayload,
 	NewVerifyDocumentSubmitData,
 	NewVerifyDocumentSubmitPayload,
 	NewVerifyFeedbackSubmitData,
@@ -23,6 +25,8 @@ const NEW_VERIFY_V2_ENDPOINTS = {
 	feedback: (token: string) => `/v2/verifications/new-verify/${token}/feedback/`,
 	documentVerification: (token: string) =>
 		`/v2/verifications/new-verify/${token}/document_verification/`,
+	addressVerification: (token: string) =>
+		`/v2/verifications/new-verify/${token}/address_verification/`,
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -60,6 +64,14 @@ export const NEW_VERIFY_V2_API = {
 		await getHttpClient()
 			.post(NEW_VERIFY_V2_ENDPOINTS.documentVerification(token), data)
 			.then((res) => unwrapV2Data<NewVerifyDocumentSubmitData>(res)),
+
+	ADDRESS_VERIFICATION: async (
+		token: string,
+		data: NewVerifyAddressSubmitPayload,
+	): Promise<NewVerifyAddressSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.addressVerification(token), data)
+			.then((res) => unwrapV2Data<NewVerifyAddressSubmitData>(res)),
 
 	FEEDBACK: async (
 		token: string,

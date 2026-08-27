@@ -30,8 +30,9 @@ export function AddressVerificationInfoPanel() {
 								Link Mode
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								An onsite verification flow is sent to the customer so they
-								can submit their own proof of address through a secure link.
+								Share a secure verification URL with your customer. They capture
+								or upload their own proof of address through the link, which
+								expires based on the Verification URL Limit you set.
 							</p>
 						</div>
 
