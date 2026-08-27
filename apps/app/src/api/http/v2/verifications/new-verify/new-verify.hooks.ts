@@ -13,6 +13,7 @@ import { VERIFICATIONS_V2_QUERY_KEYS } from "../verifications.hooks";
 import { NEW_VERIFY_V2_API } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.api";
 import type {
 	NewVerifyDocumentSubmitPayload,
+	NewVerifyFeedbackSubmitPayload,
 	NewVerifyPresignPayload,
 	NewVerifySession,
 } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
@@ -76,4 +77,15 @@ export const useSubmitNewVerifyDocumentV2Mutation = () =>
 			token: string;
 			payload: NewVerifyDocumentSubmitPayload;
 		}) => NEW_VERIFY_V2_API.DOCUMENT_VERIFICATION(token, payload),
+	});
+
+export const useSubmitNewVerifyFeedbackV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyFeedbackSubmitPayload;
+		}) => NEW_VERIFY_V2_API.FEEDBACK(token, payload),
 	});

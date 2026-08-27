@@ -22,7 +22,10 @@ export function NewVerifySessionView({ session }: NewVerifySessionViewProps) {
 		];
 
 	return (
-		<NewVerifyChrome token={session.token}>
+		<NewVerifyChrome
+			token={session.token}
+			contactEmail={session.email ?? ""}
+		>
 			<NewVerifyConsent onConsented={() => setHasConsented(true)} />
 			{hasConsented ? (
 				VerificationComponent ? (

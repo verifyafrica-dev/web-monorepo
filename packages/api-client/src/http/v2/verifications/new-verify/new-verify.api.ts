@@ -7,6 +7,8 @@ import type {
 import type {
 	NewVerifyDocumentSubmitData,
 	NewVerifyDocumentSubmitPayload,
+	NewVerifyFeedbackSubmitData,
+	NewVerifyFeedbackSubmitPayload,
 	NewVerifyPresignData,
 	NewVerifyPresignPayload,
 	NewVerifySession,
@@ -18,6 +20,7 @@ const NEW_VERIFY_V2_ENDPOINTS = {
 	root: "/v2/verifications/new-verify/",
 	token: (token: string) => `/v2/verifications/new-verify/${token}/`,
 	presign: (token: string) => `/v2/verifications/new-verify/${token}/presign/`,
+	feedback: (token: string) => `/v2/verifications/new-verify/${token}/feedback/`,
 	documentVerification: (token: string) =>
 		`/v2/verifications/new-verify/${token}/document_verification/`,
 } as const;
@@ -57,4 +60,12 @@ export const NEW_VERIFY_V2_API = {
 		await getHttpClient()
 			.post(NEW_VERIFY_V2_ENDPOINTS.documentVerification(token), data)
 			.then((res) => unwrapV2Data<NewVerifyDocumentSubmitData>(res)),
+
+	FEEDBACK: async (
+		token: string,
+		data: NewVerifyFeedbackSubmitPayload,
+	): Promise<NewVerifyFeedbackSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.feedback(token), data)
+			.then((res) => unwrapV2Data<NewVerifyFeedbackSubmitData>(res)),
 };

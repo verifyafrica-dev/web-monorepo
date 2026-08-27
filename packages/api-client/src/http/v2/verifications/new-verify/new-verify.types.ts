@@ -67,6 +67,7 @@ export function createNewVerifyIdDocumentFormSchema(
 export interface NewVerifySession {
 	token: string;
 	reference: string;
+	email?: string;
 	verification_type: string;
 	ttl_minutes: number | null;
 	expires_at: string | null;
@@ -104,7 +105,18 @@ export interface NewVerifyDocumentSubmitData {
 	status: string;
 }
 
+export interface NewVerifyFeedbackSubmitPayload {
+	email: string;
+	message: string;
+}
+
+export interface NewVerifyFeedbackSubmitData {
+	email: string;
+}
+
 export type NewVerifySessionResponse = V2SuccessResponse<NewVerifySession>;
 export type NewVerifyPresignResponse = V2SuccessResponse<NewVerifyPresignData>;
 export type NewVerifyDocumentSubmitResponse =
 	V2SuccessResponse<NewVerifyDocumentSubmitData>;
+export type NewVerifyFeedbackSubmitResponse =
+	V2SuccessResponse<NewVerifyFeedbackSubmitData>;

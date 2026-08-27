@@ -1,8 +1,10 @@
 import { CopySimpleIcon, DeviceMobileIcon } from "@phosphor-icons/react";
 import { QRCodeSVG } from "qrcode.react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useSubmitNewVerifyFeedbackV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,
@@ -13,6 +15,7 @@ import {
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Field, FieldLabel } from "@verifyafrica/ui/components/ui/field";
+import { Input } from "@verifyafrica/ui/components/ui/input";
 import {
 	Tooltip,
 	TooltipContent,
@@ -28,6 +31,7 @@ export const NEW_VERIFY_SUPPORT_EMAIL = "support@verifyafrica.io";
 type NewVerifyChromeProps = {
 	children: ReactNode;
 	token: string;
+	contactEmail?: string;
 };
 
 export function NewVerifyBrandingFooter() {
@@ -51,18 +55,54 @@ export function NewVerifyBrandingFooter() {
 	);
 }
 
-export function NewVerifyChrome({ children, token }: NewVerifyChromeProps) {
+export function NewVerifyChrome({
+	children,
+	token,
+	contactEmail = "",
+}: NewVerifyChromeProps) {
 	const [isHelpOpen, setIsHelpOpen] = useState(false);
 	const [isContinueOnPhoneOpen, setIsContinueOnPhoneOpen] = useState(false);
+	const [email, setEmail] = useState(contactEmail);
 	const [feedback, setFeedback] = useState("");
+	const feedbackMutation = useSubmitNewVerifyFeedbackV2Mutation();
 	const { copy } = useClipboard({ successMessage: "Link copied." });
 	const continueOnPhoneUrl =
 		typeof window === "undefined" ? "" : buildNewVerifyUrl(token);
 
-	function handleSubmitFeedback() {
-		setIsHelpOpen(false);
-		setFeedback("");
-		toast.success("Thanks for your feedback.");
+	useEffect(() => {
+		if (contactEmail) {
+			setEmail(contactEmail);
+		}
+	}, [contactEmail]);
+
+	const canSubmitFeedback =
+		email.trim().length > 0 && feedback.trim().length > 0;
+
+	async function handleSubmitFeedback() {
+		if (!canSubmitFeedback) {
+			return;
+		}
+
+		try {
+			await feedbackMutation.mutateAsync({
+				token,
+				payload: {
+					email: email.trim(),
+					message: feedback.trim(),
+				},
+			});
+			setIsHelpOpen(false);
+			setFeedback("");
+			toast.success("Thanks for your feedback. We've sent you a confirmation email.");
+		} catch (error) {
+			const axiosError = error as V2AxiosError;
+			toast.error(
+				axiosError.response?.data?.message ??
+					(error instanceof Error
+						? error.message
+						: "Unable to submit feedback."),
+			);
+		}
 	}
 
 	return (
@@ -130,7 +170,24 @@ export function NewVerifyChrome({ children, token }: NewVerifyChromeProps) {
 						<DialogTitle className="text-xl font-semibold">
 							Send Feedback
 						</DialogTitle>
+						<DialogDescription>
+							Share feedback about your verification experience. We will email
+							you a confirmation once it is received.
+						</DialogDescription>
 					</DialogHeader>
+					<Field>
+						<FieldLabel htmlFor="new-verify-feedback-email">
+							Email <span className="text-destructive">*</span>
+						</FieldLabel>
+						<Input
+							id="new-verify-feedback-email"
+							type="email"
+							autoComplete="email"
+							placeholder="you@example.com"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+						/>
+					</Field>
 					<Field>
 						<FieldLabel htmlFor="new-verify-feedback">
 							How can we improve <span className="text-destructive">*</span>
@@ -147,10 +204,10 @@ export function NewVerifyChrome({ children, token }: NewVerifyChromeProps) {
 						<Button
 							type="button"
 							className="rounded-full px-5"
-							disabled={feedback.trim().length === 0}
-							onClick={handleSubmitFeedback}
+							disabled={!canSubmitFeedback || feedbackMutation.isPending}
+							onClick={() => void handleSubmitFeedback()}
 						>
-							Submit
+							{feedbackMutation.isPending ? "Submitting..." : "Submit"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
