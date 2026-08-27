@@ -1,7 +1,11 @@
-import { CodeIcon, EyeIcon } from "@phosphor-icons/react";
+import { ArrowsClockwiseIcon, CodeIcon, EyeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import { toast } from "sonner";
 
-import { useTenantWebhookEventsV2Query } from "#/api/http/v2/tenants/tenants.hooks";
+import {
+	useRetryTenantWebhookEventV2Mutation,
+	useTenantWebhookEventsV2Query,
+} from "#/api/http/v2/tenants/tenants.hooks";
 import type { TenantWebhookEvent } from "#/api/http/v2/tenants/tenants.types";
 import {
 	TablePagination,
@@ -35,11 +39,16 @@ import {
 } from "../-data";
 import { WebhookPayloadDialog } from "./webhook-payload-dialog";
 
+function canRetryWebhookDelivery(status: TenantWebhookEvent["status"]) {
+	return status === "failure";
+}
+
 export function WebhookDeliveriesTab() {
 	const [page, setPage] = useState(1);
 	const [selectedEvent, setSelectedEvent] = useState<TenantWebhookEvent | null>(
 		null,
 	);
+	const [retryingEventId, setRetryingEventId] = useState<string | null>(null);
 	const { tenantId } = useCurrentTenant();
 
 	const eventsQuery = useTenantWebhookEventsV2Query(
@@ -47,10 +56,27 @@ export function WebhookDeliveriesTab() {
 		{ page, per_page: WEBHOOK_EVENTS_PAGE_SIZE },
 		Boolean(tenantId),
 	);
+	const retryMutation = useRetryTenantWebhookEventV2Mutation(tenantId ?? "");
 
 	const events = eventsQuery.data?.items ?? [];
 	const total = eventsQuery.data?.meta.pagination.total ?? 0;
 	const isLoading = eventsQuery.isPending || eventsQuery.isFetching;
+
+	async function handleRetry(event: TenantWebhookEvent) {
+		if (!tenantId) {
+			return;
+		}
+
+		setRetryingEventId(event.id);
+		try {
+			await retryMutation.mutateAsync(event.id);
+			toast.success("Webhook delivery retry queued.");
+		} catch {
+			toast.error("Failed to retry webhook delivery. Please try again.");
+		} finally {
+			setRetryingEventId(null);
+		}
+	}
 
 	if (eventsQuery.isError) {
 		return (
@@ -111,8 +137,8 @@ export function WebhookDeliveriesTab() {
 											<TableHead>Event</TableHead>
 											<TableHead>Status</TableHead>
 											<TableHead>Retries</TableHead>
-											<TableHead className="w-16 text-right pr-4">
-												Payload
+											<TableHead className="w-28 text-right pr-4">
+												Actions
 											</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -149,16 +175,37 @@ export function WebhookDeliveriesTab() {
 														{event.retry_count}
 													</TableCell>
 													<TableCell className="text-right pr-4">
-														<Button
-															type="button"
-															variant="ghost"
-															size="icon"
-															className="cursor-pointer"
-															aria-label="View payload"
-															onClick={() => setSelectedEvent(event)}
-														>
-															<EyeIcon className="size-4" />
-														</Button>
+														<div className="flex items-center justify-end gap-1">
+															{canRetryWebhookDelivery(event.status) ? (
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size="icon"
+																	className="cursor-pointer"
+																	aria-label="Retry delivery"
+																	disabled={retryingEventId === event.id}
+																	onClick={() => void handleRetry(event)}
+																>
+																	<ArrowsClockwiseIcon
+																		className={cn(
+																			"size-4",
+																			retryingEventId === event.id &&
+																				"animate-spin",
+																		)}
+																	/>
+																</Button>
+															) : null}
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																className="cursor-pointer"
+																aria-label="View payload"
+																onClick={() => setSelectedEvent(event)}
+															>
+																<EyeIcon className="size-4" />
+															</Button>
+														</div>
 													</TableCell>
 												</TableRow>
 											))

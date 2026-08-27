@@ -43,6 +43,7 @@ import type {
 	TenantVerificationConfigUpdatePayload,
 	TenantWebhook,
 	TenantWebhookCreatePayload,
+	TenantWebhookEvent,
 	TenantWebhookEventListQuery,
 	TenantWebhookUpdatePayload,
 } from "./tenants.types";
@@ -75,6 +76,8 @@ const TENANTS_V2_ENDPOINTS = {
 	productSettings: "/v2/tenants/product-settings/",
 	webhook: "/v2/tenants/webhook/",
 	webhookEvents: "/v2/tenants/webhook/events/",
+	webhookEventRetry: (eventId: string) =>
+		`/v2/tenants/webhook/events/${eventId}/retry/`,
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -376,4 +379,16 @@ export const TENANTS_V2_API = {
 				params,
 			})
 			.then((res) => unwrapV2Paginated(res)),
+
+	WEBHOOK_EVENT_RETRY: async (
+		tenantId: string,
+		eventId: string,
+	): Promise<TenantWebhookEvent> =>
+		await $http
+			.post(
+				TENANTS_V2_ENDPOINTS.webhookEventRetry(eventId),
+				{},
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantWebhookEvent>(res)),
 };

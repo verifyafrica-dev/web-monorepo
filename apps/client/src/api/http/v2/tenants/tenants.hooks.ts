@@ -222,6 +222,20 @@ export const useTenantWebhookEventsV2Query = (
 	});
 };
 
+export const useRetryTenantWebhookEventV2Mutation = (tenantId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (eventId: string) =>
+			TENANTS_V2_API.WEBHOOK_EVENT_RETRY(tenantId, eventId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["tenants-v2", "webhook-events", tenantId],
+			});
+		},
+	});
+};
+
 export const useTenantInvitationsV2Query = (
 	tenantId: string | undefined,
 	params?: TenantInvitationListQuery,

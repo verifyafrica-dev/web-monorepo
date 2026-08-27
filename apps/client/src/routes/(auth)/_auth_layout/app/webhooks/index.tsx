@@ -36,7 +36,12 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Switch } from "@verifyafrica/ui/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@verifyafrica/ui/components/ui/tabs";
 import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { DashboardOnboarding } from "../-components/dashboard-onboarding";
@@ -114,7 +119,10 @@ function WebhooksPage() {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent value="configuration" className="flex flex-col gap-6">
+				<TabsContent
+					value="configuration"
+					className="flex flex-col gap-6"
+				>
 					<ConfigurationTab />
 				</TabsContent>
 
@@ -356,7 +364,10 @@ function WebhooksHeader() {
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 			<div className="flex items-start gap-3">
 				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-					<WebhooksLogoIcon className="size-5" weight="duotone" />
+					<WebhooksLogoIcon
+						className="size-5"
+						weight="duotone"
+					/>
 				</div>
 				<div className="flex flex-col gap-1">
 					<h1 className="text-2xl font-semibold tracking-tight">Webhooks</h1>
@@ -366,7 +377,11 @@ function WebhooksHeader() {
 					</p>
 				</div>
 			</div>
-			<Button variant="outline" className="cursor-pointer" asChild>
+			<Button
+				variant="outline"
+				className="cursor-pointer"
+				asChild
+			>
 				<a
 					href="https://docs.verifyafrica.io"
 					target="_blank"
@@ -400,7 +415,10 @@ function ApiKeyCardSkeleton() {
 				</div>
 				<div className="grid gap-3 sm:grid-cols-3">
 					{["last-used", "status", "expires"].map((item) => (
-						<Skeleton key={item} className="h-20 rounded-lg" />
+						<Skeleton
+							key={item}
+							className="h-20 rounded-lg"
+						/>
 					))}
 				</div>
 				<Separator />
@@ -444,10 +462,10 @@ function UsageInstructionsCard({
 								Authentication Header
 							</h3>
 							<p className="text-sm text-muted-foreground">
-								Include your API key in the X-API-KEY header:
+								Include your API key in the Bearer header:
 							</p>
 							<pre className="min-w-full overflow-x-auto rounded-lg bg-zinc-900 px-4 py-3 text-sm text-emerald-400">
-								<code className="break-all whitespace-pre-wrap">{`X-API-KEY: ${keyPreview}`}</code>
+								<code className="break-all whitespace-pre-wrap">{`Authorization: Bearer ${keyPreview}`}</code>
 							</pre>
 						</div>
 					</div>
