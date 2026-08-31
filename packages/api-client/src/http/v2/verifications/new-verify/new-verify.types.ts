@@ -102,7 +102,7 @@ export interface NewVerifySession {
 	supported_types: Array<
 		ShuftiDocumentSupportedType | ShuftiAddressSupportedType
 	>;
-	collect: NewVerifyCollectConfig;
+	collect?: NewVerifyCollectConfig | null;
 	allow_file_upload?: boolean;
 	country?: string;
 	full_address?: string;
