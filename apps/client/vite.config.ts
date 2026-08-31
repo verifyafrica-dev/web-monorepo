@@ -1,5 +1,4 @@
 import { PORTLESS_HOSTS } from "@verifyafrica/config/domains";
-import { devNetworkViteDefine } from "@verifyafrica/config/network";
 import path from "node:path";
 // import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
@@ -10,7 +9,6 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 const config = defineConfig({
-	define: devNetworkViteDefine(import.meta.dirname),
 	server: {
 		allowedHosts: [PORTLESS_HOSTS.client],
 	},

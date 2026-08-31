@@ -1,14 +1,20 @@
 import { MapPinIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useSubmitNewVerifyAddressV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 import { uploadNewVerifyProofFile } from "@verifyafrica/api-client/lib/new-verify-proof-upload";
+import { AddressDocumentTypeCombobox } from "@verifyafrica/ui/components/ui-extended/address-document-types-combobox";
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import { Field, FieldLabel } from "@verifyafrica/ui/components/ui/field";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import { getCountryName } from "@verifyafrica/ui/lib/country-state-city";
+import {
+	SHUFTI_ADDRESS_SUPPORTED_TYPES,
+	type ShuftiAddressSupportedType,
+} from "@verifyafrica/ui/lib/constants";
 
 import {
 	IdDocumentCapture,
@@ -22,6 +28,20 @@ type AddressVerificationProps = {
 };
 
 export function AddressVerification({ session }: AddressVerificationProps) {
+	const allowedTypes = useMemo(() => {
+		const fromSession = (session.supported_types ?? []).filter(
+			(value): value is ShuftiAddressSupportedType =>
+				(SHUFTI_ADDRESS_SUPPORTED_TYPES as readonly string[]).includes(
+					value,
+				),
+		);
+		return fromSession.length > 0
+			? fromSession
+			: [...SHUFTI_ADDRESS_SUPPORTED_TYPES];
+	}, [session.supported_types]);
+	const [documentType, setDocumentType] = useState(
+		() => allowedTypes[0] ?? "",
+	);
 	const [step, setStep] = useState<"review" | "capture" | "submitted">(
 		"review",
 	);
@@ -37,6 +57,11 @@ export function AddressVerification({ session }: AddressVerificationProps) {
 			return;
 		}
 
+		if (!documentType) {
+			toast.error("Select the document type you are submitting");
+			return;
+		}
+
 		setIsSubmitting(true);
 
 		try {
@@ -46,7 +71,10 @@ export function AddressVerification({ session }: AddressVerificationProps) {
 			);
 			await submitAddressMutation.mutateAsync({
 				token: session.token,
-				payload: { proof },
+				payload: {
+					proof,
+					supported_types: documentType as ShuftiAddressSupportedType,
+				},
 			});
 			setStep("submitted");
 		} catch (error) {
@@ -114,11 +142,23 @@ export function AddressVerification({ session }: AddressVerificationProps) {
 						</p>
 					</div>
 
+					<Field className="gap-1.5">
+						<FieldLabel htmlFor="address-verification-document-type">
+							Document type
+						</FieldLabel>
+						<AddressDocumentTypeCombobox
+							id="address-verification-document-type"
+							value={documentType}
+							onValueChange={setDocumentType}
+							options={allowedTypes}
+						/>
+					</Field>
+
 					<div className="flex justify-end">
 						<Button
 							type="button"
 							className="rounded-full px-6"
-							disabled={!fullAddress}
+							disabled={!fullAddress || !documentType}
 							onClick={() => setStep("capture")}
 						>
 							Continue

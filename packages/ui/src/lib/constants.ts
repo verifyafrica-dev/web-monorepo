@@ -310,6 +310,78 @@ export const SHUFTI_CHOICES = {
 	ANY: "any",
 };
 
+export const SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES = [
+	"utility_bill",
+	"bank_statement",
+	"rent_agreement",
+	"lease_agreement",
+	"tax_bill",
+	"employer_letter",
+] as const;
+
+export const SHUFTI_ADDRESS_MORE_SUPPORTED_TYPES = [
+	"id_card",
+	"passport",
+	"driving_license",
+	"insurance_agreement",
+	"envelope",
+	"cpr_smart_card_reader_copy",
+	"property_tax",
+	"insurance_card",
+	"permanent_residence_permit",
+	"credit_card_statement",
+	"insurance_policy",
+	"e_commerce_receipt",
+	"bank_letter_receipt",
+	"birth_certificate",
+	"salary_slip",
+] as const;
+
+export const SHUFTI_ADDRESS_SUPPORTED_TYPES = [
+	...SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES,
+	...SHUFTI_ADDRESS_MORE_SUPPORTED_TYPES,
+] as const;
+
+export type ShuftiAddressSupportedType =
+	(typeof SHUFTI_ADDRESS_SUPPORTED_TYPES)[number];
+
+export type ShuftiAddressSupportedTypeGroup = {
+	value: "Recommended" | "More";
+	items: ShuftiAddressSupportedType[];
+};
+
+export function formatShuftiAddressDocumentTypeLabel(value: string) {
+	return value
+		.split("_")
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ");
+}
+
+export function getShuftiAddressSupportedTypeGroups(
+	allowed?: readonly string[],
+): ShuftiAddressSupportedTypeGroup[] {
+	const filterGroup = (
+		items: readonly string[],
+	): ShuftiAddressSupportedType[] =>
+		(allowed
+			? items.filter((item) => allowed.includes(item))
+			: [...items]) as ShuftiAddressSupportedType[];
+
+	return (
+		[
+			{
+				value: "Recommended",
+				items: filterGroup(SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES),
+			},
+			{
+				value: "More",
+				items: filterGroup(SHUFTI_ADDRESS_MORE_SUPPORTED_TYPES),
+			},
+		] satisfies ShuftiAddressSupportedTypeGroup[]
+	).filter((group) => group.items.length > 0);
+}
+
 export const SHUFTI_VERIFICATION_TYPES = {
 	DOCUMENT_VERIFICATION: "id_document",
 	FACIAL_VERIFICATION: "face_match",

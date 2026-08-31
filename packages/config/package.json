@@ -5,8 +5,6 @@
   "exports": {
     "./eslint": "./biome.base.json",
     "./tsconfig": "./tsconfig.base.json",
-    "./domains": "./src/domains.ts",
-    "./app-env": "./src/app-env.ts",
-    "./network": "./src/network.ts"
+    "./domains": "./src/domains.ts"
   }
 }

@@ -20,6 +20,34 @@ export type ShuftiDocumentSupportedType = z.infer<
 	typeof ShuftiDocumentSupportedTypeSchema
 >;
 
+export const ShuftiAddressSupportedTypeSchema = z.enum([
+	"utility_bill",
+	"bank_statement",
+	"rent_agreement",
+	"lease_agreement",
+	"tax_bill",
+	"employer_letter",
+	"id_card",
+	"passport",
+	"driving_license",
+	"insurance_agreement",
+	"envelope",
+	"cpr_smart_card_reader_copy",
+	"property_tax",
+	"insurance_card",
+	"permanent_residence_permit",
+	"credit_card_statement",
+	"insurance_policy",
+	"e_commerce_receipt",
+	"bank_letter_receipt",
+	"birth_certificate",
+	"salary_slip",
+]);
+
+export type ShuftiAddressSupportedType = z.infer<
+	typeof ShuftiAddressSupportedTypeSchema
+>;
+
 export const NewVerifyIdDocumentFormBaseSchema = z.object({
 	country: z.string().min(1, "Select a country"),
 	documentType: z.string().min(1, "Select a document type"),
@@ -71,7 +99,9 @@ export interface NewVerifySession {
 	verification_type: string;
 	ttl_minutes: number | null;
 	expires_at: string | null;
-	supported_types: ShuftiDocumentSupportedType[];
+	supported_types: Array<
+		ShuftiDocumentSupportedType | ShuftiAddressSupportedType
+	>;
 	collect: NewVerifyCollectConfig;
 	allow_file_upload?: boolean;
 	country?: string;
@@ -110,6 +140,7 @@ export interface NewVerifyDocumentSubmitData {
 
 export interface NewVerifyAddressSubmitPayload {
 	proof: string;
+	supported_types: ShuftiAddressSupportedType;
 }
 
 export interface NewVerifyAddressSubmitData {

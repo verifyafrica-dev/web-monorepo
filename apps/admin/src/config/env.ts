@@ -5,15 +5,9 @@
  * All variables must be prefixed with VITE_ to be accessible in the browser.
  */
 
-import { resolveApiBaseUrl } from "@verifyafrica/config/app-env";
-
 export const env = {
   // API Configuration
-  apiBaseUrl: resolveApiBaseUrl({
-    isViteDev: import.meta.env.DEV,
-    viteApiBaseUrl: import.meta.env.VITE_API_BASE_URL,
-    devNetworkIp: import.meta.env.VITE_DEV_NETWORK_IP,
-  }),
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
 
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'Verify Africa',

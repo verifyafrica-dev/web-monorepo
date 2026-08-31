@@ -33,7 +33,7 @@ export const APP_ORIGINS: Record<
 		client: `https://${PORTLESS_HOSTS.client}`,
 		admin: `https://${PORTLESS_HOSTS.admin}`,
 		app: `https://${PORTLESS_HOSTS.app}`,
-		api: "http://localhost:8300",
+		api: `http://localhost:${DEV_API_PORT}`,
 	},
 	test: {
 		client: "https://test.dashboard.verifyafrica.io",
@@ -69,16 +69,15 @@ export function getAppOrigin(
 	return APP_ORIGINS[deployEnv][surface];
 }
 
-export function getLocalApiBaseUrl(hostname = "127.0.0.1"): string {
-	return `http://${hostname}:${DEV_API_PORT}/api`;
+export function getLocalApiBaseUrl(): string {
+	return `${APP_ORIGINS.local.api}/api`;
 }
 
 export function getApiBaseUrlForEnvironment(
 	deployEnv: DeployEnvironment,
-	options?: { devHostname?: string },
 ): string {
 	if (deployEnv === "local") {
-		return getLocalApiBaseUrl(options?.devHostname);
+		return getLocalApiBaseUrl();
 	}
 	return API_BASE_URLS[deployEnv];
 }

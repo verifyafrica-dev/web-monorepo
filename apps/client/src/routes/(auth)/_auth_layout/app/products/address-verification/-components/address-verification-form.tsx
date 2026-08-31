@@ -37,7 +37,13 @@ import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/coun
 import {
 	buildAddressVerificationDirectPayload,
 	buildAddressVerificationLinkPayload,
+	DEFAULT_ADDRESS_DOCUMENT_TYPES,
 } from "../-data";
+import { AddressDocumentTypesMultiCombobox } from "@verifyafrica/ui/components/ui-extended/address-document-types-combobox";
+import {
+	SHUFTI_ADDRESS_SUPPORTED_TYPES,
+	type ShuftiAddressSupportedType,
+} from "@verifyafrica/ui/lib/constants";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
 	VERIFICATION_MODES,
@@ -46,11 +52,16 @@ import {
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
 
+const addressDocumentTypesSchema = z
+	.array(z.enum(SHUFTI_ADDRESS_SUPPORTED_TYPES))
+	.min(1, "Select at least one document type");
+
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
 	address: z.string().trim().min(1, "Address is required"),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
+	documentTypes: addressDocumentTypesSchema,
 	consent: verificationConsentSchema,
 });
 
@@ -58,6 +69,7 @@ const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
 	address: z.string().trim().min(1, "Address is required"),
+	documentTypes: addressDocumentTypesSchema,
 	consent: verificationConsentSchema,
 });
 
@@ -87,6 +99,7 @@ export function AddressVerificationForm() {
 			country: "",
 			address: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
+			documentTypes: DEFAULT_ADDRESS_DOCUMENT_TYPES,
 			consent: false,
 		},
 		validators: {
@@ -114,6 +127,7 @@ export function AddressVerificationForm() {
 			email: "",
 			country: "",
 			address: "",
+			documentTypes: DEFAULT_ADDRESS_DOCUMENT_TYPES,
 			consent: false,
 		},
 		validators: {
@@ -270,6 +284,29 @@ export function AddressVerificationForm() {
 								)}
 							</linkForm.Field>
 
+							<linkForm.Field name="documentTypes">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="address-verification-link-document-types">
+											Allowed document types
+										</FieldLabel>
+										<AddressDocumentTypesMultiCombobox
+											id="address-verification-link-document-types"
+											value={field.state.value}
+											onValueChange={(next) =>
+												field.handleChange(
+													next as ShuftiAddressSupportedType[],
+												)
+											}
+										/>
+										<FieldDescription>
+											Customers can only submit proofs from this list.
+											Recommended types are shown first.
+										</FieldDescription>
+									</Field>
+								)}
+							</linkForm.Field>
+
 							<linkForm.Field name="urlLimit">
 								{(field) => (
 									<Field className="gap-1.5">
@@ -383,6 +420,29 @@ export function AddressVerificationForm() {
 									)}
 								</directForm.Field>
 							</FieldGroup>
+
+							<directForm.Field name="documentTypes">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="address-verification-direct-document-types">
+											Allowed document types
+										</FieldLabel>
+										<AddressDocumentTypesMultiCombobox
+											id="address-verification-direct-document-types"
+											value={field.state.value}
+											onValueChange={(next) =>
+												field.handleChange(
+													next as ShuftiAddressSupportedType[],
+												)
+											}
+										/>
+										<FieldDescription>
+											Tell the provider which proof types this document may
+											match. Recommended types are shown first.
+										</FieldDescription>
+									</Field>
+								)}
+							</directForm.Field>
 
 							<ProductProofUpload
 								label="Proof of Address"

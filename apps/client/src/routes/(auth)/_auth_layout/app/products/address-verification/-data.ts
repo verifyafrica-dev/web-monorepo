@@ -1,6 +1,10 @@
 import type { VerificationRequestCreatePayload } from "#/api/http/v2/verifications/verifications.types";
 import type { VerificationType } from "#/api/http/v2/verifications/verifications.types";
-import { SHUFTI_CHOICES } from "@verifyafrica/ui/lib/constants";
+import {
+	SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES,
+	SHUFTI_CHOICES,
+	type ShuftiAddressSupportedType,
+} from "@verifyafrica/ui/lib/constants";
 
 const ADDRESS_VERIFICATION_TYPE =
 	"address_verification" satisfies VerificationType;
@@ -10,13 +14,31 @@ type LinkFormValues = {
 	country: string;
 	address: string;
 	urlLimit: string;
+	documentTypes: ShuftiAddressSupportedType[];
 };
 
 type DirectFormValues = {
 	email: string;
 	country: string;
 	address: string;
+	documentTypes: ShuftiAddressSupportedType[];
 };
+
+export const DEFAULT_ADDRESS_DOCUMENT_TYPES = [
+	...SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES,
+];
+
+function addressPayload(values: {
+	address: string;
+	documentTypes: ShuftiAddressSupportedType[];
+}) {
+	return {
+		full_address: values.address.trim(),
+		address_fuzzy_match: SHUFTI_CHOICES.YES,
+		verification_mode: SHUFTI_CHOICES.ANY,
+		supported_types: values.documentTypes,
+	};
+}
 
 export function buildAddressVerificationLinkPayload(
 	values: LinkFormValues,
@@ -29,11 +51,7 @@ export function buildAddressVerificationLinkPayload(
 			language: "EN",
 			email: values.email.trim(),
 			ttl: Number(values.urlLimit),
-			address: {
-				full_address: values.address.trim(),
-				address_fuzzy_match: SHUFTI_CHOICES.YES,
-				verification_mode: SHUFTI_CHOICES.ANY,
-			},
+			address: addressPayload(values),
 		},
 	};
 }
@@ -50,9 +68,7 @@ export function buildAddressVerificationDirectPayload(
 			language: "EN",
 			email: values.email.trim(),
 			address: {
-				full_address: values.address.trim(),
-				address_fuzzy_match: SHUFTI_CHOICES.YES,
-				verification_mode: SHUFTI_CHOICES.ANY,
+				...addressPayload(values),
 				proof,
 			},
 		},

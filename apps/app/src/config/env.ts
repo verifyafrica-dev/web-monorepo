@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { resolveApiBaseUrl } from "@verifyafrica/config/app-env";
 
 const envSchema = z.object({
 	VITE_API_BASE_URL: z.url(),
@@ -31,11 +30,7 @@ const data = parsed.data;
 export const env = {
 	...parsed.data,
 	// Backward-compatible app config accessors
-	apiBaseUrl: resolveApiBaseUrl({
-		isViteDev: import.meta.env.DEV,
-		viteApiBaseUrl: data.VITE_API_BASE_URL,
-		devNetworkIp: import.meta.env.VITE_DEV_NETWORK_IP,
-	}),
+	apiBaseUrl: data.VITE_API_BASE_URL,
 	appName: data.VITE_APP_NAME,
 	appEnvironment: data.VITE_APP_ENVIRONMENT,
 	siteType: data.VITE_SITE_TYPE,
