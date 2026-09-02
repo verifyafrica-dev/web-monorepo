@@ -209,27 +209,14 @@ function VerificationReportDetailPage() {
 							Back to Reports
 						</Link>
 					</Button>
-					<div className="flex flex-row items-center justify-between gap-4">
-						<div className="min-w-0 space-y-1">
-							<h1 className="text-2xl font-semibold tracking-tight text-pretty">
-								Verification Report
-							</h1>
-							<p className="text-sm text-muted-foreground text-pretty">
-								Review the complete verification outcome and downloadable
-								report.
-							</p>
-						</div>
-						{productSlug ? (
-							<Button
-								className="shrink-0"
-								asChild
-							>
-								<Link to={`/app/products/${productSlug}`}>
-									<PlusIcon weight="bold" />
-									New verification
-								</Link>
-							</Button>
-						) : null}
+
+					<div className="min-w-0 flex flex-col gap-1">
+						<h1 className="text-2xl font-semibold tracking-tight text-pretty">
+							Verification Report
+						</h1>
+						<p className="text-sm text-muted-foreground text-pretty">
+							Review the complete verification outcome and downloadable report.
+						</p>
 					</div>
 				</div>
 
@@ -259,6 +246,18 @@ function VerificationReportDetailPage() {
 						<DownloadSimpleIcon weight="bold" />
 						{isDownloading ? "Downloading..." : "Download PDF"}
 					</Button>
+
+					{productSlug ? (
+						<Button
+							className="shrink-0"
+							asChild
+						>
+							<Link to={`/app/products/${productSlug}`}>
+								<PlusIcon weight="bold" />
+								New verification
+							</Link>
+						</Button>
+					) : null}
 				</div>
 			</div>
 
