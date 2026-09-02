@@ -49,6 +49,45 @@ function stopMediaStream(stream: MediaStream | null) {
 	});
 }
 
+function getTrackZoomRange(track: MediaStreamTrack) {
+	const capabilities = track.getCapabilities?.() as
+		| (MediaTrackCapabilities & { zoom?: { min?: number; max?: number } })
+		| undefined;
+	const zoom = capabilities?.zoom;
+	if (!zoom || typeof zoom !== "object") {
+		return null;
+	}
+
+	const min = "min" in zoom && typeof zoom.min === "number" ? zoom.min : undefined;
+	const max = "max" in zoom && typeof zoom.max === "number" ? zoom.max : undefined;
+	if (min === undefined && max === undefined) {
+		return null;
+	}
+
+	return { min: min ?? 1, max: max ?? 1 };
+}
+
+async function lockCameraToDefaultZoom(stream: MediaStream) {
+	const track = stream.getVideoTracks()[0];
+	if (!track) {
+		return;
+	}
+
+	const range = getTrackZoomRange(track);
+	if (!range) {
+		return;
+	}
+
+	const zoom = Math.min(range.max, Math.max(range.min, 1));
+	try {
+		await track.applyConstraints({
+			advanced: [{ zoom } as MediaTrackConstraintSet],
+		});
+	} catch {
+		// Safari and some Android browsers ignore or reject zoom constraints.
+	}
+}
+
 export function FacialCapture({
 	verificationMode,
 	allowFileUpload,
@@ -151,6 +190,11 @@ export function FacialCapture({
 					video: { facingMode: { ideal: "user" } },
 					audio: false,
 				});
+				if (cancelled) {
+					stopMediaStream(stream);
+					return;
+				}
+				await lockCameraToDefaultZoom(stream);
 				if (cancelled) {
 					stopMediaStream(stream);
 					return;
