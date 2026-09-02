@@ -22,6 +22,10 @@ function getProofContentType(file: File) {
 		return "application/pdf";
 	}
 
+	if (name.endsWith(".mp4")) {
+		return "video/mp4";
+	}
+
 	return "image/jpeg";
 }
 

@@ -106,6 +106,7 @@ export interface NewVerifySession {
 	allow_file_upload?: boolean;
 	country?: string;
 	full_address?: string;
+	face_verification_mode?: "image_only" | "video_only" | "";
 }
 
 export interface NewVerifyPresignPayload {
@@ -149,6 +150,16 @@ export interface NewVerifyAddressSubmitData {
 	status: string;
 }
 
+export interface NewVerifyFaceSubmitPayload {
+	proof: string;
+}
+
+export interface NewVerifyFaceSubmitData {
+	reference: string;
+	event: string | null;
+	status: string;
+}
+
 export interface NewVerifyFeedbackSubmitPayload {
 	email: string;
 	message: string;
@@ -164,5 +175,7 @@ export type NewVerifyDocumentSubmitResponse =
 	V2SuccessResponse<NewVerifyDocumentSubmitData>;
 export type NewVerifyAddressSubmitResponse =
 	V2SuccessResponse<NewVerifyAddressSubmitData>;
+export type NewVerifyFaceSubmitResponse =
+	V2SuccessResponse<NewVerifyFaceSubmitData>;
 export type NewVerifyFeedbackSubmitResponse =
 	V2SuccessResponse<NewVerifyFeedbackSubmitData>;

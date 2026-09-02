@@ -33,6 +33,11 @@ type ProductProofUploadProps = {
 	 */
 	allowedMimeTypes?: readonly string[];
 	/**
+	 * Maximum file size in bytes.
+	 * @default 10485760 (10MB)
+	 */
+	maxSize?: number;
+	/**
 	 * Copy shown in the empty dropzone.
 	 */
 	emptyStateText: string;
@@ -57,6 +62,7 @@ export function ProductProofUpload({
 	onProofUrlChange,
 	accept,
 	allowedMimeTypes,
+	maxSize = UPLOAD_MAX_FILE_SIZE,
 	emptyStateText,
 	disabled = false,
 	onUploadingChange,
@@ -69,7 +75,7 @@ export function ProductProofUpload({
 			emptyStateText={emptyStateText}
 			accept={accept}
 			allowedMimeTypes={allowedMimeTypes}
-			maxSize={UPLOAD_MAX_FILE_SIZE}
+			maxSize={maxSize}
 			proofUrl={proofUrl}
 			onProofUrlChange={onProofUrlChange}
 			onUploadingChange={onUploadingChange}

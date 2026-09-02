@@ -9,6 +9,8 @@ import type {
 	NewVerifyAddressSubmitPayload,
 	NewVerifyDocumentSubmitData,
 	NewVerifyDocumentSubmitPayload,
+	NewVerifyFaceSubmitData,
+	NewVerifyFaceSubmitPayload,
 	NewVerifyFeedbackSubmitData,
 	NewVerifyFeedbackSubmitPayload,
 	NewVerifyPresignData,
@@ -27,6 +29,8 @@ const NEW_VERIFY_V2_ENDPOINTS = {
 		`/v2/verifications/new-verify/${token}/document_verification/`,
 	addressVerification: (token: string) =>
 		`/v2/verifications/new-verify/${token}/address_verification/`,
+	faceVerification: (token: string) =>
+		`/v2/verifications/new-verify/${token}/face_verification/`,
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -72,6 +76,14 @@ export const NEW_VERIFY_V2_API = {
 		await getHttpClient()
 			.post(NEW_VERIFY_V2_ENDPOINTS.addressVerification(token), data)
 			.then((res) => unwrapV2Data<NewVerifyAddressSubmitData>(res)),
+
+	FACE_VERIFICATION: async (
+		token: string,
+		data: NewVerifyFaceSubmitPayload,
+	): Promise<NewVerifyFaceSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.faceVerification(token), data)
+			.then((res) => unwrapV2Data<NewVerifyFaceSubmitData>(res)),
 
 	FEEDBACK: async (
 		token: string,

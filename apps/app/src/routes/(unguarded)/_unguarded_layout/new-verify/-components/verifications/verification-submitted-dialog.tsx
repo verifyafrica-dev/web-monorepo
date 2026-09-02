@@ -6,7 +6,13 @@ import {
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
 
-export function VerificationSubmittedDialog() {
+type VerificationSubmittedDialogProps = {
+	description?: string;
+};
+
+export function VerificationSubmittedDialog({
+	description = "We've received your document. You can close this page now.",
+}: VerificationSubmittedDialogProps) {
 	return (
 		<Dialog open>
 			<DialogContent
@@ -26,7 +32,7 @@ export function VerificationSubmittedDialog() {
 						Verification submitted
 					</DialogTitle>
 					<DialogDescription className="text-pretty">
-						We&apos;ve received your document. You can close this page now.
+						{description}
 					</DialogDescription>
 				</DialogHeader>
 			</DialogContent>

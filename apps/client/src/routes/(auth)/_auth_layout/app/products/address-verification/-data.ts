@@ -15,6 +15,7 @@ type LinkFormValues = {
 	address: string;
 	urlLimit: string;
 	documentTypes: ShuftiAddressSupportedType[];
+	verificationInstructions: string;
 };
 
 type DirectFormValues = {
@@ -51,6 +52,9 @@ export function buildAddressVerificationLinkPayload(
 			language: "EN",
 			email: values.email.trim(),
 			ttl: Number(values.urlLimit),
+			collect: {
+				verification_instructions: values.verificationInstructions.trim(),
+			},
 			address: addressPayload(values),
 		},
 	};

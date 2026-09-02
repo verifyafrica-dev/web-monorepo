@@ -29,7 +29,7 @@ const config = defineConfig({
 		],
 	},
 	optimizeDeps: {
-		include: ["html2canvas-pro"],
+		include: ["html2canvas-pro", "@mediapipe/tasks-vision"],
 	},
 	plugins: [
 		devtools(),

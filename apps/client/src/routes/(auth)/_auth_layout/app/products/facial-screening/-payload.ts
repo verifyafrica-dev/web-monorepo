@@ -2,14 +2,18 @@ import type { VerificationRequestCreatePayload } from "#/api/http/v2/verificatio
 import type { VerificationType } from "#/api/http/v2/verifications/verifications.types";
 import { SHUFTI_CHOICES } from "@verifyafrica/ui/lib/constants";
 
-const FACIAL_VERIFICATION_TYPE = "face_match" satisfies VerificationType;
-
 import type { FaceVerificationMode } from "./-data";
+
+const FACIAL_VERIFICATION_TYPE = "face_match" satisfies VerificationType;
 
 type LinkFormValues = {
 	email: string;
 	faceVerificationMode: FaceVerificationMode;
 	urlLimit: string;
+	checkForDuplicates: boolean;
+	ageMin: string;
+	ageMax: string;
+	verificationInstructions: string;
 };
 
 type DirectFormValues = {
@@ -17,27 +21,50 @@ type DirectFormValues = {
 };
 
 function mapFaceVerificationMode(mode: FaceVerificationMode) {
-	if (mode === "image") {
-		return "image_only";
-	}
-
-	if (mode === "video") {
-		return "video_only";
-	}
-
-	return "any";
+	return mode === "video" ? "video_only" : "image_only";
 }
 
-function buildFaceBlock(options?: { proof?: string; verificationMode?: string }) {
-	const face: Record<string, unknown> = {
-		verification_mode: options?.verificationMode ?? "any",
+function optionalFaceAge(ageMin: string, ageMax: string) {
+	const min = ageMin.trim();
+	const max = ageMax.trim();
+
+	if (!min && !max) {
+		return undefined;
+	}
+
+	return { min, max };
+}
+
+function buildFaceBlock(options: {
+	proof?: string;
+	verificationMode: string;
+	checkForDuplicates?: boolean;
+	ageMin?: string;
+	ageMax?: string;
+}) {
+	const face: {
+		verification_mode: string;
+		allow_offline: string;
+		allow_online: string;
+		check_duplicate_request: string;
+		proof?: string;
+		age?: { min: string; max: string };
+	} = {
+		verification_mode: options.verificationMode,
 		allow_offline: SHUFTI_CHOICES.NO,
 		allow_online: SHUFTI_CHOICES.YES,
-		check_duplicate_request: SHUFTI_CHOICES.NO,
+		check_duplicate_request: options.checkForDuplicates
+			? SHUFTI_CHOICES.YES
+			: SHUFTI_CHOICES.NO,
 	};
 
-	if (options?.proof) {
+	if (options.proof) {
 		face.proof = options.proof;
+	}
+
+	const age = optionalFaceAge(options.ageMin ?? "", options.ageMax ?? "");
+	if (age) {
+		face.age = age;
 	}
 
 	return face;
@@ -48,13 +75,19 @@ export function buildFacialScreeningLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: FACIAL_VERIFICATION_TYPE,
-		method_type: "onsite",
+		method_type: "new_link",
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),
 			ttl: Number(values.urlLimit),
+			collect: {
+				verification_instructions: values.verificationInstructions.trim(),
+			},
 			face: buildFaceBlock({
 				verificationMode: mapFaceVerificationMode(values.faceVerificationMode),
+				checkForDuplicates: values.checkForDuplicates,
+				ageMin: values.ageMin,
+				ageMax: values.ageMax,
 			}),
 		},
 	};
@@ -70,7 +103,10 @@ export function buildFacialScreeningDirectPayload(
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),
-			face: buildFaceBlock({ proof, verificationMode: "any" }),
+			face: buildFaceBlock({
+				proof,
+				verificationMode: "image_only",
+			}),
 		},
 	};
 }

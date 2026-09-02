@@ -62,6 +62,7 @@ const linkFormSchema = z.object({
 	address: z.string().trim().min(1, "Address is required"),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	documentTypes: addressDocumentTypesSchema,
+	verificationInstructions: z.string(),
 	consent: verificationConsentSchema,
 });
 
@@ -100,6 +101,7 @@ export function AddressVerificationForm() {
 			address: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
 			documentTypes: DEFAULT_ADDRESS_DOCUMENT_TYPES,
+			verificationInstructions: "",
 			consent: false,
 		},
 		validators: {
@@ -334,6 +336,25 @@ export function AddressVerificationForm() {
 										<FieldDescription>
 											How long the verification link stays active
 										</FieldDescription>
+									</Field>
+								)}
+							</linkForm.Field>
+
+							<linkForm.Field name="verificationInstructions">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="address-verification-instructions">
+											Verification instructions
+										</FieldLabel>
+										<Textarea
+											id="address-verification-instructions"
+											placeholder="Optional instructions shown to the end user"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
 									</Field>
 								)}
 							</linkForm.Field>

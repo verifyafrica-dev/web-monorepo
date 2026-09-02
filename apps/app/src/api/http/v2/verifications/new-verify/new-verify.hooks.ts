@@ -14,6 +14,7 @@ import { NEW_VERIFY_V2_API } from "@verifyafrica/api-client/http/v2/verification
 import type {
 	NewVerifyAddressSubmitPayload,
 	NewVerifyDocumentSubmitPayload,
+	NewVerifyFaceSubmitPayload,
 	NewVerifyFeedbackSubmitPayload,
 	NewVerifyPresignPayload,
 	NewVerifySession,
@@ -89,6 +90,17 @@ export const useSubmitNewVerifyAddressV2Mutation = () =>
 			token: string;
 			payload: NewVerifyAddressSubmitPayload;
 		}) => NEW_VERIFY_V2_API.ADDRESS_VERIFICATION(token, payload),
+	});
+
+export const useSubmitNewVerifyFaceV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyFaceSubmitPayload;
+		}) => NEW_VERIFY_V2_API.FACE_VERIFICATION(token, payload),
 	});
 
 export const useSubmitNewVerifyFeedbackV2Mutation = () =>

@@ -28,8 +28,8 @@ export function FacialScreeningInfoPanel() {
 								Link Mode
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								A facial biometric verification flow is sent to the customer so
-								they can complete the check themselves through a secure link.
+								The customer completes facial biometrics on a hosted capture
+								page: camera liveness, or a file upload when you allow it.
 							</p>
 						</div>
 
@@ -39,8 +39,8 @@ export function FacialScreeningInfoPanel() {
 								Direct Mode
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Upload a face photo directly for immediate verification when you
-								already have the customer&apos;s image on hand.
+								Upload a JPEG, PNG, or PDF (max 16MB) when you already have the
+								customer&apos;s face proof.
 							</p>
 						</div>
 					</div>
@@ -54,23 +54,12 @@ export function FacialScreeningInfoPanel() {
 					<div className="space-y-4">
 						<div className="space-y-1.5">
 							<div className="flex items-center gap-2 text-sm font-medium">
-								<EyeIcon className="size-4 text-secondary" />
-								Any
-							</div>
-							<p className="text-sm leading-relaxed text-muted-foreground">
-								Accepts both image and video. The system picks the best
-								available method.
-							</p>
-						</div>
-
-						<div className="space-y-1.5">
-							<div className="flex items-center gap-2 text-sm font-medium">
 								<ImageIcon className="size-4 text-secondary" />
 								Image Only
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Requires a selfie photograph. Faster verification with lower
-								confidence.
+								The customer blinks, then we capture a still. File upload stays
+								available when enabled on this product.
 							</p>
 						</div>
 
@@ -80,8 +69,19 @@ export function FacialScreeningInfoPanel() {
 								Video Only
 							</div>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Requires a short recorded video clip for higher confidence
-								verification.
+								The customer completes two random liveness actions on camera. File
+								upload still follows the product setting.
+							</p>
+						</div>
+
+						<div className="space-y-1.5">
+							<div className="flex items-center gap-2 text-sm font-medium">
+								<EyeIcon className="size-4 text-secondary" />
+								Age and duplicates
+							</div>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								Optional per-link age bounds use the estimated age from the face.
+								Duplicate checks compare this face across other customers.
 							</p>
 						</div>
 					</div>

@@ -2,6 +2,7 @@ import {
 	LinkIcon,
 	MagnifyingGlassIcon,
 	PaperPlaneTiltIcon,
+	InfoIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
@@ -10,7 +11,10 @@ import { z } from "zod";
 
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
+import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
 import { Input } from "@verifyafrica/ui/components/ui/input";
+import { Label } from "@verifyafrica/ui/components/ui/label";
+import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -19,6 +23,11 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@verifyafrica/ui/components/ui/tooltip";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
@@ -30,10 +39,7 @@ import { VerificationConsentCheckbox } from "../../../-components/VerificationCo
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import {
-	IMAGE_UPLOAD_MIME_TYPES,
-	PRODUCT_UPLOAD_VERIFICATIONS,
-} from "../../-upload-utils";
+import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
 	VERIFICATION_MODES,
@@ -44,6 +50,8 @@ import {
 import {
 	DEFAULT_FACE_VERIFICATION_MODE,
 	FACE_VERIFICATION_MODES,
+	FACIAL_PROOF_MAX_BYTES,
+	FACIAL_PROOF_MIME_TYPES,
 	type FaceVerificationMode,
 } from "../-data";
 import {
@@ -51,12 +59,56 @@ import {
 	buildFacialScreeningLinkPayload,
 } from "../-payload";
 
-const linkFormSchema = z.object({
-	email: z.email("Enter a valid email address"),
-	faceVerificationMode: z.enum(["any", "image", "video"]),
-	urlLimit: z.string().min(1, "Select a verification URL limit"),
-	consent: verificationConsentSchema,
-});
+const optionalAgeSchema = z.string().trim();
+
+const linkFormSchema = z
+	.object({
+		email: z.email("Enter a valid email address"),
+		faceVerificationMode: z.enum(["image", "video"]),
+		urlLimit: z.string().min(1, "Select a verification URL limit"),
+		checkForDuplicates: z.boolean(),
+		ageMin: optionalAgeSchema,
+		ageMax: optionalAgeSchema,
+		verificationInstructions: z.string(),
+		consent: verificationConsentSchema,
+	})
+	.superRefine((value, context) => {
+		const min = value.ageMin.trim();
+		const max = value.ageMax.trim();
+		if (!min && !max) {
+			return;
+		}
+		if (!min || !max) {
+			context.addIssue({
+				code: "custom",
+				path: min ? ["ageMax"] : ["ageMin"],
+				message: "Set both a minimum and maximum age, or leave both empty.",
+			});
+			return;
+		}
+		const minAge = Number(min);
+		const maxAge = Number(max);
+		if (
+			!Number.isInteger(minAge) ||
+			!Number.isInteger(maxAge) ||
+			minAge < 0 ||
+			maxAge < 0
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: "Age bounds must be whole numbers of 0 or more.",
+			});
+			return;
+		}
+		if (minAge > maxAge) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: "Minimum age cannot be greater than maximum age.",
+			});
+		}
+	});
 
 const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
@@ -84,6 +136,10 @@ export function FacialScreeningForm() {
 			email: "",
 			faceVerificationMode: DEFAULT_FACE_VERIFICATION_MODE,
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
+			checkForDuplicates: false,
+			ageMin: "",
+			ageMax: "",
+			verificationInstructions: "",
 			consent: false,
 		},
 		validators: {
@@ -117,7 +173,7 @@ export function FacialScreeningForm() {
 		},
 		onSubmit: async ({ value }) => {
 			if (!facePhotoUrl) {
-				toast.error("Please upload a face photo");
+				toast.error("Please upload a face photo or PDF");
 				return;
 			}
 
@@ -233,6 +289,109 @@ export function FacialScreeningForm() {
 												))}
 											</SelectContent>
 										</Select>
+										<FieldDescription>
+											Image only captures a still after a blink. Video only
+											records two random liveness actions.
+										</FieldDescription>
+									</Field>
+								)}
+							</linkForm.Field>
+
+							<linkForm.Field name="checkForDuplicates">
+								{(field) => (
+									<Field className="gap-1.5">
+										<div className="flex items-center gap-2">
+											<Checkbox
+												id="facial-screening-check-duplicates"
+												checked={field.state.value}
+												onCheckedChange={(checked) =>
+													field.handleChange(checked === true)
+												}
+											/>
+											<Label
+												htmlFor="facial-screening-check-duplicates"
+												className="text-sm font-normal"
+											>
+												Check for duplicates
+											</Label>
+											<Tooltip>
+												<TooltipTrigger
+													type="button"
+													className="inline-flex text-muted-foreground"
+													aria-label="About duplicate checks"
+												>
+													<InfoIcon className="size-4" />
+												</TooltipTrigger>
+												<TooltipContent>
+													We will check this face against other customers to
+													ensure there are no duplicate identities.
+												</TooltipContent>
+											</Tooltip>
+										</div>
+									</Field>
+								)}
+							</linkForm.Field>
+
+							<div className="grid gap-4 sm:grid-cols-2">
+								<linkForm.Field name="ageMin">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="facial-screening-age-min">
+												Minimum detected age
+											</FieldLabel>
+											<Input
+												id="facial-screening-age-min"
+												inputMode="numeric"
+												placeholder="Optional"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+											/>
+										</Field>
+									)}
+								</linkForm.Field>
+								<linkForm.Field name="ageMax">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="facial-screening-age-max">
+												Maximum detected age
+											</FieldLabel>
+											<Input
+												id="facial-screening-age-max"
+												inputMode="numeric"
+												placeholder="Optional"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+											/>
+										</Field>
+									)}
+								</linkForm.Field>
+							</div>
+							<FieldDescription>
+								Leave both empty to skip the age check. If you set a range, the
+								detected age from the face must fall between these bounds.
+							</FieldDescription>
+
+							<linkForm.Field name="verificationInstructions">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="facial-screening-instructions">
+											Verification instructions
+										</FieldLabel>
+										<Textarea
+											id="facial-screening-instructions"
+											placeholder="Optional instructions shown to the end user"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
 									</Field>
 								)}
 							</linkForm.Field>
@@ -291,39 +450,16 @@ export function FacialScreeningForm() {
 								)}
 							</directForm.Field>
 
-							<Field className="gap-1.5">
-								<FieldLabel htmlFor="facial-screening-direct-face-mode">
-									Face Verification Mode
-								</FieldLabel>
-								<Select value={DEFAULT_FACE_VERIFICATION_MODE} disabled>
-									<SelectTrigger
-										id="facial-screening-direct-face-mode"
-										className="w-full"
-									>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{FACE_VERIFICATION_MODES.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								<FieldDescription>
-									Fixed to &apos;Any&apos; in direct mode
-								</FieldDescription>
-							</Field>
-
 							<ProductProofUpload
-								label="Face Photo"
+								label="Face proof"
 								verificationName={PRODUCT_UPLOAD_VERIFICATIONS.facialScreening}
 								proofUrl={facePhotoUrl}
 								onProofUrlChange={setFacePhotoUrl}
 								onUploadingChange={setIsProofUploading}
-								accept="image/*"
-								allowedMimeTypes={IMAGE_UPLOAD_MIME_TYPES}
-								emptyStateText="Click to upload a face photo"
+								accept="image/jpeg,image/jpg,image/png,application/pdf"
+								allowedMimeTypes={FACIAL_PROOF_MIME_TYPES}
+								maxSize={FACIAL_PROOF_MAX_BYTES}
+								emptyStateText="Upload a JPEG, PNG, or PDF up to 16MB"
 								disabled={isSubmitting}
 							/>
 						</FieldGroup>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 
 import { AddressVerification } from "./verifications/address-verification";
+import { FacialBiometricsVerification } from "./verifications/facial-biometrics/facial-biometrics-verification";
 import { IdDocumentVerification } from "./verifications/id-document-verification";
 import { NewVerifyChrome } from "./new-verify-chrome";
 import { NewVerifyConsent } from "./new-verify-consent";
@@ -10,6 +11,7 @@ import { NewVerifyConsent } from "./new-verify-consent";
 const NEW_VERIFY_VERIFICATION_COMPONENTS = {
 	id_document: IdDocumentVerification,
 	address_verification: AddressVerification,
+	face_match: FacialBiometricsVerification,
 } as const;
 
 type NewVerifySessionViewProps = {
