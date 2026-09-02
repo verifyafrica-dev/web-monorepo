@@ -2,6 +2,7 @@ import {
 	ArrowLeftIcon,
 	ArrowsClockwiseIcon,
 	DownloadSimpleIcon,
+	PlusIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef } from "react";
@@ -38,6 +39,7 @@ import { VerificationMetadataCard } from "../-components/verification-metadata-c
 import { VerificationProofsSection } from "../-components/verification-proofs/verification-proofs-section";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
 import { VerificationStatusSchema } from "#/api/http/v2/verifications/verifications.types";
+import { getProductSlugForVerificationType } from "../../products/-data";
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/reports/$id/")({
 	head: () => ({
@@ -70,6 +72,9 @@ function VerificationReportDetailPage() {
 			? verification
 			: null;
 	const isAmlScreening = Boolean(amlVerification);
+	const productSlug = verification
+		? getProductSlugForVerificationType(verification.verification_type)
+		: null;
 	const isDownloading = isAmlScreening
 		? amlDownload.isDownloading
 		: standardDownload.isDownloading;
@@ -204,13 +209,27 @@ function VerificationReportDetailPage() {
 							Back to Reports
 						</Link>
 					</Button>
-					<div className="space-y-1">
-						<h1 className="text-2xl font-semibold tracking-tight">
-							Verification Report
-						</h1>
-						<p className="text-sm text-muted-foreground">
-							Review the complete verification outcome and downloadable report.
-						</p>
+					<div className="flex flex-row items-center justify-between gap-4">
+						<div className="min-w-0 space-y-1">
+							<h1 className="text-2xl font-semibold tracking-tight text-pretty">
+								Verification Report
+							</h1>
+							<p className="text-sm text-muted-foreground text-pretty">
+								Review the complete verification outcome and downloadable
+								report.
+							</p>
+						</div>
+						{productSlug ? (
+							<Button
+								className="shrink-0"
+								asChild
+							>
+								<Link to={`/app/products/${productSlug}`}>
+									<PlusIcon weight="bold" />
+									New verification
+								</Link>
+							</Button>
+						) : null}
 					</div>
 				</div>
 
