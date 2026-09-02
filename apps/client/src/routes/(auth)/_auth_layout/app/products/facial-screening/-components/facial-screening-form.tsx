@@ -32,6 +32,7 @@ import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldDescription,
+	FieldError,
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
@@ -49,6 +50,7 @@ import {
 } from "../../../-components/VerificationConsentCheckbox/data";
 import {
 	DEFAULT_FACE_VERIFICATION_MODE,
+	FACE_AGE_MIN_YEARS,
 	FACE_VERIFICATION_MODES,
 	FACIAL_PROOF_MAX_BYTES,
 	FACIAL_PROOF_MIME_TYPES,
@@ -91,13 +93,20 @@ const linkFormSchema = z
 		if (
 			!Number.isInteger(minAge) ||
 			!Number.isInteger(maxAge) ||
-			minAge < 0 ||
 			maxAge < 0
 		) {
 			context.addIssue({
 				code: "custom",
 				path: ["ageMin"],
-				message: "Age bounds must be whole numbers of 0 or more.",
+				message: "Age bounds must be whole numbers.",
+			});
+			return;
+		}
+		if (minAge < FACE_AGE_MIN_YEARS) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: `Minimum detected age must be ${FACE_AGE_MIN_YEARS} or greater.`,
 			});
 			return;
 		}
@@ -342,13 +351,15 @@ export function FacialScreeningForm() {
 											<Input
 												id="facial-screening-age-min"
 												inputMode="numeric"
-												placeholder="Optional"
+												min={FACE_AGE_MIN_YEARS}
+												placeholder={`${FACE_AGE_MIN_YEARS}+`}
 												value={field.state.value}
 												onBlur={field.handleBlur}
 												onChange={(event) =>
 													field.handleChange(event.target.value)
 												}
 											/>
+											<FieldError errors={field.state.meta.errors} />
 										</Field>
 									)}
 								</linkForm.Field>
@@ -361,6 +372,7 @@ export function FacialScreeningForm() {
 											<Input
 												id="facial-screening-age-max"
 												inputMode="numeric"
+												min={FACE_AGE_MIN_YEARS}
 												placeholder="Optional"
 												value={field.state.value}
 												onBlur={field.handleBlur}
@@ -368,12 +380,14 @@ export function FacialScreeningForm() {
 													field.handleChange(event.target.value)
 												}
 											/>
+											<FieldError errors={field.state.meta.errors} />
 										</Field>
 									)}
 								</linkForm.Field>
 							</div>
 							<FieldDescription>
-								Leave both empty to skip the age check. If you set a range, the
+								Leave both empty to skip the age check. If you set a range,
+								minimum age must be {FACE_AGE_MIN_YEARS} or greater, and the
 								detected age from the face must fall between these bounds.
 							</FieldDescription>
 
