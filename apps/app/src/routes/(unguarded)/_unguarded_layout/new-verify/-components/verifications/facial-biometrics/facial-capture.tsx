@@ -296,7 +296,9 @@ export function FacialCapture({
 			}
 
 			if (!startedRef.current) {
-				trackerRef.current.start([...actions]);
+				trackerRef.current.start([...actions], {
+					requiredBlinks: isVideoMode ? 1 : 2,
+				});
 				if (isVideoMode && streamRef.current) {
 					const mimeType = pickRecordingMimeType();
 					if (!mimeType) {

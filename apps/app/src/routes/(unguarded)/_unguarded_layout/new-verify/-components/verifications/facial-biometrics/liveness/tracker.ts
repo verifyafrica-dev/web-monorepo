@@ -156,6 +156,14 @@ class BlinkTracker {
 		return this.blinks >= this.required;
 	}
 
+	get completedCount() {
+		return this.blinks;
+	}
+
+	get requiredCount() {
+		return this.required;
+	}
+
 	push(shapes: BlendshapeCategory[] | undefined, nowMs: number) {
 		const score = Math.max(
 			blendscore(shapes, "eyeBlinkLeft"),
@@ -231,10 +239,11 @@ export class LivenessChallengeTracker {
 	});
 	private mouth = new MouthTracker();
 
-	start(actions: LivenessAction[]) {
+	start(actions: LivenessAction[], options?: { requiredBlinks?: number }) {
 		this.actions = actions;
 		this.index = 0;
 		this.status = "running";
+		this.blink = new BlinkTracker(options?.requiredBlinks ?? 1);
 		this.resetCurrentGesture();
 	}
 
@@ -318,6 +327,12 @@ export class LivenessChallengeTracker {
 				prompt = "Liveness complete.";
 			} else if (this.status === "left_oval") {
 				prompt = "Keep your face inside the oval.";
+			} else if (action === "blink" && this.blink.requiredCount > 1) {
+				const remaining = this.blink.requiredCount - this.blink.completedCount;
+				prompt =
+					remaining === this.blink.requiredCount
+						? "Blink twice — close your eyes, then open them, then blink again."
+						: "Blink once more.";
 			} else if (action) {
 				prompt = LIVENESS_ACTION_PROMPTS[action];
 			}
