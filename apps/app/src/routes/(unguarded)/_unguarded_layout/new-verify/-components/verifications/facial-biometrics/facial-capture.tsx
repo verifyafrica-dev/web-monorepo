@@ -148,6 +148,7 @@ export function FacialCapture({
 					window.setTimeout(resolve, IMAGE_CAPTURE_DELAY_MS);
 				});
 				const file = await captureStillFrame(video, true);
+				video.pause();
 				await onComplete(file);
 			} catch {
 				setFailure("generic");
@@ -356,6 +357,7 @@ export function FacialCapture({
 		completingRef.current = false;
 		setPrompt("Align your face in the oval.");
 		setAttempt((value) => value + 1);
+		void videoRef.current?.play();
 	}
 
 	return (
@@ -382,7 +384,7 @@ export function FacialCapture({
 					<FaceOvalOverlay />
 					<div className="relative z-10 mt-auto flex flex-col items-center gap-3 bg-linear-to-t from-black/70 to-transparent px-5 py-5">
 						<p className="text-center text-sm font-medium text-white text-pretty tabular-nums">
-							{isProcessing ? "Saving your capture…" : prompt}
+							{isBusy ? "Saving your capture…" : prompt}
 						</p>
 						{allowFileUpload ? (
 							<Button
