@@ -23,11 +23,15 @@ const READY_ITEMS = [
 
 type FacialReadyInstructionsProps = {
 	onContinue: () => void;
+	verificationMode?: "image_only" | "video_only";
 };
 
 export function FacialReadyInstructions({
 	onContinue,
+	verificationMode = "image_only",
 }: FacialReadyInstructionsProps) {
+	const isVideoMode = verificationMode === "video_only";
+
 	return (
 		<div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-8">
 			<div className="max-w-md space-y-2 text-center">
@@ -35,7 +39,9 @@ export function FacialReadyInstructions({
 					Get ready to verify your face
 				</h1>
 				<p className="text-pretty text-sm text-muted-foreground">
-					Follow these steps so we can capture a clear biometric check.
+					{isVideoMode
+						? "You will record a 5 second video. Keep your face in the oval and avoid extra movement."
+						: "Follow these steps so we can capture a clear biometric check."}
 				</p>
 			</div>
 			<ul className="grid w-full max-w-md grid-cols-3 gap-4">

@@ -59,7 +59,10 @@ export function FacialBiometricsVerification({
 				<VerificationInstructionsDialog instructions={verificationInstructions} />
 			) : null}
 			{step === "ready" ? (
-				<FacialReadyInstructions onContinue={() => setStep("capture")} />
+				<FacialReadyInstructions
+					verificationMode={verificationMode}
+					onContinue={() => setStep("capture")}
+				/>
 			) : null}
 			{step === "capture" ? (
 				<FacialCapture

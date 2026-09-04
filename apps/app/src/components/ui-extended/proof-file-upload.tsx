@@ -96,10 +96,7 @@ export type ProofFileUploadProps = {
 	/**
 	 * Persist the selected file and return a public URL. Omit this to keep the file local only.
 	 */
-	onUpload?: (
-		file: File,
-		helpers: ProofFileUploadHelpers,
-	) => Promise<string>;
+	onUpload?: (file: File, helpers: ProofFileUploadHelpers) => Promise<string>;
 	/**
 	 * Called whenever the upload in-flight state changes.
 	 */
@@ -225,9 +222,7 @@ export function ProofFileUpload({
 										error instanceof Error ? error.message : "Upload failed";
 									onError(
 										nextFile,
-										error instanceof Error
-											? error
-											: new Error("Upload failed"),
+										error instanceof Error ? error : new Error("Upload failed"),
 									);
 									toast.error(`Failed to upload file: ${message}`);
 									handleFilesChange([]);
@@ -245,10 +240,7 @@ export function ProofFileUpload({
 					)}
 				>
 					<Icon
-						className={cn(
-							"size-8 text-muted-foreground",
-							iconClassName,
-						)}
+						className={cn("size-8 text-muted-foreground", iconClassName)}
 						weight={iconWeight}
 					/>
 					<p className="text-center text-sm text-muted-foreground text-pretty">

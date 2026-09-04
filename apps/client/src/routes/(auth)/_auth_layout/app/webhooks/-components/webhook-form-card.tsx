@@ -224,13 +224,16 @@ export function WebhookFormCard() {
 			</CardHeader>
 
 			<CardContent>
-				<form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+				<form
+					className="flex flex-col gap-6"
+					onSubmit={handleSubmit}
+				>
 					<div className="space-y-1.5">
 						<Label htmlFor="webhook-url">Endpoint URL</Label>
 						<Input
 							id="webhook-url"
 							type="url"
-							placeholder="https://your-app.com/webhooks/verify-africa"
+							placeholder="https://your-app.com/webhooks/verifyafrica"
 							value={form.url}
 							onChange={(event) => updateField("url", event.target.value)}
 							disabled={isMutating || !canManage}

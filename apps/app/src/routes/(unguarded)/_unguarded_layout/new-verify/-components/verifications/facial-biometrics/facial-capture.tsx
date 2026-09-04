@@ -1,3 +1,4 @@
+import { RecordIcon } from "@phosphor-icons/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ProofFileUpload } from "#/components/ui-extended/proof-file-upload";
@@ -12,7 +13,6 @@ import {
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Spinner } from "@verifyafrica/ui/components/ui/spinner";
 
-import { pickRandomLivenessActions } from "./liveness/actions";
 import { captureStillFrame } from "./liveness/capture-still";
 import { ensureMp4Video } from "./liveness/ensure-mp4";
 import { FACE_OVAL, isFaceInOval } from "./liveness/face-in-oval";
@@ -31,7 +31,8 @@ const FACIAL_PROOF_MIME_TYPES = [
 ] as const;
 const FACIAL_PROOF_MAX_BYTES = 16 * 1024 * 1024;
 const IMAGE_CAPTURE_DELAY_MS = 200;
-const VIDEO_ACTION_COUNT = 2;
+const VIDEO_RECORDING_MS = 5000;
+const VIDEO_RECORDING_SECONDS = VIDEO_RECORDING_MS / 1000;
 
 type CaptureMode = "requesting" | "camera" | "upload";
 type FailureReason = "unsupported" | "left_oval" | "too_long" | "generic";
@@ -99,6 +100,9 @@ export function FacialCapture({
 	const [failure, setFailure] = useState<FailureReason | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [attempt, setAttempt] = useState(0);
+	const [canRecord, setCanRecord] = useState(false);
+	const [isRecording, setIsRecording] = useState(false);
+	const [secondsLeft, setSecondsLeft] = useState(VIDEO_RECORDING_SECONDS);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const overlayRef = useRef<HTMLDivElement>(null);
 	const lastTimestampRef = useRef(-1);
@@ -111,12 +115,20 @@ export function FacialCapture({
 	const startedRef = useRef(false);
 	const completingRef = useRef(false);
 	const rafRef = useRef(0);
+	const isRecordingRef = useRef(false);
+	const recordTimeoutRef = useRef(0);
+	const recordIntervalRef = useRef(0);
 
 	const isVideoMode = verificationMode === "video_only";
 	const isBusy = isProcessing || isSubmitting;
 
 	const failCapture = useCallback(async (reason: FailureReason) => {
 		window.cancelAnimationFrame(rafRef.current);
+		window.clearTimeout(recordTimeoutRef.current);
+		window.clearInterval(recordIntervalRef.current);
+		isRecordingRef.current = false;
+		setIsRecording(false);
+		setCanRecord(false);
 		if (recorderRef.current) {
 			await recorderRef.current.stop().catch(() => undefined);
 			recorderRef.current = null;
@@ -129,6 +141,11 @@ export function FacialCapture({
 			setIsProcessing(true);
 			try {
 				if (isVideoMode) {
+					window.clearTimeout(recordTimeoutRef.current);
+					window.clearInterval(recordIntervalRef.current);
+					isRecordingRef.current = false;
+					setIsRecording(false);
+					video.pause();
 					const recorder = recorderRef.current;
 					if (!recorder) {
 						throw new Error("Recording did not start.");
@@ -186,6 +203,15 @@ export function FacialCapture({
 				return;
 			}
 
+			if (isVideoMode && !pickRecordingMimeType()) {
+				if (allowFileUpload) {
+					setMode("upload");
+					return;
+				}
+				setFailure("unsupported");
+				return;
+			}
+
 			try {
 				const stream = await navigator.mediaDevices.getUserMedia({
 					video: { facingMode: { ideal: "user" } },
@@ -219,12 +245,14 @@ export function FacialCapture({
 		return () => {
 			cancelled = true;
 			window.cancelAnimationFrame(rafRef.current);
+			window.clearTimeout(recordTimeoutRef.current);
+			window.clearInterval(recordIntervalRef.current);
 			stopMediaStream(streamRef.current);
 			streamRef.current = null;
 			landmarkerRef.current?.close();
 			landmarkerRef.current = null;
 		};
-	}, [allowFileUpload]);
+	}, [allowFileUpload, isVideoMode]);
 
 	useEffect(() => {
 		const video = videoRef.current;
@@ -246,13 +274,14 @@ export function FacialCapture({
 
 		void attempt;
 
-		const actions = isVideoMode
-			? pickRandomLivenessActions(VIDEO_ACTION_COUNT)
-			: (["blink"] as const);
 		startedRef.current = false;
 		completingRef.current = false;
 		lastTimestampRef.current = -1;
 		trackerRef.current.reset();
+		isRecordingRef.current = false;
+		setIsRecording(false);
+		setCanRecord(false);
+		setSecondsLeft(VIDEO_RECORDING_SECONDS);
 
 		const loop = (nowMs: number) => {
 			const video = videoRef.current;
@@ -281,7 +310,34 @@ export function FacialCapture({
 							mirrored: true,
 						}
 					: undefined;
-			if (!result || !face || !isFaceInOval(face, layout)) {
+			const inOval = Boolean(result && face && isFaceInOval(face, layout));
+
+			if (isVideoMode) {
+				if (completingRef.current || isRecordingRef.current) {
+					rafRef.current = window.requestAnimationFrame(loop);
+					return;
+				}
+				if (!inOval) {
+					setCanRecord(false);
+					setPrompt((current) =>
+						current === "Align your face in the oval."
+							? current
+							: "Align your face in the oval.",
+					);
+				} else {
+					setCanRecord(true);
+					setPrompt((current) =>
+						current ===
+						"Stay still, then start recording. Avoid extra movement."
+							? current
+							: "Stay still, then start recording. Avoid extra movement.",
+					);
+				}
+				rafRef.current = window.requestAnimationFrame(loop);
+				return;
+			}
+
+			if (!inOval) {
 				if (startedRef.current) {
 					void failCapture("left_oval");
 					return;
@@ -295,20 +351,15 @@ export function FacialCapture({
 				return;
 			}
 
+			if (!result) {
+				rafRef.current = window.requestAnimationFrame(loop);
+				return;
+			}
+
 			if (!startedRef.current) {
-				trackerRef.current.start([...actions], {
-					requiredBlinks: isVideoMode ? 1 : 2,
+				trackerRef.current.start(["blink"], {
+					requiredBlinks: 2,
 				});
-				if (isVideoMode && streamRef.current) {
-					const mimeType = pickRecordingMimeType();
-					if (!mimeType) {
-						setFailure("unsupported");
-						return;
-					}
-					const recorder = new SizeCappedRecorder();
-					recorder.start(streamRef.current, mimeType);
-					recorderRef.current = recorder;
-				}
 				startedRef.current = true;
 			}
 
@@ -319,11 +370,6 @@ export function FacialCapture({
 
 			if (progress.status === "left_oval") {
 				void failCapture("left_oval");
-				return;
-			}
-
-			if (recorderRef.current?.hasExceededCap()) {
-				void failCapture("too_long");
 				return;
 			}
 
@@ -343,17 +389,74 @@ export function FacialCapture({
 		};
 	}, [attempt, failCapture, finishCapture, isVideoMode, mode]);
 
+	function handleStartRecording() {
+		if (
+			!isVideoMode ||
+			isBusy ||
+			isRecordingRef.current ||
+			!canRecord ||
+			!streamRef.current
+		) {
+			return;
+		}
+
+		const mimeType = pickRecordingMimeType();
+		if (!mimeType) {
+			setFailure("unsupported");
+			return;
+		}
+
+		const recorder = new SizeCappedRecorder();
+		recorder.start(streamRef.current, mimeType);
+		recorderRef.current = recorder;
+		isRecordingRef.current = true;
+		setIsRecording(true);
+		setCanRecord(false);
+		setSecondsLeft(VIDEO_RECORDING_SECONDS);
+		setPrompt("Keep still — avoid extra movement.");
+
+		const startedAt = Date.now();
+		recordIntervalRef.current = window.setInterval(() => {
+			if (recorder.hasExceededCap()) {
+				void failCapture("too_long");
+				return;
+			}
+			const remainingMs = VIDEO_RECORDING_MS - (Date.now() - startedAt);
+			setSecondsLeft(Math.max(0, Math.ceil(remainingMs / 1000)));
+		}, 200);
+
+		recordTimeoutRef.current = window.setTimeout(() => {
+			window.clearInterval(recordIntervalRef.current);
+			const video = videoRef.current;
+			if (!video || completingRef.current) {
+				return;
+			}
+			completingRef.current = true;
+			window.cancelAnimationFrame(rafRef.current);
+			void finishCapture(video);
+		}, VIDEO_RECORDING_MS);
+	}
+
 	function handleUploadInstead() {
 		if (!allowFileUpload || isBusy) {
 			return;
 		}
 		window.cancelAnimationFrame(rafRef.current);
+		window.clearTimeout(recordTimeoutRef.current);
+		window.clearInterval(recordIntervalRef.current);
+		isRecordingRef.current = false;
 		stopMediaStream(streamRef.current);
 		streamRef.current = null;
 		setMode("upload");
 	}
 
 	function handleTryAgain() {
+		window.clearTimeout(recordTimeoutRef.current);
+		window.clearInterval(recordIntervalRef.current);
+		isRecordingRef.current = false;
+		setIsRecording(false);
+		setCanRecord(false);
+		setSecondsLeft(VIDEO_RECORDING_SECONDS);
 		setFailure(null);
 		startedRef.current = false;
 		completingRef.current = false;
@@ -385,10 +488,26 @@ export function FacialCapture({
 					/>
 					<FaceOvalOverlay />
 					<div className="relative z-10 mt-auto flex flex-col items-center gap-3 bg-linear-to-t from-black/70 to-transparent px-5 py-5">
+						{isRecording ? (
+							<p className="text-center text-4xl font-semibold text-white tabular-nums">
+								{secondsLeft}
+							</p>
+						) : null}
 						<p className="text-center text-sm font-medium text-white text-pretty tabular-nums">
 							{isBusy ? "Saving your capture…" : prompt}
 						</p>
-						{allowFileUpload ? (
+						{isVideoMode && !isRecording && !isBusy ? (
+							<Button
+								type="button"
+								className="active:scale-[0.96]"
+								disabled={!canRecord}
+								onClick={handleStartRecording}
+							>
+								<RecordIcon weight="fill" />
+								Start recording
+							</Button>
+						) : null}
+						{allowFileUpload && !isRecording ? (
 							<Button
 								type="button"
 								variant="ghost"
@@ -435,7 +554,7 @@ export function FacialCapture({
 								: failure === "left_oval"
 									? "Keep your face inside the oval for the whole check."
 									: failure === "too_long"
-										? "That recording was too long. Try again and complete the actions a little faster."
+										? "That recording was too large. Try again and keep still for the 5 second clip."
 										: "We could not finish this capture. Try again."}
 						</DialogDescription>
 					</DialogHeader>
