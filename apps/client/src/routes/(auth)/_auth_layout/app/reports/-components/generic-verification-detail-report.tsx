@@ -19,7 +19,6 @@ export function GenericVerificationDetailReport({
 	const responsePayload = (asRecord(responseData.data) ??
 		responseData) as Record<string, unknown>;
 
-	const infoData = asRecord(responsePayload.info);
 	const { proofs: _proofs, info: _info, ...resultData } = responsePayload;
 
 	const country =
@@ -61,13 +60,6 @@ export function GenericVerificationDetailReport({
 			/>
 
 			<VerificationResultPanel data={resultData} />
-
-			{infoData ? (
-				<VerificationResultPanel
-					title="Info"
-					data={infoData}
-				/>
-			) : null}
 		</div>
 	);
 }

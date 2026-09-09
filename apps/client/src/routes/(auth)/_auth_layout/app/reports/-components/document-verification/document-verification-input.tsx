@@ -5,10 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
-import {
-	COUNTRY_NAME_BY_ISO_CODE,
-	getCountryName,
-} from "@verifyafrica/ui/lib/country-state-city";
+import { getCountryName } from "@verifyafrica/ui/lib/country-state-city";
 import { displayValue } from "../../-utils";
 import { ReportDetailField } from "../report-detail-field";
 

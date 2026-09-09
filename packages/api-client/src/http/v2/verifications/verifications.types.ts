@@ -535,6 +535,7 @@ export interface VerificationAgentInfo {
 	useragent?: string;
 	browser_name?: string;
 	platform_name?: string;
+	fingerprint_id?: string;
 }
 
 export interface VerificationGeoLocation {
