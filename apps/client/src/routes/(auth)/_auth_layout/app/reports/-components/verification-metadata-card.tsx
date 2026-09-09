@@ -1,6 +1,4 @@
 import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { toast } from "sonner";
 
 import { VerificationStatusSchema } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
@@ -11,6 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
+import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import { extractHostedVerificationUrl } from "@verifyafrica/api-client/lib/verification-links";
 import {
 	formatReportDate,
@@ -20,7 +19,6 @@ import {
 } from "../-data";
 import { ReportDetailField } from "./report-detail-field";
 import { VerificationStatusBadge } from "./verification-badges";
-import { getCountryName } from "country-state-city";
 
 type VerificationMetadataCardProps = {
 	verification: VerificationRequestDetail;
@@ -29,29 +27,15 @@ type VerificationMetadataCardProps = {
 export function VerificationMetadataCard({
 	verification,
 }: VerificationMetadataCardProps) {
-	const [copiedVerificationUrl, setCopiedVerificationUrl] = useState(false);
+	const { copied, copy } = useClipboard({
+		successMessage: "Verification link copied.",
+		errorMessage: "Unable to copy verification link.",
+	});
 	const report = mapVerificationRequestToReport(verification);
 	const verificationUrl = extractHostedVerificationUrl(verification);
 	const showVerificationLink =
 		verification.status === VerificationStatusSchema.enum.PENDING &&
 		Boolean(verificationUrl);
-
-	async function handleCopyVerificationUrl() {
-		if (!verificationUrl) {
-			return;
-		}
-
-		try {
-			await navigator.clipboard.writeText(verificationUrl);
-			setCopiedVerificationUrl(true);
-			setTimeout(() => setCopiedVerificationUrl(false), 2000);
-			toast.success("Verification link copied.");
-		} catch {
-			toast.error("Unable to copy verification link.");
-		}
-	}
-
-	console.log(verification);
 
 	return (
 		<Card className="bg-muted/20">
@@ -124,6 +108,10 @@ export function VerificationMetadataCard({
 						value={verification.response_data.declined_reason}
 					/>
 				) : null}
+				<ReportDetailField
+					label="Mode"
+					value={verification.link ? "Link" : "Direct"}
+				/>
 
 				{showVerificationLink ? (
 					<ReportDetailField
@@ -144,10 +132,10 @@ export function VerificationMetadataCard({
 									variant="ghost"
 									size="icon-sm"
 									className="shrink-0"
-									onClick={() => void handleCopyVerificationUrl()}
+									onClick={() => void copy(verificationUrl)}
 									aria-label="Copy verification link"
 								>
-									{copiedVerificationUrl ? (
+									{copied ? (
 										<CheckIcon className="size-4 text-emerald-600" />
 									) : (
 										<CopyIcon className="size-4" />

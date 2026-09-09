@@ -1,10 +1,10 @@
 import { CheckIcon, CopyIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { useSendVerificationEmailV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
+import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 
 type HostedVerificationLinkCardProps = {
@@ -14,20 +14,13 @@ type HostedVerificationLinkCardProps = {
 export function HostedVerificationLinkCard({
 	linkResult,
 }: HostedVerificationLinkCardProps) {
-	const [copiedUrl, setCopiedUrl] = useState(false);
+	const { copied, copy } = useClipboard({
+		successMessage: "Verification link copied.",
+		errorMessage: "Unable to copy verification link.",
+	});
 	const sendEmailMutation = useSendVerificationEmailV2Mutation();
 	const verificationId = linkResult.hostedLink?.verification_id;
 	const canSendEmail = Boolean(verificationId && linkResult.customerEmail);
-
-	async function handleCopyUrl() {
-		if (!linkResult.verificationUrl) {
-			return;
-		}
-
-		await navigator.clipboard.writeText(linkResult.verificationUrl);
-		setCopiedUrl(true);
-		setTimeout(() => setCopiedUrl(false), 2000);
-	}
 
 	async function handleSendEmail() {
 		if (!verificationId) {
@@ -100,10 +93,10 @@ export function HostedVerificationLinkCard({
 								type="button"
 								variant="ghost"
 								size="icon-sm"
-								onClick={() => void handleCopyUrl()}
+								onClick={() => void copy(linkResult.verificationUrl)}
 								aria-label="Copy verification URL"
 							>
-								{copiedUrl ? (
+								{copied ? (
 									<CheckIcon className="size-4 text-emerald-600" />
 								) : (
 									<CopyIcon className="size-4" />

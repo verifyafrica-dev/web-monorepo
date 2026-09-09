@@ -6,6 +6,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
+import { getCountryName } from "@verifyafrica/ui/lib/country-state-city";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { asNonEmptyString, displayValue } from "../../-utils";
 import { ReportDetailField } from "../report-detail-field";
@@ -25,15 +26,6 @@ function formatLabel(value: string) {
 		.replace(/_/g, " ")
 		.replace(/-/g, " ")
 		.replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function joinName(...parts: Array<string | undefined>) {
-	const name = parts
-		.map((part) => part?.trim())
-		.filter((part): part is string => Boolean(part))
-		.join(" ");
-
-	return name || undefined;
 }
 
 function getResultValueLabel(
@@ -104,6 +96,7 @@ export function DocumentVerificationOutcome({
 	responseData: VerificationResponseData;
 }) {
 	const declinedReason = asNonEmptyString(responseData.declined_reason);
+	const extractedProof = responseData.additional_data?.document?.proof;
 	const supportedTypes = asStringArray(
 		responseData.verification_data?.document?.supported_types,
 	);
@@ -122,9 +115,7 @@ export function DocumentVerificationOutcome({
 				<ReportDetailField
 					label="Full Name"
 					value={displayValue(
-						responseData.verification_data?.document?.name?.first_name +
-							" " +
-							responseData.verification_data?.document?.name?.last_name,
+						responseData.additional_data?.document?.proof?.full_name,
 					)}
 				/>
 				<ReportDetailField
@@ -138,6 +129,27 @@ export function DocumentVerificationOutcome({
 					value={displayValue(
 						responseData.verification_data?.document?.name?.last_name,
 					)}
+				/>
+				<ReportDetailField
+					label="Gender"
+					value={displayValue(extractedProof?.gender)}
+				/>
+				<ReportDetailField
+					label="Issue Date"
+					value={displayValue(extractedProof?.issue_date)}
+				/>
+				<ReportDetailField
+					label="Expiry Date"
+					value={displayValue(extractedProof?.expiry_date)}
+				/>
+				<ReportDetailField
+					label="Place of Birth"
+					value={displayValue(extractedProof?.place_of_birth)}
+					valueClassName="capitalize"
+				/>
+				<ReportDetailField
+					label="Country"
+					value={displayValue(getCountryName(extractedProof?.country_code))}
 				/>
 				<ReportDetailField
 					label="Customer Unique ID"

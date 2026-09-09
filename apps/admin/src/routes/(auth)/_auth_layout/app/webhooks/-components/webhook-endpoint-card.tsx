@@ -1,23 +1,14 @@
 import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@verifyafrica/ui/components/ui/alert";
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import { getWebhookEndpointUrls } from "../-data";
 
 function WebhookEndpointRow({ label, url }: { label: string; url: string }) {
-	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async () => {
-		try {
-			await navigator.clipboard.writeText(url);
-			setCopied(true);
-			toast.success(`${label} webhook URL copied`);
-			setTimeout(() => setCopied(false), 2000);
-		} catch {
-			toast.error("Failed to copy webhook URL");
-		}
-	};
+	const { copied, copy } = useClipboard({
+		successMessage: `${label} webhook URL copied`,
+		errorMessage: "Failed to copy webhook URL",
+	});
 
 	return (
 		<div className="space-y-2">
@@ -32,7 +23,7 @@ function WebhookEndpointRow({ label, url }: { label: string; url: string }) {
 					type="button"
 					variant="ghost"
 					size="icon-sm"
-					onClick={() => void handleCopy()}
+					onClick={() => void copy(url)}
 					title={copied ? "Copied" : "Copy to clipboard"}
 				>
 					{copied ? (
