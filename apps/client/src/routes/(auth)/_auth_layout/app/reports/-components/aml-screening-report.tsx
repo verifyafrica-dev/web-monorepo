@@ -218,30 +218,6 @@ function CopyValueButton({ value }: { value: string }) {
 	);
 }
 
-function RawResponseCard({ data }: { data: Record<string, unknown> }) {
-	const [expanded, setExpanded] = useState(false);
-
-	return (
-		<Card>
-			<CardHeader
-				className="cursor-pointer pb-3"
-				onClick={() => setExpanded((previous) => !previous)}
-			>
-				<CardTitle className="text-base font-semibold">
-					Raw Response Data
-				</CardTitle>
-			</CardHeader>
-			{expanded ? (
-				<CardContent className="pt-0">
-					<pre className="max-h-80 overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
-						{JSON.stringify(data, null, 2)}
-					</pre>
-				</CardContent>
-			) : null}
-		</Card>
-	);
-}
-
 function RiskStatCard({
 	label,
 	value,
@@ -875,8 +851,6 @@ export function AmlScreeningReport({
 					/>
 				</CardContent>
 			</Card>
-
-			<RawResponseCard data={responsePayload} />
 
 			{downloadRef ? (
 				<div
