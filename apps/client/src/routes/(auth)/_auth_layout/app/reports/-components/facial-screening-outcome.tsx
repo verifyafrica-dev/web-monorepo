@@ -93,7 +93,7 @@ export function FacialScreeningOutcome({
 }: {
 	verification: FacialScreeningVerificationRequestDetail;
 }) {
-	const responseData = verification.response_data;
+	const responseData = verification.response_data ?? {};
 	const faceResult = getFaceResult(responseData.verification_result?.face);
 	const faceData = responseData.verification_data?.face;
 	const declinedReason = asNonEmptyString(responseData.declined_reason);

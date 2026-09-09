@@ -88,21 +88,21 @@ export function VerificationMetadataCard({
 						mono
 					/>
 				) : null}
-				{verification.response_data.event ? (
+				{verification.response_data?.event ? (
 					<ReportDetailField
 						label="Event"
 						value={verification.response_data.event}
 						mono
 					/>
 				) : null}
-				{verification.input_data.customer_unique_id ? (
+				{verification.input_data?.customer_unique_id ? (
 					<ReportDetailField
 						label="Customer Unique ID"
 						value={verification.input_data.customer_unique_id}
 					/>
 				) : null}
 
-				{verification.response_data.declined_reason ? (
+				{verification.response_data?.declined_reason ? (
 					<ReportDetailField
 						label="Declined Reason"
 						value={verification.response_data.declined_reason}

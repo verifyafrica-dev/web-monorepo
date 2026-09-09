@@ -172,7 +172,7 @@ export function MoreInfo({
 }: {
 	verification: VerificationRequestDetail;
 }) {
-	const info = verification.response_data.info;
+	const info = verification.response_data?.info;
 	const agent = info?.agent;
 	const geolocation = info?.geolocation;
 	const showAgent = hasInfoValues(agent);
