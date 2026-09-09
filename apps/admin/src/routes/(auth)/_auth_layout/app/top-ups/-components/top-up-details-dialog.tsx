@@ -1,4 +1,4 @@
-import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
+import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {

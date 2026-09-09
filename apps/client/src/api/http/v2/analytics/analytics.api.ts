@@ -6,7 +6,7 @@ import type {
 	AnalyticsStatementsListQuery,
 	PaginatedStatementsListResult,
 	PlatformAnalyticsPayload,
-} from "./analytics.types";
+} from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

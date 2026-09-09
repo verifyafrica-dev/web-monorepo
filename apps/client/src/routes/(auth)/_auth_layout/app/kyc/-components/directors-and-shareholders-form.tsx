@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import {
 	KycDirectorsAndShareholdersFormSchema,
 	type KycDirectorsAndShareholdersFormValues,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Field,

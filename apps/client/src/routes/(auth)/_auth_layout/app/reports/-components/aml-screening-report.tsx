@@ -21,7 +21,7 @@ import { VerificationMetadataCard } from "./verification-metadata-card";
 import type {
 	AmlScreeningResponsePayload,
 	AmlScreeningVerificationRequestDetail,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 type AmlHit = Record<string, unknown>;
 

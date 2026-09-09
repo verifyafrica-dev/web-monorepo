@@ -7,8 +7,8 @@ import type {
 	BillingInformationCreatePayload,
 	BillingInformationUpdatePayload,
 	InvoiceListItem,
-} from "#/api/http/v2/billing/billing.types";
-import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
+} from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { normalizeCountryCode } from "@verifyafrica/ui/lib/country-state-city";
 import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 

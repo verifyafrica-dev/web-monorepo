@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { SectionRejectedReason } from "#/api/http/v2/tenants/tenants.types";
+import type { SectionRejectedReason } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import {
 	Accordion,
 	AccordionContent,

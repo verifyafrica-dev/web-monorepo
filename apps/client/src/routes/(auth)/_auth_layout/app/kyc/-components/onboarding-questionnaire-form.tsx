@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import {
 	KycOnboardingQuestionnaireFormSchema,
 	type KycOnboardingQuestionnaireFormValues,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import {
 	Select,
 	SelectContent,

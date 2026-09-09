@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useSendCustomMessageV2Mutation } from "#/api/http/v2/mail/mail.hooks";
 import { USERS_V2_API } from "#/api/http/v2/users/users.api";
-import type { AdminUser } from "#/api/http/v2/users/users.types";
+import type { AdminUser } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

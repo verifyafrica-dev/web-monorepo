@@ -1,4 +1,4 @@
-import type { TenantWebhookEvent } from "#/api/http/v2/tenants/tenants.types";
+import type { TenantWebhookEvent } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import {
 	Dialog,
 	DialogContent,

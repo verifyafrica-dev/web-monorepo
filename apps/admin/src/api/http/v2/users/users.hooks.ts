@@ -7,7 +7,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import type { UserDetail } from "#/api/http/v2/users/users.types";
+import type { UserDetail } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { useAuthStore } from "#/stores/auth-store";
 import { setAccessToken } from "../../xhr";
@@ -43,7 +43,7 @@ import type {
 	UserSession,
 	UserVerifyForgotPasswordTokenPayload,
 	VerifyForgotPasswordTokenResponseData,
-} from "./users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 
 export const USER_V2_QUERY_KEYS = {
 	all: ["users-v2"] as const,

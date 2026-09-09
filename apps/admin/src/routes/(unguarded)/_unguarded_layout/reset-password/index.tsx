@@ -14,7 +14,7 @@ import { useAdminResetPasswordWithOtpV2Mutation } from "#/api/http/v2/users/user
 import {
 	AdminResetPasswordWithOtpFormSchema,
 	type AdminResetPasswordWithOtpFormValues,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";

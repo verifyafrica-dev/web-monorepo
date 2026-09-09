@@ -25,7 +25,7 @@ import {
 	type AmlScreeningVerificationRequestDetail,
 	type DocumentVerificationRequestDetail,
 	type GovernmentRegistryChecksVerificationRequestDetail,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { AmlScreeningReport } from "../-components/aml-screening/aml-screening-report";
 import { AddressVerificationReport } from "../-components/address-verification-report";
 import { BusinessAmlScreeningReport } from "../-components/business-aml-screening-report";
@@ -38,7 +38,7 @@ import { RiskAssessmentReport } from "../-components/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";
 import { VerificationProofsSection } from "../-components/verification-proofs/verification-proofs-section";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
-import { VerificationStatusSchema } from "#/api/http/v2/verifications/verifications.types";
+import { VerificationStatusSchema } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { getProductSlugForVerificationType } from "../../products/-data";
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/reports/$id/")({

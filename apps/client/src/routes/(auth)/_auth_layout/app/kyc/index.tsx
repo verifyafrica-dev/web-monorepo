@@ -8,8 +8,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { useKycTenantQuery } from "#/api/http/v2/kyc/kyc.hooks";
-import { normalizeComplianceData } from "#/api/http/v2/kyc/kyc.types";
-import type { TenantDetail } from "#/api/http/v2/tenants/tenants.types";
+import { normalizeComplianceData } from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
+import type { TenantDetail } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";

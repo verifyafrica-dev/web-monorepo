@@ -15,11 +15,12 @@ import type {
 	BillingPricingListQuery,
 	BillingPricingUpdatePayload,
 	Invoice,
+	InvoiceListItem,
 	PaginatedAllInvoiceListResult,
 	PaginatedBillingInformationListResult,
 	PaginatedBillingPricingListResult,
 	PaginatedTenantInvoiceListResult,
-} from "./billing.types";
+} from "@verifyafrica/api-client/http/v2/billing/billing.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 
@@ -119,14 +120,14 @@ export const BILLING_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated<Invoice>(res)),
+			.then((res) => unwrapV2Paginated<InvoiceListItem>(res)),
 
 	ALL_INVOICES_LIST: async (
 		params?: AllInvoicesListQuery,
 	): Promise<PaginatedAllInvoiceListResult> =>
 		await $http
 			.get(BILLING_V2_ENDPOINTS.invoicesAll, { params })
-			.then((res) => unwrapV2Paginated<Invoice>(res)),
+			.then((res) => unwrapV2Paginated<InvoiceListItem>(res)),
 
 	ALL_INVOICE_DETAIL: async (id: string): Promise<Invoice> =>
 		await $http

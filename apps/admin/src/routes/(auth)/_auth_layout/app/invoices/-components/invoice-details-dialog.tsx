@@ -1,5 +1,5 @@
 import { DownloadSimpleIcon } from "@phosphor-icons/react";
-import type { Invoice } from "#/api/http/v2/billing/billing.types";
+import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -111,7 +111,7 @@ export function InvoiceDetailsDialog({
 					<section className="mt-6 space-y-3">
 						<h3 className="text-sm font-semibold">Invoice Items</h3>
 
-						{invoice.items.length > 0 ? (
+						{(invoice.items ?? []).length > 0 ? (
 							<div className="overflow-hidden rounded-lg border">
 								<Table>
 									<TableHeader>
@@ -123,7 +123,7 @@ export function InvoiceDetailsDialog({
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{invoice.items.map((item) => (
+										{(invoice.items ?? []).map((item) => (
 											<TableRow key={item.id}>
 												<TableCell>{item.description}</TableCell>
 												<TableCell className="text-right">

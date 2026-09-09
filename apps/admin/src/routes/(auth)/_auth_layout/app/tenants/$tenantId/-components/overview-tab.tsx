@@ -8,9 +8,9 @@ import {
 	ShieldCheckIcon,
 	UsersIcon,
 } from "@phosphor-icons/react";
-import type { BillingInformation } from "#/api/http/v2/billing/billing.types";
-import type { TenantDetail } from "#/api/http/v2/tenants/tenants.types";
-import type { Wallet } from "#/api/http/v2/wallet/wallet.types";
+import type { BillingInformation } from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import type { TenantDetail } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
+import type { Wallet } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";

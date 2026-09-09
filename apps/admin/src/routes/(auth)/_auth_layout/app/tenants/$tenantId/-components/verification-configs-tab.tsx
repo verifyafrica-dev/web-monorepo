@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useUpdateTenantVerificationConfigsV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
-import type { TenantVerificationConfigRow } from "#/api/http/v2/tenants/tenants.types";
+import type { TenantVerificationConfigRow } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";

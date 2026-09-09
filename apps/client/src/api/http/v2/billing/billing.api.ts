@@ -19,7 +19,7 @@ import type {
 	PaginatedBillingInformationListResult,
 	PaginatedBillingPricingListResult,
 	PaginatedTenantInvoiceListResult,
-} from "./billing.types";
+} from "@verifyafrica/api-client/http/v2/billing/billing.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

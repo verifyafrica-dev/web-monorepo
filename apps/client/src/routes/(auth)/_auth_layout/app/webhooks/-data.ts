@@ -5,7 +5,7 @@ import type {
 	TenantWebhookCreatePayload,
 	TenantWebhookUpdatePayload,
 	WebhookDeliveryStatus,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 
 export const webhooksSearchSchema = z.object({

@@ -49,7 +49,7 @@ import type {
 	TenantWebhookCreatePayload,
 	TenantWebhookEventListQuery,
 	TenantWebhookUpdatePayload,
-} from "./tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 
 function isTenantWebhookNotFoundError(error: unknown) {
 	const axiosError = error as V2AxiosError | null;

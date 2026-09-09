@@ -4,7 +4,7 @@ import type {
 	ActivityLog,
 	ActivityLogsListQuery,
 	PaginatedActivityLogListResult,
-} from "./activity-logs.types";
+} from "@verifyafrica/api-client/http/v2/activity-logs/activity-logs.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

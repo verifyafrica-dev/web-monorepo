@@ -17,7 +17,7 @@ import {
 	type UserActivateAccountPayload,
 	UserActivateAccountSchema,
 	UserActivateAccountSearchSchema,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	InputOTP,

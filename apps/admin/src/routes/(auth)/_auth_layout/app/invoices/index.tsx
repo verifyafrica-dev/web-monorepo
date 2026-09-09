@@ -9,7 +9,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAllInvoicesV2Query } from "#/api/http/v2/billing/billing.hooks";
-import type { Invoice } from "#/api/http/v2/billing/billing.types";
+import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import {
 	paginateItems,
 	TablePagination,

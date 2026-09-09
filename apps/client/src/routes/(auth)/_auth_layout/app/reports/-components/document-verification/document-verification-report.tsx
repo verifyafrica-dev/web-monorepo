@@ -1,4 +1,4 @@
-import type { DocumentVerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
+import type { DocumentVerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { asNonEmptyString } from "../../-utils";
 import { DocumentVerificationIdentityCard } from "./document-verification-identity-card";
 import { DocumentVerificationOutcome } from "./document-verification-outcome";

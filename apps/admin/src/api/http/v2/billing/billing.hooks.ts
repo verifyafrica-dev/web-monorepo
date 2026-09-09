@@ -21,7 +21,7 @@ import type {
 	PaginatedBillingInformationListResult,
 	PaginatedBillingPricingListResult,
 	PaginatedTenantInvoiceListResult,
-} from "./billing.types";
+} from "@verifyafrica/api-client/http/v2/billing/billing.types";
 
 const BILLING_V2_STALE_TIME = 60_000;
 

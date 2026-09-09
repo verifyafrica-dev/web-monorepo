@@ -3,7 +3,7 @@ import $http from "../../xhr";
 import type {
 	CustomMessageRequestPayload,
 	CustomMessageResult,
-} from "./mail.types";
+} from "@verifyafrica/api-client/http/v2/mail/mail.types";
 
 const MAIL_V2_ENDPOINTS = {
 	customMessage: "/v2/mail/custom-message/",

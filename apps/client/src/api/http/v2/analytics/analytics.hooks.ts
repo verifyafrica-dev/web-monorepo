@@ -8,7 +8,7 @@ import type {
 	AnalyticsStatementsListQuery,
 	PaginatedStatementsListResult,
 	PlatformAnalyticsPayload,
-} from "./analytics.types";
+} from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
 
 export const ANALYTICS_V2_QUERY_KEYS = {
 	all: ["analytics-v2"] as const,

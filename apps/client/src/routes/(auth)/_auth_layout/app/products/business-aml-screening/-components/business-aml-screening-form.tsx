@@ -42,7 +42,7 @@ import { VerificationConsentCheckbox } from "../../../-components/VerificationCo
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import type { SupportedCountry } from "#/api/http/v2/tenants/tenants.types";
+import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,

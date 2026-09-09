@@ -17,7 +17,7 @@ import type {
 	Wallet,
 	WalletListQuery,
 	WalletTransactionsQuery,
-} from "./wallet.types";
+} from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 
 const WALLET_V2_STALE_TIME = 60_000;
 

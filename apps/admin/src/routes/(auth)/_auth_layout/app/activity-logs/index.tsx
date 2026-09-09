@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAllActivityLogsV2Query } from "#/api/http/v2/activity-logs/activity-logs.hooks";
-import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.types";
+import type { ActivityLog } from "@verifyafrica/api-client/http/v2/activity-logs/activity-logs.types";
 import { useUserV2DetailQuery } from "#/api/http/v2/users/users.hooks";
 import {
 	TablePagination,

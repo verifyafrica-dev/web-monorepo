@@ -1,4 +1,4 @@
-import type { AdminUser, UserListSortBy } from "#/api/http/v2/users/users.types";
+import type { AdminUser, UserListSortBy } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { formatTenantDate } from "../tenants/-data";
 import { downloadCsv } from "../tenants/$tenantId/-data";
 

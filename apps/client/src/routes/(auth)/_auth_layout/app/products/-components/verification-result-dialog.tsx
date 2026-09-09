@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import type { VerificationRequest } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationRequest } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

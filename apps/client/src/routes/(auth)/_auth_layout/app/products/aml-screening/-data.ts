@@ -1,7 +1,7 @@
 import type {
 	VerificationRequestCreatePayload,
 	VerificationType,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { SHUFTI_CHOICES } from "@verifyafrica/ui/lib/constants";
 
 const AML_SCREENING_TYPE = "aml_screening" satisfies VerificationType;

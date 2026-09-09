@@ -1,4 +1,4 @@
-import type { Invoice } from "#/api/http/v2/billing/billing.types";
+import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { downloadCsv } from "../tenants/$tenantId/-data";
 import {
 	formatTenantMoney,

@@ -7,7 +7,7 @@ import { ACTIVITY_LOGS_V2_API } from "./activity-logs.api";
 import type {
 	ActivityLogsListQuery,
 	PaginatedActivityLogListResult,
-} from "./activity-logs.types";
+} from "@verifyafrica/api-client/http/v2/activity-logs/activity-logs.types";
 
 const ACTIVITY_LOGS_V2_STALE_TIME = 60_000;
 

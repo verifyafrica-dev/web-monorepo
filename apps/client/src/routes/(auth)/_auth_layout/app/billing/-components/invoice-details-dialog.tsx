@@ -144,13 +144,13 @@ export function InvoiceDetailsDialog({
 									</div>
 								</div>
 
-								{invoice.items.length > 0 ? (
+								{(invoice.items ?? []).length > 0 ? (
 									<>
 										<Separator />
 										<div>
 											<h3 className="mb-2 font-medium">Product Items</h3>
 											<div className="space-y-1 text-sm">
-												{invoice.items.map((item) => (
+												{(invoice.items ?? []).map((item) => (
 													<DetailRow
 														key={item.id}
 														label={`${item.description}${

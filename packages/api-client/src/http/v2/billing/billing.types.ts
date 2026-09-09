@@ -4,7 +4,7 @@ import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "@verifyafrica/api-client/http/shared";
+} from "../../shared";
 
 export const BillingListQuerySchema = z.object({
 	page: z.number().int().positive().optional(),
@@ -143,6 +143,11 @@ export interface InvoiceItem {
 export interface InvoiceListItem {
 	id: string;
 	tenant: string;
+	tenant_name?: string;
+	tenant_email?: string;
+	tenant_slug?: string;
+	tenant_stripe_customer_id?: string;
+	tenant_kyc_verified?: boolean;
 	invoice_id?: string;
 	stripe_invoice_id?: string;
 	stripe_status?: string;
@@ -160,7 +165,7 @@ export interface InvoiceListItem {
 
 /** Full invoice from detail endpoints (includes line items). */
 export interface Invoice extends InvoiceListItem {
-	items: InvoiceItem[];
+	items?: InvoiceItem[];
 }
 
 export type BillingInformationResponse = V2SuccessResponse<BillingInformation>;

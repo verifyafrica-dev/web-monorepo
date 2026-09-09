@@ -11,7 +11,7 @@ import {
 } from "@verifyafrica/ui/components/ui/table";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
-import type { VerificationPrice } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationPrice } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import {
 	createVerificationPriceDraft,
 	formatVerificationSettingsLabel,

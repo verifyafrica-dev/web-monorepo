@@ -9,7 +9,7 @@ import { useUserV2LoginMutation } from "#/api/http/v2/users/users.hooks";
 import {
 	type UserLoginPayload,
 	UserLoginSchema,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { MixedVerification } from "#/api/http/v2/verifications/verifications.types";
+import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export const MIXED_VERIFICATIONS_LIST_PARAMS = {
 	per_page: 100,

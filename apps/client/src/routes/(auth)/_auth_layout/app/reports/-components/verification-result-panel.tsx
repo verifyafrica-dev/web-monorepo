@@ -1,4 +1,4 @@
-import type { VerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { isPlainObject } from "@verifyafrica/ui/lib/validators";
 import { ReportDetailField } from "./report-detail-field";

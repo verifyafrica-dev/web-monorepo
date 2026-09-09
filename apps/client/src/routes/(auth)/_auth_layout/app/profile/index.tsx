@@ -23,7 +23,7 @@ import {
 	UserProfileUpdateFormSchema,
 	type UserProfileUpdateFormValues,
 	type UserSession,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {

@@ -4,7 +4,7 @@ import type {
 	PaginatedWebhookEventListResult,
 	WebhookEvent,
 	WebhookEventsListQuery,
-} from "./webhooks.types";
+} from "@verifyafrica/api-client/http/v2/webhooks/webhooks.types";
 
 const WEBHOOKS_V2_ENDPOINTS = {
 	events: "/v2/webhook/events/",

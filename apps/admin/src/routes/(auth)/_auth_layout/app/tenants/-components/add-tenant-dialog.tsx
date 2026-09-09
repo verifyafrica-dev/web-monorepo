@@ -11,7 +11,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useCreateBillingInformationV2Mutation } from "#/api/http/v2/billing/billing.hooks";
-import type { BillingPlan } from "#/api/http/v2/billing/billing.types";
+import type { BillingPlan } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { useCreateTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Button } from "@verifyafrica/ui/components/ui/button";

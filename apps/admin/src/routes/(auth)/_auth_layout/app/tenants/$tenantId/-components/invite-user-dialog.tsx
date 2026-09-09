@@ -12,7 +12,7 @@ import {
 	type TenantInvitationCreatePayload,
 	type TenantRole,
 	TenantRoleSchema,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

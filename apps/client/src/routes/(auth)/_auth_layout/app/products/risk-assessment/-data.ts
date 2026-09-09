@@ -1,7 +1,7 @@
 import type {
 	VerificationRequestCreatePayload,
 	VerificationType,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const RISK_ASSESSMENT_TYPE = "risk_assessment" satisfies VerificationType;
 

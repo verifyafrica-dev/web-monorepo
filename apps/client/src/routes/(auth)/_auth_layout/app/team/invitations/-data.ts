@@ -1,7 +1,7 @@
 import type {
 	InvitationStatus as ApiInvitationStatus,
 	TenantInvitation,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import type { TenantUserRole } from "../-data";
 
 export type InvitationStatus = "pending" | "accepted" | "expired" | "cancelled";

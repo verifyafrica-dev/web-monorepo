@@ -13,7 +13,7 @@ import type {
 	WalletListQuery,
 	WalletTransaction,
 	WalletTransactionsQuery,
-} from "./wallet.types";
+} from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

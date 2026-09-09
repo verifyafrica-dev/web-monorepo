@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import type {
 	Invoice,
 	PaymentStatus,
-} from "#/api/http/v2/billing/billing.types";
+} from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { useTenantInvoicesV2Query } from "#/api/http/v2/billing/billing.hooks";
 import {
 	paginateItems,

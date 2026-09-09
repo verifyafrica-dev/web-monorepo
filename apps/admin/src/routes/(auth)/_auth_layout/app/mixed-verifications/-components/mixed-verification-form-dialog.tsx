@@ -7,7 +7,7 @@ import {
 	useCreateMixedVerificationV2Mutation,
 	useUpdateMixedVerificationV2Mutation,
 } from "#/api/http/v2/verifications/verifications.hooks";
-import type { MixedVerification } from "#/api/http/v2/verifications/verifications.types";
+import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type {
 	MixedVerification,
 	MixedVerificationUpsertPayload,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { SHUFTI_VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 
 export const MIXED_VERIFICATION_TYPE_OPTIONS = Object.values(

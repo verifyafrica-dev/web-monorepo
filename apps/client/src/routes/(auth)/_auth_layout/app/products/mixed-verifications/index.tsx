@@ -6,7 +6,7 @@ import { useTenantMixedVerificationsV2Query } from "#/api/http/v2/verifications/
 import type {
 	MixedVerification,
 	VerificationRequest,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";

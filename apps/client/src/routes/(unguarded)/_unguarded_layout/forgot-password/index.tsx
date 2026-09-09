@@ -8,7 +8,7 @@ import { useUserV2ForgotPasswordMutation } from "#/api/http/v2/users/users.hooks
 import {
 	type UserForgotPasswordPayload,
 	UserForgotPasswordSchema,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";

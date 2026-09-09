@@ -4,7 +4,7 @@ import { WEBHOOKS_V2_API } from "./webhooks.api";
 import type {
 	PaginatedWebhookEventListResult,
 	WebhookEventsListQuery,
-} from "./webhooks.types";
+} from "@verifyafrica/api-client/http/v2/webhooks/webhooks.types";
 
 const WEBHOOKS_V2_STALE_TIME = 60_000;
 

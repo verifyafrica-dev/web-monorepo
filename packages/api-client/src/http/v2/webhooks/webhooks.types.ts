@@ -3,7 +3,7 @@ import { z } from "zod";
 import type {
 	V2AxiosError,
 	V2PaginatedSuccessResponse,
-} from "@verifyafrica/api-client/http/shared";
+} from "../../shared";
 
 export const WebhookEventsListQuerySchema = z.object({
 	page: z.number().int().positive().optional(),

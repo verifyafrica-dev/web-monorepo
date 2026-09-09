@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import {
 	KycPrimaryContactFormSchema,
 	type KycPrimaryContactFormValues,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import {
 	Select,
 	SelectContent,

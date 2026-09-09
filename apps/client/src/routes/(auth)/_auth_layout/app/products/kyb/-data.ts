@@ -1,7 +1,7 @@
 import type {
 	VerificationRequestCreatePayload,
 	VerificationType,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const KYB_VERIFICATION_TYPE = "kyb_screening" satisfies VerificationType;
 

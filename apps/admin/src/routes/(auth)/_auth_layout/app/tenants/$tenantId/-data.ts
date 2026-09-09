@@ -3,7 +3,7 @@ import type {
 	SupportedCountry,
 	TenantDetail,
 	TenantVerificationConfigRow,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import type { KycDisplayStatus } from "../-data";
 import { formatAdminNumber } from "../../-data";
 import { formatTenantDate } from "../-data";

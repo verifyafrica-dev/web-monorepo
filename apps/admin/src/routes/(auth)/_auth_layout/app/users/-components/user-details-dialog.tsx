@@ -5,7 +5,7 @@ import {
 	EnvelopeSimpleIcon,
 	PhoneIcon,
 } from "@phosphor-icons/react";
-import type { AdminUser } from "#/api/http/v2/users/users.types";
+import type { AdminUser } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";

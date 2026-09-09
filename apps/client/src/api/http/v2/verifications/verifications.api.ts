@@ -29,7 +29,7 @@ import type {
 	VerificationSendEmailData,
 	VerificationSupportedCountriesData,
 	VerificationTypeDefinition,
-} from "./verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

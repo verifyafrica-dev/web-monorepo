@@ -11,7 +11,7 @@ import {
 import {
 	AdminChangePasswordWithOtpFormSchema,
 	type AdminChangePasswordWithOtpFormValues,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import {

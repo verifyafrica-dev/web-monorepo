@@ -35,7 +35,7 @@ import type {
 	TenantAPIKey,
 	SupportedCountry,
 	TenantDetail,
-} from "./tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 
 const TENANTS_V2_STALE_TIME = 60_000;
 

@@ -7,6 +7,7 @@
     "paths": {
       "country-state-city": ["../../packages/ui/src/lib/country-state-city.ts"],
       "@verifyafrica/ui/*": ["../../packages/ui/src/*"],
+      "@verifyafrica/api-client/*": ["../../packages/api-client/src/*"],
       "#/*": ["./src/*"],
       "@/*": ["./src/*"]
     },

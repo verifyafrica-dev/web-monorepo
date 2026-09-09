@@ -13,14 +13,14 @@ import {
 import {
 	normalizeComplianceData,
 	type KYBApplication,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import type {
 	KycComplianceSection,
 	KycSectionUpdatePayload,
 	SectionRejectedReason,
 	KycSummary,
 	TenantDetail,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { getUserTenantMembership } from "../../team/-data";
 import { useAuthStore } from "#/stores/auth-store";
 import type { KycSectionPath } from "../-data";

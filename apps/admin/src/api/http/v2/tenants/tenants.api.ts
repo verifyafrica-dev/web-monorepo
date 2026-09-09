@@ -42,7 +42,7 @@ import type {
 	TenantWebhook,
 	TenantWebhookCreatePayload,
 	TenantWebhookUpdatePayload,
-} from "./tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
 

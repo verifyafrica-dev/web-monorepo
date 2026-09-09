@@ -6,7 +6,7 @@ import {
 	useCreateBillingInformationV2Mutation,
 	useUpdateTenantBillingInformationV2Mutation,
 } from "#/api/http/v2/billing/billing.hooks";
-import type { BillingInformation } from "#/api/http/v2/billing/billing.types";
+import type { BillingInformation } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

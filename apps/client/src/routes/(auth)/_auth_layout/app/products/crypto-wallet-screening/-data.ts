@@ -1,7 +1,7 @@
 import type {
 	VerificationRequestCreatePayload,
 	VerificationType,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const CRYPTO_WALLET_SCREENING_TYPE =
 	"crypto_wallet_screening" satisfies VerificationType;

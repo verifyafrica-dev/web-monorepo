@@ -1,5 +1,5 @@
-import type { VerificationRequestCreatePayload } from "#/api/http/v2/verifications/verifications.types";
-import type { VerificationType } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationRequestCreatePayload } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type { VerificationType } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import {
 	SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES,
 	SHUFTI_CHOICES,

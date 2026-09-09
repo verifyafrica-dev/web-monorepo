@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { useUpdateTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
-import { TenantUpdateSchema } from "#/api/http/v2/tenants/tenants.types";
+import { TenantUpdateSchema } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {

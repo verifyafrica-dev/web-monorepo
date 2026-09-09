@@ -1,10 +1,10 @@
 import $http from "#/api/http/xhr";
-import type { BillingPlan } from "#/api/http/v2/billing/billing.types";
-import type { PlatformAnalyticsPayload } from "#/api/http/v2/analytics/analytics.types";
+import type { BillingPlan } from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import type { PlatformAnalyticsPayload } from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
 import type {
 	KycStatus,
 	TenantAllListItem,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 
 export type BillingPlanFilter = "all" | BillingPlan;
 export type KycStatusFilter = "all" | "verified" | "pending" | "not_started";

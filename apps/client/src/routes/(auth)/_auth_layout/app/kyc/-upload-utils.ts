@@ -1,4 +1,4 @@
-import type { UploadedDocument } from "#/api/http/v2/kyc/kyc.types";
+import type { UploadedDocument } from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import {
 	buildKycStorageFolder,
 	deleteUploadedFile,

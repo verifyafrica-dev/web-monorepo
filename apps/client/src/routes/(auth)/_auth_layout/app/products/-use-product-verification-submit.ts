@@ -5,7 +5,7 @@ import { useCreateVerificationRequestV2Mutation } from "#/api/http/v2/verificati
 import type {
 	VerificationRequest,
 	VerificationRequestCreatePayload,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import {
 	buildLinkResult,

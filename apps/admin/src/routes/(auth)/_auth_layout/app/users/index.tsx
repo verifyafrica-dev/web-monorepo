@@ -13,7 +13,7 @@ import { useUsersV2ListQuery } from "#/api/http/v2/users/users.hooks";
 import type {
 	AdminUser,
 	UserListSortBy,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import {
 	TablePagination,
 	TablePaginationSkeleton,

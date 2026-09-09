@@ -1,4 +1,4 @@
-import type { VerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { asNonEmptyString, asRecord } from "../-utils";
 import { ReportOverviewCard } from "./report-overview-card";
 import { VerificationResultPanel } from "./verification-result-panel";

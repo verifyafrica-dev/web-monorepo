@@ -5,7 +5,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
+import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { useTenantTransactionsV2Query } from "#/api/http/v2/wallet/wallet.hooks";
 import {
 	TablePagination,

@@ -5,7 +5,7 @@ import { TENANTS_V2_QUERY_KEYS } from "#/api/http/v2/tenants/tenants.hooks";
 import type {
 	KycComplianceSection,
 	KycSectionUpdatePayload,
-} from "#/api/http/v2/tenants/tenants.types";
+} from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 
 const KYC_STALE_TIME = 60_000;
 

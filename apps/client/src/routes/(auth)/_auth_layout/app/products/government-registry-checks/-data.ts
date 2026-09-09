@@ -1,7 +1,7 @@
 import type {
 	VerificationRequestCreatePayload,
 	VerificationType,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 
 export const REGISTRY_COUNTRY_CODES = ["ng", "za", "gh", "ke"] as const;

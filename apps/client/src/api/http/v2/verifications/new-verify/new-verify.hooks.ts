@@ -8,7 +8,7 @@ import {
 import type {
 	VerificationRequest,
 	VerificationRequestCreatePayload,
-} from "../verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATIONS_V2_QUERY_KEYS } from "../verifications.hooks";
 import { NEW_VERIFY_V2_API } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.api";
 import type {

@@ -1,5 +1,5 @@
-import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
-import type { WalletTransactionsQuery } from "#/api/http/v2/wallet/wallet.types";
+import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
+import type { WalletTransactionsQuery } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { formatTenantDate } from "../tenants/-data";
 import { formatTenantMoney } from "../tenants/$tenantId/-data";
 import { downloadCsv } from "../tenants/$tenantId/-data";

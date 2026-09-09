@@ -4,11 +4,11 @@ import type {
 	V2MessageSuccessResponse,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "@verifyafrica/api-client/http/shared";
+} from "../../shared";
 import type {
 	BillingInformationStatus,
 	BillingPlan,
-} from "#/api/http/v2/billing/billing.types";
+} from "../billing/billing.types";
 
 export interface SupportedCountry {
 	code: string;
@@ -33,6 +33,7 @@ export const InvitationStatusSchema = z.enum([
 	"accepted",
 	"expired",
 	"canceled",
+	"cancelled",
 ]);
 export type InvitationStatus = z.infer<typeof InvitationStatusSchema>;
 
@@ -503,7 +504,7 @@ const KYC_DATA_URL_PATTERN =
 
 function isValidKycDocumentUrl(value: string) {
 	if (KYC_DATA_URL_PATTERN.test(value)) {
-		return import.meta.env.DEV;
+		return process.env.NODE_ENV !== "production";
 	}
 
 	return z.url().safeParse(value).success;

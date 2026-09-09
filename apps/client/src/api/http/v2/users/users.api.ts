@@ -29,7 +29,7 @@ import type {
 	UserSession,
 	UserVerifyForgotPasswordTokenPayload,
 	VerifyForgotPasswordTokenResponseData,
-} from "./users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 
 const USER_V2_ENDPOINTS = {
 	list: "/v2/users/",

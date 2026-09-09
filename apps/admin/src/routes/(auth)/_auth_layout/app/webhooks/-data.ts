@@ -1,5 +1,5 @@
-import type { WebhookEventsListQuery } from "#/api/http/v2/webhooks/webhooks.types";
-import type { WebhookEvent } from "#/api/http/v2/webhooks/webhooks.types";
+import type { WebhookEventsListQuery } from "@verifyafrica/api-client/http/v2/webhooks/webhooks.types";
+import type { WebhookEvent } from "@verifyafrica/api-client/http/v2/webhooks/webhooks.types";
 import { env } from "#/config/env";
 import { formatTenantDate } from "../tenants/-data";
 

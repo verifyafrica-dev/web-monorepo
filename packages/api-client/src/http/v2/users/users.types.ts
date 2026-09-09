@@ -5,7 +5,7 @@ import type {
 	V2MessageSuccessResponse,
 	V2PaginatedSuccessResponse,
 	V2SuccessResponse,
-} from "@verifyafrica/api-client/http/shared";
+} from "../../shared";
 import {
 	isBlockedregisterEmailDomain,
 	PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,
@@ -38,6 +38,7 @@ export type UserLoginPayload = z.infer<typeof UserLoginSchema>;
 
 export type UserLoginMutationInput = {
 	payload: UserLoginPayload;
+	rememberMe?: boolean;
 };
 
 export const UserRegisterSchema = z.object({
@@ -57,6 +58,12 @@ export const UserRegisterSchema = z.object({
 });
 
 export type UserRegisterPayload = z.infer<typeof UserRegisterSchema>;
+
+/** Form schema (no tenant_email — set from the user's email on submit). */
+export const UserRegisterFormSchema = UserRegisterSchema.omit({
+	tenant_email: true,
+});
+export type UserRegisterFormValues = z.infer<typeof UserRegisterFormSchema>;
 
 export const UserActivateAccountSchema = z.object({
 	email: z.email({ message: "Invalid email address" }),
@@ -338,6 +345,8 @@ export interface UserTenantMembership {
 	enabled_countries?: string[];
 	role: UserRole;
 	date_added: string;
+	/** True when the user created this organization (not only invited into it). */
+	is_owner?: boolean;
 }
 
 export interface UserDetail {
@@ -351,6 +360,12 @@ export interface UserDetail {
 	is_active?: boolean;
 	last_login?: string | null;
 	created_at: string;
+}
+
+export interface PaginatedUserDetailListResponse {
+	next: string | null;
+	previous: string | null;
+	results: UserDetail[];
 }
 
 export interface UserSession {

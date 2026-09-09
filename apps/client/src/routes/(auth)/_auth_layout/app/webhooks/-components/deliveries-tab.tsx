@@ -6,7 +6,7 @@ import {
 	useRetryTenantWebhookEventV2Mutation,
 	useTenantWebhookEventsV2Query,
 } from "#/api/http/v2/tenants/tenants.hooks";
-import type { TenantWebhookEvent } from "#/api/http/v2/tenants/tenants.types";
+import type { TenantWebhookEvent } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import {
 	TablePagination,
 	TablePaginationSkeleton,

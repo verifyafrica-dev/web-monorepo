@@ -13,7 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import type { ComponentType } from "react";
 
-import { VERIFICATION_TYPES_BY_PRODUCT } from "#/api/http/v2/verifications/verifications.types";
+import { VERIFICATION_TYPES_BY_PRODUCT } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export const PRODUCT_ICON_WEIGHT = "duotone" as const satisfies IconWeight;
 

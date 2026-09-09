@@ -8,7 +8,7 @@ import { ProofImagePreviewDialog } from "./verification-proofs/proof-image-previ
 import type {
 	GovernmentRegistryChecksVerificationRequestDetail,
 	GovernmentRegistryChecksResponsePayload,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 type RenderField = {
 	key: string;

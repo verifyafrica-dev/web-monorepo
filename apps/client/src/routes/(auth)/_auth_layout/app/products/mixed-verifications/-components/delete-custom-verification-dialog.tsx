@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 import { useDeleteMixedVerificationV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
-import type { MixedVerification } from "#/api/http/v2/verifications/verifications.types";
+import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import {
 	AlertDialog,
 	AlertDialogCancel,

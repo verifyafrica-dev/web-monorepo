@@ -1,4 +1,4 @@
-import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.types";
+import type { ActivityLog } from "@verifyafrica/api-client/http/v2/activity-logs/activity-logs.types";
 import { formatTenantDate } from "../tenants/-data";
 import { downloadCsv } from "../tenants/$tenantId/-data";
 

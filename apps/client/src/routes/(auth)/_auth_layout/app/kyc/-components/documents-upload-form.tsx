@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import type {
 	KYBDocuments,
 	UploadedDocument,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import { useRegisterTenantComplianceDocumentV2Mutation, useDeleteTenantComplianceDocumentV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
-import type { KycDocumentKey } from "#/api/http/v2/tenants/tenants.types";
+import type { KycDocumentKey } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";

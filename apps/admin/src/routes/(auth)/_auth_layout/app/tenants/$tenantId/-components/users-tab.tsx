@@ -11,7 +11,7 @@ import {
 	useTenantUsersV2Query,
 	useUpdateTenantUserMembershipV2Mutation,
 } from "#/api/http/v2/tenants/tenants.hooks";
-import type { TenantUser } from "#/api/http/v2/tenants/tenants.types";
+import type { TenantUser } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import {
 	paginateItems,
 	TablePagination,

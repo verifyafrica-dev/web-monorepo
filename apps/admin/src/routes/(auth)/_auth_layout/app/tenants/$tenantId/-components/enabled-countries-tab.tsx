@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { SupportedCountry } from "#/api/http/v2/tenants/tenants.types";
+import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";

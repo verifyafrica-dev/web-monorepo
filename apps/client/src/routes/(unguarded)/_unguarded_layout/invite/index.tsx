@@ -23,7 +23,7 @@ import {
 	AcceptInvitationNewUserFormSchema,
 	type AcceptInvitationNewUserFormValues,
 	AcceptInvitationSearchSchema,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { useVerifyInvitationV2Query } from "#/api/http/v2/tenants/tenants.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";

@@ -1,7 +1,7 @@
 import type {
 	VerificationBatch,
 	VerificationRequest,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { isPlainObject } from "@verifyafrica/ui/lib/validators";
 
 export type VerificationReport = {

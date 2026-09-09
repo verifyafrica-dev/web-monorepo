@@ -6,7 +6,7 @@ import {
 	KycBasicInformationFormSchema,
 	type KycBasicInformationFormValues,
 	normalizeWebsiteUrl,
-} from "#/api/http/v2/kyc/kyc.types";
+} from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import {
 	Field,
 	FieldError,

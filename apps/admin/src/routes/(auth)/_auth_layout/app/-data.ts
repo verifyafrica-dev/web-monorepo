@@ -1,8 +1,8 @@
 import type {
 	AnalyticsDateRangeQuery,
 	PlatformAnalyticsPayload,
-} from "#/api/http/v2/analytics/analytics.types";
-import { VERIFICATION_TYPES_BY_PRODUCT } from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
+import { VERIFICATION_TYPES_BY_PRODUCT } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export type TimeRange = "all" | "7d" | "30d" | "90d";
 

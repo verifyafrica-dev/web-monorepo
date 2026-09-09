@@ -5,7 +5,7 @@ import {
 	useTenantProductSettingsV2Query,
 	useUpdateTenantProductSettingsV2Mutation,
 } from "#/api/http/v2/tenants/tenants.hooks";
-import type { HostedCaptureVerificationType } from "#/api/http/v2/tenants/tenants.types";
+import type { HostedCaptureVerificationType } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";

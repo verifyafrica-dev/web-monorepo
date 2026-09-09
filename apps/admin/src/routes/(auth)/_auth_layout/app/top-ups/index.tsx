@@ -11,7 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { WALLET_V2_API } from "#/api/http/v2/wallet/wallet.api";
 import { useAllTransactionsV2Query } from "#/api/http/v2/wallet/wallet.hooks";
-import type { WalletTransaction } from "#/api/http/v2/wallet/wallet.types";
+import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import {
 	TablePagination,
 	TablePaginationSkeleton,

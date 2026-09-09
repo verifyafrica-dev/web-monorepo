@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { VERIFICATIONS_V2_API } from "#/api/http/v2/verifications/verifications.api";
-import type { VerificationProofs } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationProofs } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";

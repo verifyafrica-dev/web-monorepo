@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useSupportedCountriesV2Query } from "#/api/http/v2/tenants/tenants.hooks";
-import type { SupportedCountry } from "#/api/http/v2/tenants/tenants.types";
+import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { useCurrentTenant } from "../team/-data";
 
 export function filterCountriesByTenant(

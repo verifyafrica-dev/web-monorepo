@@ -1,4 +1,4 @@
-import type { VerificationPrice } from "#/api/http/v2/verifications/verifications.types";
+import type { VerificationPrice } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const COUNTRY_NAMES: Record<string, string> = {
 	ng: "Nigeria",

@@ -14,7 +14,7 @@ import { useUserV2RegisterMutation } from "#/api/http/v2/users/users.hooks";
 import {
 	UserRegisterFormSchema,
 	type UserRegisterFormValues,
-} from "#/api/http/v2/users/users.types";
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
 import { Input } from "@verifyafrica/ui/components/ui/input";

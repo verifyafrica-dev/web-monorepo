@@ -5,7 +5,7 @@ import { useStartMixedVerificationV2Mutation } from "#/api/http/v2/verifications
 import type {
 	MixedVerification,
 	VerificationRequest,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,

@@ -3,11 +3,11 @@ import { z } from "zod";
 import {
 	VERIFICATION_STATUS_OPTIONS,
 	VERIFICATION_TYPE_OPTIONS,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type {
 	VerificationBatchListQuery,
 	VerificationListQuery,
-} from "#/api/http/v2/verifications/verifications.types";
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export const reportsSearchSchema = z.object({
 	tab: z.enum(["individual", "batch"]).optional(),
