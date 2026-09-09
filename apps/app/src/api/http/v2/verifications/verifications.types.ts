@@ -110,9 +110,6 @@ export type MixedVerificationUpsertPayload = z.infer<
 	typeof MixedVerificationUpsertSchema
 >;
 
-export interface VerificationProofUrlObject {
-	proof?: string;
-}
 
 export interface VerificationRequestDetail extends VerificationRequest {
 	proofs_available: boolean;
