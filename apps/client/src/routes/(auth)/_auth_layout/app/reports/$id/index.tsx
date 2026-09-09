@@ -9,6 +9,7 @@ import {
 	type AddressVerificationRequestDetail,
 	type AmlScreeningVerificationRequestDetail,
 	type DocumentVerificationRequestDetail,
+	type FacialScreeningVerificationRequestDetail,
 	type GovernmentRegistryChecksVerificationRequestDetail,
 	isAmlScreeningVerificationDetail,
 	VERIFICATION_TYPES_BY_PRODUCT,
@@ -145,7 +146,13 @@ function VerificationReportDetailPage() {
 				verificationType,
 			):
 			case verificationType === "facial_screening":
-				return <FacialScreeningReport verification={verificationData} />;
+				return (
+					<FacialScreeningReport
+						verification={
+							verificationData as FacialScreeningVerificationRequestDetail
+						}
+					/>
+				);
 			case isInProductGroup(
 				VERIFICATION_TYPES_BY_PRODUCT["KYB Screening"],
 				verificationType,

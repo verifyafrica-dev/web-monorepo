@@ -585,6 +585,16 @@ export interface AddressVerificationResultAddress {
 	full_address?: number | null;
 }
 
+export interface FaceVerificationDataFace {
+	duplicate_account_detected?: boolean | null;
+	age?: string | number;
+}
+
+export interface FaceVerificationResultFace {
+	face?: number | null;
+	age?: number | null;
+}
+
 export interface DocumentVerificationResultDocument {
 	document?: number | null;
 	document_country?: number | null;
@@ -682,11 +692,13 @@ export interface VerificationResponseData {
 	verification_data?: {
 		document?: DocumentVerificationDataDocument;
 		address?: AddressVerificationDataAddress;
+		face?: FaceVerificationDataFace;
 		background_checks?: AmlVerificationData["background_checks"];
 	};
 	verification_result?: {
 		document?: DocumentVerificationResultDocument;
 		address?: AddressVerificationResultAddress;
+		face?: number | FaceVerificationResultFace | null;
 		background_checks?: boolean | string | number;
 	};
 	info?: {
@@ -740,6 +752,19 @@ export function isAddressVerificationDetail(
 	verification: VerificationRequestDetail,
 ): verification is AddressVerificationRequestDetail {
 	return verification.verification_type === "address_verification";
+}
+
+export type FacialScreeningVerificationRequestDetail = Omit<
+	VerificationRequestDetail,
+	"verification_type"
+> & {
+	verification_type: "face_match";
+};
+
+export function isFacialScreeningVerificationDetail(
+	verification: VerificationRequestDetail,
+): verification is FacialScreeningVerificationRequestDetail {
+	return verification.verification_type === "face_match";
 }
 
 type GovernmentRegistryChecksVerificationType =
