@@ -35,17 +35,17 @@ export function ProofImagePreviewDialog({
 				</button>
 			</DialogTrigger>
 			<DialogContent
-				className=" bg-background/95 p-4"
+				className="flex max-h-[90dvh] min-w-1/2 max-w-8/10 flex-col overflow-hidden bg-background/95 p-4"
 				showCloseButton
 			>
-				<DialogHeader>
+				<DialogHeader className="shrink-0">
 					<DialogTitle className="font-semibold">{label}</DialogTitle>
 				</DialogHeader>
-				<div className="flex h-full items-center justify-center overflow-auto pb-6">
+				<div className="min-h-0 flex-1 overflow-y-auto">
 					<img
 						src={src}
 						alt={alt}
-						className="max-h-full max-w-full object-contain"
+						className="h-auto w-full object-contain"
 					/>
 				</div>
 			</DialogContent>

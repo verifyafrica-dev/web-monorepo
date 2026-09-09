@@ -573,6 +573,18 @@ export interface DocumentVerificationDataDocument {
 	supported_types?: string[];
 }
 
+export interface AddressVerificationDataAddress {
+	full_address?: string;
+	selected_type?: string[];
+	supported_types?: string[];
+}
+
+export interface AddressVerificationResultAddress {
+	address_document?: number | null;
+	address_must_not_be_expired?: number | null;
+	full_address?: number | null;
+}
+
 export interface DocumentVerificationResultDocument {
 	document?: number | null;
 	document_country?: number | null;
@@ -669,10 +681,12 @@ export interface VerificationResponseData {
 	status?: boolean | string;
 	verification_data?: {
 		document?: DocumentVerificationDataDocument;
+		address?: AddressVerificationDataAddress;
 		background_checks?: AmlVerificationData["background_checks"];
 	};
 	verification_result?: {
 		document?: DocumentVerificationResultDocument;
+		address?: AddressVerificationResultAddress;
 		background_checks?: boolean | string | number;
 	};
 	info?: {
