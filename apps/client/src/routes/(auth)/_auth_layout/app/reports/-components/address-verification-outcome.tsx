@@ -1,4 +1,4 @@
-import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type { AddressVerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import {
 	Card,
@@ -76,7 +76,7 @@ function ResultBadge({ value }: { value: unknown }) {
 export function AddressVerificationOutcome({
 	verification,
 }: {
-	verification: VerificationRequestDetail;
+	verification: AddressVerificationRequestDetail;
 }) {
 	const responseData = verification.response_data;
 	const addressResult = responseData.verification_result?.address;

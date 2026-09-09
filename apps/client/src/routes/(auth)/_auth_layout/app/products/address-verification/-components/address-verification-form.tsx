@@ -39,7 +39,7 @@ import {
 	buildAddressVerificationLinkPayload,
 	DEFAULT_ADDRESS_DOCUMENT_TYPES,
 } from "../-data";
-import { AddressDocumentTypesMultiCombobox } from "@verifyafrica/ui/components/ui-extended/address-document-types-combobox";
+import { AddressDocumentTypeCombobox, AddressDocumentTypesMultiCombobox } from "@verifyafrica/ui/components/ui-extended/address-document-types-combobox";
 import {
 	SHUFTI_ADDRESS_SUPPORTED_TYPES,
 	type ShuftiAddressSupportedType,
@@ -52,16 +52,18 @@ import {
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
 
-const addressDocumentTypesSchema = z
-	.array(z.enum(SHUFTI_ADDRESS_SUPPORTED_TYPES))
-	.min(1, "Select at least one document type");
+const addressDocumentTypeSchema = z.enum(SHUFTI_ADDRESS_SUPPORTED_TYPES, {
+	error: "Select a document type",
+});
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
 	address: z.string().trim().min(1, "Address is required"),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
-	documentTypes: addressDocumentTypesSchema,
+	documentTypes: z
+		.array(z.enum(SHUFTI_ADDRESS_SUPPORTED_TYPES))
+		.min(1, "Select at least one document type"),
 	verificationInstructions: z.string(),
 	consent: verificationConsentSchema,
 });
@@ -70,7 +72,7 @@ const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
 	address: z.string().trim().min(1, "Address is required"),
-	documentTypes: addressDocumentTypesSchema,
+	documentType: addressDocumentTypeSchema,
 	consent: verificationConsentSchema,
 });
 
@@ -129,7 +131,7 @@ export function AddressVerificationForm() {
 			email: "",
 			country: "",
 			address: "",
-			documentTypes: DEFAULT_ADDRESS_DOCUMENT_TYPES,
+			documentType: "" as ShuftiAddressSupportedType | "",
 			consent: false,
 		},
 		validators: {
@@ -442,24 +444,23 @@ export function AddressVerificationForm() {
 								</directForm.Field>
 							</FieldGroup>
 
-							<directForm.Field name="documentTypes">
+							<directForm.Field name="documentType">
 								{(field) => (
 									<Field className="gap-1.5">
-										<FieldLabel htmlFor="address-verification-direct-document-types">
-											Allowed document types
+										<FieldLabel htmlFor="address-verification-direct-document-type">
+											Document type
 										</FieldLabel>
-										<AddressDocumentTypesMultiCombobox
-											id="address-verification-direct-document-types"
+										<AddressDocumentTypeCombobox
+											id="address-verification-direct-document-type"
 											value={field.state.value}
 											onValueChange={(next) =>
 												field.handleChange(
-													next as ShuftiAddressSupportedType[],
+													next as ShuftiAddressSupportedType,
 												)
 											}
 										/>
 										<FieldDescription>
-											Tell the provider which proof types this document may
-											match. Recommended types are shown first.
+											Select the type of proof you are uploading.
 										</FieldDescription>
 									</Field>
 								)}

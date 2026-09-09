@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
+	type AddressVerificationRequestDetail,
 	type AmlScreeningVerificationRequestDetail,
 	type DocumentVerificationRequestDetail,
 	type GovernmentRegistryChecksVerificationRequestDetail,
@@ -134,7 +135,11 @@ function VerificationReportDetailPage() {
 				VERIFICATION_TYPES_BY_PRODUCT["Address Verification"],
 				verificationType,
 			):
-				return <AddressVerificationReport verification={verificationData} />;
+				return (
+					<AddressVerificationReport
+						verification={verificationData as AddressVerificationRequestDetail}
+					/>
+				);
 			case isInProductGroup(
 				VERIFICATION_TYPES_BY_PRODUCT["Facial Screening"],
 				verificationType,

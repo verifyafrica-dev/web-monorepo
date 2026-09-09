@@ -23,8 +23,8 @@ export function FullJsonResponse({
 		errorMessage: "Unable to copy JSON response.",
 	});
 	const json = useMemo(
-		() => JSON.stringify(verification.response_data, null, 2),
-		[verification.response_data],
+		() => JSON.stringify(verification, null, 2),
+		[verification],
 	);
 
 	return (

@@ -729,6 +729,19 @@ export function isDocumentVerificationDetail(
 	return verification.verification_type === "id_document";
 }
 
+export type AddressVerificationRequestDetail = Omit<
+	VerificationRequestDetail,
+	"verification_type"
+> & {
+	verification_type: "address_verification";
+};
+
+export function isAddressVerificationDetail(
+	verification: VerificationRequestDetail,
+): verification is AddressVerificationRequestDetail {
+	return verification.verification_type === "address_verification";
+}
+
 type GovernmentRegistryChecksVerificationType =
 	| (typeof VERIFICATION_TYPES_BY_PRODUCT)["Government Registry Checks"][number]
 	| "government_registry_checks"

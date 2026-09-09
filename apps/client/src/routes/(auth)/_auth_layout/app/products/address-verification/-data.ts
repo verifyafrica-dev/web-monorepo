@@ -22,7 +22,7 @@ type DirectFormValues = {
 	email: string;
 	country: string;
 	address: string;
-	documentTypes: ShuftiAddressSupportedType[];
+	documentType: ShuftiAddressSupportedType;
 };
 
 export const DEFAULT_ADDRESS_DOCUMENT_TYPES = [
@@ -72,7 +72,10 @@ export function buildAddressVerificationDirectPayload(
 			language: "EN",
 			email: values.email.trim(),
 			address: {
-				...addressPayload(values),
+				...addressPayload({
+					address: values.address,
+					documentTypes: [values.documentType],
+				}),
 				proof,
 			},
 		},
