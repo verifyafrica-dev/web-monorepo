@@ -20,6 +20,7 @@ import {
 } from "../-data";
 import { ReportDetailField } from "./report-detail-field";
 import { VerificationStatusBadge } from "./verification-badges";
+import { getCountryName } from "country-state-city";
 
 type VerificationMetadataCardProps = {
 	verification: VerificationRequestDetail;
@@ -49,7 +50,9 @@ export function VerificationMetadataCard({
 			toast.error("Unable to copy verification link.");
 		}
 	}
+
 	console.log(verification);
+
 	return (
 		<Card className="bg-muted/20">
 			<CardHeader>
@@ -99,6 +102,26 @@ export function VerificationMetadataCard({
 						label="Reference"
 						value={verification.reference}
 						mono
+					/>
+				) : null}
+				{verification.response_data.event ? (
+					<ReportDetailField
+						label="Event"
+						value={verification.response_data.event}
+						mono
+					/>
+				) : null}
+				{verification.input_data.customer_unique_id ? (
+					<ReportDetailField
+						label="Customer Unique ID"
+						value={verification.input_data.customer_unique_id}
+					/>
+				) : null}
+
+				{verification.response_data.declined_reason ? (
+					<ReportDetailField
+						label="Declined Reason"
+						value={verification.response_data.declined_reason}
 					/>
 				) : null}
 

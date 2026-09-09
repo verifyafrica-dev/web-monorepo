@@ -4,7 +4,22 @@ import {
 	DownloadSimpleIcon,
 	PlusIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import {
+	type AmlScreeningVerificationRequestDetail,
+	type DocumentVerificationRequestDetail,
+	type GovernmentRegistryChecksVerificationRequestDetail,
+	isAmlScreeningVerificationDetail,
+	VERIFICATION_TYPES_BY_PRODUCT,
+	type VerificationRequestDetail,
+	VerificationStatusSchema,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { Button } from "@verifyafrica/ui/components/ui/button";
+import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
+import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
+import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
+import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useMemo, useRef } from "react";
 import { toast } from "sonner";
 
@@ -12,34 +27,19 @@ import {
 	useRefreshVerificationStatusV2Mutation,
 	useVerificationRequestDetailV2Query,
 } from "#/api/http/v2/verifications/verifications.hooks";
-import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
-import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
-import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
-import { cn } from "@verifyafrica/ui/lib/utils";
-import {
-	type VerificationRequestDetail,
-	VERIFICATION_TYPES_BY_PRODUCT,
-	isAmlScreeningVerificationDetail,
-	type AmlScreeningVerificationRequestDetail,
-	type DocumentVerificationRequestDetail,
-	type GovernmentRegistryChecksVerificationRequestDetail,
-} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
-import { AmlScreeningReport } from "../-components/aml-screening/aml-screening-report";
+import { getProductSlugForVerificationType } from "../../products/-data";
 import { AddressVerificationReport } from "../-components/address-verification-report";
+import { AmlScreeningReport } from "../-components/aml-screening/aml-screening-report";
 import { BusinessAmlScreeningReport } from "../-components/business-aml-screening-report";
 import { CryptoWalletScreeningReport } from "../-components/crypto-wallet-screening-report";
 import { DocumentVerificationReport } from "../-components/document-verification/document-verification-report";
 import { FacialScreeningReport } from "../-components/facial-screening-report";
+import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
 import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks-report";
 import { KybReport } from "../-components/kyb-report";
 import { RiskAssessmentReport } from "../-components/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";
 import { VerificationProofsSection } from "../-components/verification-proofs/verification-proofs-section";
-import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
-import { VerificationStatusSchema } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
-import { getProductSlugForVerificationType } from "../../products/-data";
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/reports/$id/")({
 	head: () => ({

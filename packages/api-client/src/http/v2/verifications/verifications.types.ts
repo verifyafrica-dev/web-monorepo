@@ -24,17 +24,19 @@ export interface VerificationRequest {
 	id: string;
 	verification_type: VerificationType | string;
 	status: VerificationStatus | string;
-	input_data: Record<string, unknown>;
-	response_data: Record<string, unknown>;
+	input_data: VerificationInputData;
+	response_data: VerificationResponseData;
 	cost_charged: string;
 	currency: string;
 	created_at: string;
+	submitted_at: string | null;
 	batch_id: string | null;
 	reference?: string;
 	source?: string;
 	link?: VerificationLink | null;
 	email_sent_at?: string | null;
-	submitted_at?: string | null;
+	by_api: boolean | null;
+	api_key_id: string | null;
 }
 
 export interface VerificationProofUrlObject {
@@ -349,82 +351,348 @@ export interface PaginatedVerificationTypePriceListResult {
 
 export type VerificationsApiErrorResponse = V2AxiosError;
 
-type UnknownRecord = Record<string, unknown>;
+export interface VerificationInputDataBase {
+	email?: string;
+	country?: string;
+	language?: string;
+	ttl?: number;
+	reference?: string;
+	customer_unique_id?: string;
+}
 
-type AmlBackgroundChecksName = {
+export interface VerificationCollectConfig {
+	dob?: boolean;
+	age?: boolean;
+	gender?: boolean;
+	backside_proof_required?: boolean;
+	verification_instructions?: string;
+}
+
+export interface DocumentVerificationInputName {
+	first_name?: string;
+	last_name?: string;
+	fuzzy_match?: string;
+}
+
+export interface DocumentVerificationInputDocument {
+	name?: DocumentVerificationInputName;
+	proof?: string;
+	backside_proof?: string;
+	allow_online?: string;
+	allow_offline?: string;
+	verification_mode?: string;
+	fetch_enhanced_data?: string;
+	backside_proof_required?: string;
+	dob?: string;
+	age?: number | string;
+	gender?: string;
+}
+
+export interface DocumentVerificationInputData extends VerificationInputDataBase {
+	document?: DocumentVerificationInputDocument;
+	collect?: VerificationCollectConfig;
+}
+
+export interface AddressVerificationInputAddress {
+	full_address?: string;
+	proof?: string;
+	supported_types?: string[];
+	address_fuzzy_match?: string;
+	verification_mode?: string;
+}
+
+export interface AddressVerificationInputData extends VerificationInputDataBase {
+	address?: AddressVerificationInputAddress;
+	collect?: Pick<VerificationCollectConfig, "verification_instructions">;
+}
+
+export interface FaceVerificationInputFace {
+	proof?: string;
+	verification_mode?: string;
+	allow_offline?: string;
+	allow_online?: string;
+	check_duplicate_request?: string;
+	age?: {
+		min?: string;
+		max?: string;
+	};
+}
+
+export interface FaceVerificationInputData extends VerificationInputDataBase {
+	face?: FaceVerificationInputFace;
+	collect?: Pick<VerificationCollectConfig, "verification_instructions">;
+}
+
+export interface AmlBackgroundChecksName {
 	full_name?: string;
 	first_name?: string;
 	last_name?: string;
-};
+	match_score?: number;
+}
 
-type AmlBackgroundChecksInput = {
+export interface AmlBackgroundChecksInput {
 	name?: AmlBackgroundChecksName;
 	filters?: string[];
 	countries?: string[];
 	match_score?: number;
 	rca_search?: string;
 	alias_search?: string;
-};
+	dob?: string;
+	legacy_version?: string;
+	ongoing?: string;
+}
 
-type AmlVerificationData = {
-	background_checks?: {
-		name?: AmlBackgroundChecksName;
-		aml_data?: {
-			filters?: string[];
-			hits?: UnknownRecord[];
-		};
-	};
-};
+export interface AmlScreeningInputData extends VerificationInputDataBase {
+	background_checks?: AmlBackgroundChecksInput;
+}
 
-type AmlGeoLocation = {
-	ip?: string;
-	city?: string;
-	region?: string;
-	country?: string;
-	timezone?: string;
-	isp?: string;
-};
+export interface BusinessAmlScreeningInput {
+	filters?: string[];
+	match_score?: number;
+	alias_search?: string;
+	rca_search?: string;
+	business_name?: string;
+	business_incorporation_date?: string;
+	countries?: string[];
+}
 
-type AmlAgentInfo = {
+export interface BusinessAmlScreeningInputData extends VerificationInputDataBase {
+	aml_for_businesses?: BusinessAmlScreeningInput;
+}
+
+export interface CryptoWalletScreeningInputData extends VerificationInputDataBase {
+	is_crypto_request?: boolean;
+	verification_mode?: string;
+	background_checks?: AmlBackgroundChecksInput;
+}
+
+export interface KybScreeningInput {
+	company_registration_number?: string;
+	company_jurisdiction_code?: string;
+	search_type?: string;
+}
+
+export interface KybScreeningInputData extends VerificationInputDataBase {
+	kyb?: KybScreeningInput;
+}
+
+export interface RiskAssessmentInput {
+	phone_number?: string;
+	risk_reference?: string;
+}
+
+export interface RiskAssessmentInputData extends VerificationInputDataBase {
+	risk_assessment?: RiskAssessmentInput;
+}
+
+export interface GovernmentRegistryChecksInputData extends VerificationInputDataBase {
+	nin?: string;
+	bvn?: string;
+	id?: string;
+	phone_number?: string;
+	last_name?: string;
+	first_name?: string;
+	date_of_birth?: string;
+	selfie?: string;
+}
+
+export interface MixedVerificationInputData extends VerificationInputDataBase {
+	is_mixed?: boolean;
+	verification_id?: string;
+	full_address?: string;
+	notification_email?: string;
+}
+
+export interface VerificationInputData extends VerificationInputDataBase {
+	document?: DocumentVerificationInputDocument;
+	address?: AddressVerificationInputAddress;
+	face?: FaceVerificationInputFace;
+	collect?: VerificationCollectConfig;
+	background_checks?: AmlBackgroundChecksInput;
+	aml_for_businesses?: BusinessAmlScreeningInput;
+	kyb?: KybScreeningInput;
+	risk_assessment?: RiskAssessmentInput;
+	is_crypto_request?: boolean;
+	verification_mode?: string;
+	nin?: string;
+	bvn?: string;
+	id?: string;
+	phone_number?: string;
+	last_name?: string;
+	first_name?: string;
+	date_of_birth?: string;
+	selfie?: string;
+	is_mixed?: boolean;
+	verification_id?: string;
+	full_address?: string;
+	notification_email?: string;
+}
+
+export interface VerificationAgentInfo {
 	is_desktop?: boolean;
 	is_phone?: boolean;
 	device_name?: string;
 	useragent?: string;
 	browser_name?: string;
 	platform_name?: string;
-};
+}
 
-export type AmlScreeningResponsePayload = UnknownRecord & {
+export interface VerificationGeoLocation {
+	host?: string;
+	ip?: string;
+	rdns?: string;
+	asn?: string;
+	isp?: string;
+	country?: string;
+	country_name?: string;
+	country_code?: string;
+	region?: string;
+	region_name?: string;
+	region_code?: string;
+	city?: string;
+	postal_code?: string;
+	continent_name?: string;
+	continent_code?: string;
+	latitude?: string;
+	longitude?: string;
+	metro_code?: string;
+	timezone?: string;
+	ip_type?: string;
+	capital?: string;
+	currency?: string;
+}
+
+export interface DocumentVerificationDataDocument {
+	name?: {
+		first_name?: string;
+		last_name?: string;
+	};
+	country?: string;
+	selected_type?: string[];
+	supported_types?: string[];
+}
+
+export interface DocumentVerificationResultDocument {
+	document?: number | null;
+	document_country?: number | null;
+	document_must_not_be_expired?: number | null;
+	document_proof?: number | null;
+	document_visibility?: number | null;
+	name?: number | null;
+	selected_type?: number | null;
+}
+
+export interface DocumentVerificationAdditionalProof {
+	dob?: string;
+	mrz?: string;
+	face?: string;
+	gender?: string;
+	country?: string;
+	category?: string;
+	authority?: string;
+	full_name?: string;
+	last_name?: string;
+	signature?: string;
+	first_name?: string;
+	issue_date?: string;
+	expiry_date?: string;
+	nationality?: string;
+	country_code?: string;
+	document_country?: string;
+	country_native?: string;
+	place_of_birth?: string;
+	document_number?: string;
+	personal_number?: string;
+	document_country_code?: string;
+	nationality_native?: string;
+	document_type?: string;
+	document_official_name?: string;
+}
+
+export interface AmlVerificationData {
+	background_checks?: {
+		name?: AmlBackgroundChecksName;
+		aml_data?: {
+			filters?: string[];
+			hits?: Record<string, unknown>[];
+		};
+	};
+}
+
+export interface AmlScreeningResponsePayload {
 	reference?: string;
 	event?: string;
 	country?: string;
 	email?: string;
 	customer_unique_id?: string;
+	verification_url?: string;
 	verification_data?: AmlVerificationData;
 	verification_result?: {
 		background_checks?: boolean | string | number;
 	};
 	info?: {
-		agent?: AmlAgentInfo;
-		geolocation?: AmlGeoLocation;
+		agent?: VerificationAgentInfo;
+		geolocation?: VerificationGeoLocation;
 	};
 	background_checks?: AmlBackgroundChecksInput;
-};
+	proofs?: VerificationProofs;
+	declined_reason?: string;
+	declined_codes?: string[];
+	status?: string;
+}
+
+export interface GovernmentRegistryChecksResponsePayload {
+	data?: Record<string, unknown>;
+	status?: boolean | string;
+	message?: string;
+	event?: string;
+	email?: string;
+	country?: string;
+	customer_unique_id?: string;
+	info?: Record<string, unknown>;
+	verification_data?: Record<string, unknown>;
+	verification_result?: Record<string, unknown>;
+	verification_url?: string;
+}
+
+export interface VerificationResponseData {
+	reference?: string;
+	event?: string;
+	country?: string | null;
+	email?: string;
+	customer_unique_id?: string;
+	proofs?: VerificationProofs;
+	verification_url?: string;
+	data?: Record<string, unknown>;
+	message?: string;
+	status?: boolean | string;
+	verification_data?: {
+		document?: DocumentVerificationDataDocument;
+		background_checks?: AmlVerificationData["background_checks"];
+	};
+	verification_result?: {
+		document?: DocumentVerificationResultDocument;
+		background_checks?: boolean | string | number;
+	};
+	info?: {
+		agent?: VerificationAgentInfo;
+		geolocation?: VerificationGeoLocation;
+	};
+	additional_data?: {
+		document?: {
+			proof?: DocumentVerificationAdditionalProof;
+		};
+	};
+	background_checks?: AmlBackgroundChecksInput;
+	declined_reason?: string;
+	declined_codes?: string[];
+}
 
 export type AmlScreeningVerificationRequestDetail = Omit<
 	VerificationRequestDetail,
-	"verification_type" | "input_data" | "response_data"
+	"verification_type"
 > & {
 	verification_type: "aml_screening";
-	input_data: UnknownRecord & {
-		email?: string;
-		country?: string;
-		language?: string;
-		reference?: string;
-		background_checks?: AmlBackgroundChecksInput;
-	};
-	response_data: AmlScreeningResponsePayload
-	
 };
 
 export function isAmlScreeningVerificationDetail(
@@ -433,116 +701,11 @@ export function isAmlScreeningVerificationDetail(
 	return verification.verification_type === "aml_screening";
 }
 
-type DocumentVerificationInputName = {
-	first_name?: string;
-	last_name?: string;
-	fuzzy_match?: string;
-};
-
-type DocumentVerificationInputDocument = {
-	name?: DocumentVerificationInputName;
-	proof?: string;
-	allow_online?: string;
-	allow_offline?: string;
-	verification_mode?: string;
-	fetch_enhanced_data?: string;
-	backside_proof_required?: string;
-};
-
-type DocumentVerificationDataDocument = {
-	name?: {
-		first_name?: string;
-		last_name?: string;
-	};
-	country?: string;
-	selected_type?: string[];
-	supported_types?: string[];
-};
-
-type DocumentVerificationResultDocument = {
-	document?: number | null;
-	document_country?: number | null;
-	document_must_not_be_expired?: number | null;
-	document_proof?: number | null;
-	document_visibility?: number | null;
-	name?: number | null;
-	selected_type?: number | null;
-};
-
-type DocumentVerificationGeoLocation = UnknownRecord & {
-	ip?: string;
-	city?: string;
-	region_name?: string;
-	country_name?: string;
-	country_code?: string;
-	timezone?: string;
-	isp?: string;
-};
-
-type DocumentVerificationAgentInfo = {
-	is_desktop?: boolean;
-	is_phone?: boolean;
-	device_name?: string;
-	useragent?: string;
-	browser_name?: string;
-	platform_name?: string;
-};
-
-type DocumentVerificationAdditionalProof = UnknownRecord & {
-	dob?: string;
-	gender?: string;
-	full_name?: string;
-	first_name?: string;
-	last_name?: string;
-	nationality?: string;
-	place_of_birth?: string;
-	document_number?: string;
-	document_type?: string;
-	document_country?: string;
-	document_country_code?: string;
-	document_official_name?: string;
-};
-
-export type DocumentVerificationResponsePayload = UnknownRecord & {
-	reference?: string;
-	event?: string;
-	country?: string | null;
-	email?: string;
-	customer_unique_id?: string;
-	verification_data?: {
-		document?: DocumentVerificationDataDocument;
-	};
-	verification_result?: {
-		document?: DocumentVerificationResultDocument;
-	};
-	info?: {
-		agent?: DocumentVerificationAgentInfo;
-		geolocation?: DocumentVerificationGeoLocation;
-	};
-	additional_data?: {
-		document?: {
-			proof?: DocumentVerificationAdditionalProof;
-		};
-	};
-	declined_reason?: string;
-	declined_codes?: string[];
-	status?: string;
-};
-
 export type DocumentVerificationRequestDetail = Omit<
 	VerificationRequestDetail,
-	"verification_type" | "input_data" | "response_data"
+	"verification_type"
 > & {
 	verification_type: "id_document";
-	input_data: UnknownRecord & {
-		ttl?: number;
-		email?: string;
-		country?: string;
-		language?: string;
-		reference?: string;
-		document?: DocumentVerificationInputDocument;
-	};
-	response_data: DocumentVerificationResponsePayload;	
 };
 
 export function isDocumentVerificationDetail(
@@ -552,38 +715,15 @@ export function isDocumentVerificationDetail(
 }
 
 type GovernmentRegistryChecksVerificationType =
-	(typeof VERIFICATION_TYPES_BY_PRODUCT["Government Registry Checks"])[number] |
-		"government_registry_checks" |
-		"government-registry-checks";
-
-export type GovernmentRegistryChecksResponsePayload = UnknownRecord & {
-	data?: UnknownRecord;
-	status?: boolean | string;
-	message?: string;
-	event?: string;
-	email?: string;
-	country?: string;
-	customer_unique_id?: string;
-	info?: UnknownRecord;
-	verification_data?: UnknownRecord;
-	verification_result?: UnknownRecord;
-};
+	| (typeof VERIFICATION_TYPES_BY_PRODUCT)["Government Registry Checks"][number]
+	| "government_registry_checks"
+	| "government-registry-checks";
 
 export type GovernmentRegistryChecksVerificationRequestDetail = Omit<
 	VerificationRequestDetail,
-	"verification_type" | "input_data" | "response_data"
+	"verification_type"
 > & {
 	verification_type: GovernmentRegistryChecksVerificationType;
-	input_data: UnknownRecord & {
-		nin?: string;
-		bvn?: string;
-		id?: string;
-		phone_number?: string;
-		email?: string;
-		country?: string;
-		reference?: string;
-	};
-	response_data: GovernmentRegistryChecksResponsePayload;
 };
 
 const GOVERNMENT_REGISTRY_CHECKS_TYPES = [

@@ -1,8 +1,13 @@
+import type { VerificationResponseData } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import { cn } from "@verifyafrica/ui/lib/utils";
-import type { DocumentVerificationResponsePayload } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
-import { asNonEmptyString, asRecord } from "../../-utils";
+import { asNonEmptyString, displayValue } from "../../-utils";
 import { ReportDetailField } from "../report-detail-field";
 
 function asStringArray(value: unknown): string[] {
@@ -20,6 +25,15 @@ function formatLabel(value: string) {
 		.replace(/_/g, " ")
 		.replace(/-/g, " ")
 		.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function joinName(...parts: Array<string | undefined>) {
+	const name = parts
+		.map((part) => part?.trim())
+		.filter((part): part is string => Boolean(part))
+		.join(" ");
+
+	return name || undefined;
 }
 
 function getResultValueLabel(
@@ -87,19 +101,15 @@ function ResultBadge({ value }: { value: unknown }) {
 export function DocumentVerificationOutcome({
 	responseData,
 }: {
-	responseData: DocumentVerificationResponsePayload;
+	responseData: VerificationResponseData;
 }) {
-	const payload = (asRecord(asRecord(responseData)?.data) ??
-		asRecord(responseData) ??
-		{}) as DocumentVerificationResponsePayload;
-	const verificationData = asRecord(payload.verification_data);
-	const documentData = asRecord(verificationData?.document);
-	const verificationResult = asRecord(payload.verification_result);
-	const documentResult = asRecord(verificationResult?.document);
-	const declinedReason = asNonEmptyString(payload.declined_reason);
-
-	const supportedTypes = asStringArray(documentData?.supported_types);
-	const selectedTypes = asStringArray(documentData?.selected_type);
+	const declinedReason = asNonEmptyString(responseData.declined_reason);
+	const supportedTypes = asStringArray(
+		responseData.verification_data?.document?.supported_types,
+	);
+	const selectedTypes = asStringArray(
+		responseData.verification_data?.document?.selected_type,
+	);
 
 	return (
 		<Card>
@@ -109,6 +119,30 @@ export function DocumentVerificationOutcome({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="grid gap-4 sm:grid-cols-2">
+				<ReportDetailField
+					label="Full Name"
+					value={displayValue(
+						responseData.verification_data?.document?.name?.first_name +
+							" " +
+							responseData.verification_data?.document?.name?.last_name,
+					)}
+				/>
+				<ReportDetailField
+					label="First Name"
+					value={displayValue(
+						responseData.verification_data?.document?.name?.first_name,
+					)}
+				/>
+				<ReportDetailField
+					label="Last Name"
+					value={displayValue(
+						responseData.verification_data?.document?.name?.last_name,
+					)}
+				/>
+				<ReportDetailField
+					label="Customer Unique ID"
+					value={displayValue(responseData.customer_unique_id)}
+				/>
 				{declinedReason ? (
 					<ReportDetailField
 						label="Declined Reason"
@@ -166,29 +200,62 @@ export function DocumentVerificationOutcome({
 				/>
 				<ReportDetailField
 					label="Document"
-					value={<ResultBadge value={documentResult?.document} />}
+					value={
+						<ResultBadge value={responseData.verification_data?.document} />
+					}
 				/>
 				<ReportDetailField
 					label="Document Country"
-					value={<ResultBadge value={documentResult?.document_country} />}
+					value={
+						<ResultBadge
+							value={responseData.verification_data?.document?.country}
+						/>
+					}
 				/>
 				<ReportDetailField
 					label="Document Must Not Be Expired"
 					value={
-						<ResultBadge value={documentResult?.document_must_not_be_expired} />
+						<ResultBadge
+							value={
+								responseData.verification_result?.document
+									?.document_must_not_be_expired
+							}
+						/>
 					}
 				/>
 				<ReportDetailField
 					label="Document Proof"
-					value={<ResultBadge value={documentResult?.document_proof} />}
+					value={
+						<ResultBadge
+							value={responseData.verification_result?.document?.document_proof}
+						/>
+					}
 				/>
 				<ReportDetailField
 					label="Document Visibility"
-					value={<ResultBadge value={documentResult?.document_visibility} />}
+					value={
+						<ResultBadge
+							value={
+								responseData.verification_result?.document?.document_visibility
+							}
+						/>
+					}
+				/>
+				<ReportDetailField
+					label="Name Check"
+					value={
+						<ResultBadge
+							value={responseData.verification_result?.document?.name}
+						/>
+					}
 				/>
 				<ReportDetailField
 					label="Selected Type Check"
-					value={<ResultBadge value={documentResult?.selected_type} />}
+					value={
+						<ResultBadge
+							value={responseData.verification_result?.document?.selected_type}
+						/>
+					}
 				/>
 			</CardContent>
 		</Card>
