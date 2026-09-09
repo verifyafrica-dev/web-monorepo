@@ -73,9 +73,3 @@ export const useTenantStatementsV2Query = (
 		queryFn: () => ANALYTICS_V2_API.STATEMENTS(params, tenantId),
 		enabled,
 	});
-
-export type {
-	AnalyticsPayload,
-	PaginatedStatementsListResult,
-	PlatformAnalyticsPayload,
-};

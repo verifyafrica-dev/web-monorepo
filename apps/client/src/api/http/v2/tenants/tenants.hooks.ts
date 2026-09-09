@@ -671,10 +671,3 @@ export const useUpdateTenantWebhookV2Mutation = (tenantId: string) => {
 		},
 	});
 };
-
-export type {
-	PaginatedTenantAllListResult,
-	PaginatedTenantInvitationListResult,
-	PaginatedTenantListResult,
-	PaginatedTenantUserListResult,
-};

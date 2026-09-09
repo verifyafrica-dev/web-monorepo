@@ -5,7 +5,6 @@ import {
 
 import { ACTIVITY_LOGS_V2_API } from "./activity-logs.api";
 import type {
-	ActivityLog,
 	ActivityLogsListQuery,
 	PaginatedActivityLogListResult,
 } from "./activity-logs.types";
@@ -48,5 +47,3 @@ export const useAllActivityLogsV2Query = (
 		enabled,
 		staleTime: ACTIVITY_LOGS_V2_STALE_TIME,
 	});
-
-export type { ActivityLog, PaginatedActivityLogListResult };

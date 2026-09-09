@@ -8,8 +8,8 @@ import {
 } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import type { WebhookEvent } from "#/api/http/v2/webhooks/webhooks.hooks";
 import { useAllWebhookEventsV2Query } from "#/api/http/v2/webhooks/webhooks.hooks";
+import type { WebhookEvent } from "#/api/http/v2/webhooks/webhooks.types";
 import { DateFilterPicker } from "@verifyafrica/ui/components/ui-extended/date-filter-picker";
 import {
 	TablePagination,

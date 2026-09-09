@@ -11,14 +11,17 @@ import type {
 	PaginatedTenantInvitationListResult,
 	PaginatedTenantListResult,
 	PaginatedTenantUserListResult,
+	SupportedCountry,
 	TenantAPIKey,
 	TenantAPIKeyPutUpdatePayload,
 	TenantAPIKeyUpdatePayload,
+	TenantAllListItem,
+	TenantAllListQuery,
 	TenantComplianceDataPayload,
-	TenantComplianceDocumentRegisterData,
-	TenantComplianceDocumentRegisterPayload,
 	TenantComplianceDocumentDeleteData,
 	TenantComplianceDocumentDeletePayload,
+	TenantComplianceDocumentRegisterData,
+	TenantComplianceDocumentRegisterPayload,
 	TenantCreatePayload,
 	TenantDetail,
 	TenantInvitation,
@@ -28,7 +31,7 @@ import type {
 	TenantInvitationCreateUserPayload,
 	TenantInvitationVerifyData,
 	TenantInvitationVerifyPayload,
-	TenantAllListQuery,
+	TenantListItem,
 	TenantListQuery,
 	TenantUpdatePayload,
 	TenantUser,
@@ -77,7 +80,10 @@ const withTenantHeader = (tenantId: string) => ({
 export const TENANTS_V2_API = {
 	DETAIL: async (tenantId: string): Promise<TenantDetail> =>
 		await $http
-			.get(TENANTS_V2_ENDPOINTS.root, withTenantHeader(tenantId))
+			.get(
+				TENANTS_V2_ENDPOINTS.root,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantDetail>(res)),
 
 	CREATE: async (data: TenantCreatePayload): Promise<TenantDetail> =>
@@ -90,12 +96,19 @@ export const TENANTS_V2_API = {
 		data: TenantUpdatePayload,
 	): Promise<TenantDetail> =>
 		await $http
-			.patch(TENANTS_V2_ENDPOINTS.root, data, withTenantHeader(tenantId))
+			.patch(
+				TENANTS_V2_ENDPOINTS.root,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantDetail>(res)),
 
 	DELETE: async (tenantId: string): Promise<string> =>
 		await $http
-			.delete(TENANTS_V2_ENDPOINTS.root, withTenantHeader(tenantId))
+			.delete(
+				TENANTS_V2_ENDPOINTS.root,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Message(res)),
 
 	ALL_LIST: async (
@@ -103,16 +116,19 @@ export const TENANTS_V2_API = {
 	): Promise<PaginatedTenantAllListResult> =>
 		await $http
 			.get(TENANTS_V2_ENDPOINTS.all, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<TenantAllListItem>(res)),
 
 	LIST: async (params?: TenantListQuery): Promise<PaginatedTenantListResult> =>
 		await $http
 			.get(TENANTS_V2_ENDPOINTS.list, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<TenantListItem>(res)),
 
 	API_KEY: async (tenantId: string): Promise<TenantAPIKey> =>
 		await $http
-			.get(TENANTS_V2_ENDPOINTS.apiKey, withTenantHeader(tenantId))
+			.get(
+				TENANTS_V2_ENDPOINTS.apiKey,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantAPIKey>(res)),
 
 	REPLACE_API_KEY: async (
@@ -120,7 +136,11 @@ export const TENANTS_V2_API = {
 		data: TenantAPIKeyPutUpdatePayload,
 	): Promise<TenantAPIKey> =>
 		await $http
-			.put(TENANTS_V2_ENDPOINTS.apiKey, data, withTenantHeader(tenantId))
+			.put(
+				TENANTS_V2_ENDPOINTS.apiKey,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantAPIKey>(res)),
 
 	UPDATE_API_KEY: async (
@@ -128,7 +148,11 @@ export const TENANTS_V2_API = {
 		data: TenantAPIKeyUpdatePayload,
 	): Promise<TenantAPIKey> =>
 		await $http
-			.patch(TENANTS_V2_ENDPOINTS.apiKey, data, withTenantHeader(tenantId))
+			.patch(
+				TENANTS_V2_ENDPOINTS.apiKey,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantAPIKey>(res)),
 
 	REGISTER_COMPLIANCE_DOCUMENT: async (
@@ -148,10 +172,13 @@ export const TENANTS_V2_API = {
 		data: TenantComplianceDocumentDeletePayload,
 	): Promise<TenantComplianceDocumentDeleteData> =>
 		await $http
-			.delete(TENANTS_V2_ENDPOINTS.complianceDocuments, {
-				data,
-				...withTenantHeader(tenantId),
-			})
+			.delete(
+				TENANTS_V2_ENDPOINTS.complianceDocuments,
+				{
+					data,
+					...withTenantHeader(tenantId),
+				},
+			)
 			.then((res) => unwrapV2Data<TenantComplianceDocumentDeleteData>(res)),
 
 	SUBMIT_COMPLIANCE: async (tenantId: string): Promise<TenantDetail> =>
@@ -190,14 +217,18 @@ export const TENANTS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<TenantInvitation>(res)),
 
 	INVITATION_CREATE: async (
 		tenantId: string,
 		data: TenantInvitationCreatePayload,
 	): Promise<TenantInvitation> =>
 		await $http
-			.post(TENANTS_V2_ENDPOINTS.invitations, data, withTenantHeader(tenantId))
+			.post(
+				TENANTS_V2_ENDPOINTS.invitations,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantInvitation>(res)),
 
 	INVITATION_RESEND: async (
@@ -216,21 +247,30 @@ export const TENANTS_V2_API = {
 		data: TenantInvitationAcceptPayload,
 	): Promise<TenantInvitationAcceptData> =>
 		await $http
-			.post(TENANTS_V2_ENDPOINTS.invitationAccept, data)
+			.post(
+				TENANTS_V2_ENDPOINTS.invitationAccept,
+				data,
+			)
 			.then((res) => unwrapV2Data<TenantInvitationAcceptData>(res)),
 
 	INVITATION_CREATE_USER: async (
 		data: TenantInvitationCreateUserPayload,
 	): Promise<TenantInvitationAcceptData> =>
 		await $http
-			.post(TENANTS_V2_ENDPOINTS.invitationCreateUser, data)
+			.post(
+				TENANTS_V2_ENDPOINTS.invitationCreateUser,
+				data,
+			)
 			.then((res) => unwrapV2Data<TenantInvitationAcceptData>(res)),
 
 	VERIFY_INVITATION: async (
 		data: TenantInvitationVerifyPayload,
 	): Promise<TenantInvitationVerifyData> =>
 		await $http
-			.post(TENANTS_V2_ENDPOINTS.verifyInvitation, data)
+			.post(
+				TENANTS_V2_ENDPOINTS.verifyInvitation,
+				data,
+			)
 			.then((res) => unwrapV2Data<TenantInvitationVerifyData>(res)),
 
 	USERS_LIST: async (
@@ -242,7 +282,7 @@ export const TENANTS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<TenantUser>(res)),
 
 	REMOVE_USER: async (tenantId: string, userId: string): Promise<string> =>
 		await $http
@@ -314,7 +354,10 @@ export const TENANTS_V2_API = {
 
 	WEBHOOK: async (tenantId: string): Promise<TenantWebhook> =>
 		await $http
-			.get(TENANTS_V2_ENDPOINTS.webhook, withTenantHeader(tenantId))
+			.get(
+				TENANTS_V2_ENDPOINTS.webhook,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantWebhook>(res)),
 
 	WEBHOOK_CREATE: async (
@@ -322,7 +365,11 @@ export const TENANTS_V2_API = {
 		data: TenantWebhookCreatePayload,
 	): Promise<TenantWebhook> =>
 		await $http
-			.post(TENANTS_V2_ENDPOINTS.webhook, data, withTenantHeader(tenantId))
+			.post(
+				TENANTS_V2_ENDPOINTS.webhook,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantWebhook>(res)),
 
 	WEBHOOK_UPDATE: async (
@@ -330,6 +377,10 @@ export const TENANTS_V2_API = {
 		data: TenantWebhookUpdatePayload,
 	): Promise<TenantWebhook> =>
 		await $http
-			.patch(TENANTS_V2_ENDPOINTS.webhook, data, withTenantHeader(tenantId))
+			.patch(
+				TENANTS_V2_ENDPOINTS.webhook,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<TenantWebhook>(res)),
 };

@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { VerificationStatusSchema } from "#/api/http/v2/verifications/verifications.types";
 import type { VerificationRequestDetail } from "#/api/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import { extractHostedVerificationUrl } from "@verifyafrica/api-client/lib/verification-links";
 import {
 	formatReportDate,
@@ -44,7 +49,7 @@ export function VerificationMetadataCard({
 			toast.error("Unable to copy verification link.");
 		}
 	}
-
+	console.log(verification);
 	return (
 		<Card className="bg-muted/20">
 			<CardHeader>
@@ -96,6 +101,7 @@ export function VerificationMetadataCard({
 						mono
 					/>
 				) : null}
+
 				{showVerificationLink ? (
 					<ReportDetailField
 						label="Verification Link"

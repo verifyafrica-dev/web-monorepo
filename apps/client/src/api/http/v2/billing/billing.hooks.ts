@@ -21,7 +21,6 @@ import type {
 	BillingPricingListQuery,
 	BillingPricingUpdatePayload,
 	Invoice,
-	InvoiceListItem,
 	PaginatedAllInvoiceListResult,
 	PaginatedBillingInformationListResult,
 	PaginatedBillingPricingListResult,
@@ -286,15 +285,4 @@ export const useDeleteBillingPricingV2Mutation = () => {
 			queryClient.invalidateQueries({ queryKey: BILLING_V2_QUERY_KEYS.all });
 		},
 	});
-};
-
-export type {
-	BillingInformation,
-	BillingPricing,
-	Invoice,
-	InvoiceListItem,
-	PaginatedAllInvoiceListResult,
-	PaginatedBillingInformationListResult,
-	PaginatedBillingPricingListResult,
-	PaginatedTenantInvoiceListResult,
 };

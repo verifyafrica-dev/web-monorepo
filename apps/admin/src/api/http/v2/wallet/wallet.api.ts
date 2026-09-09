@@ -10,6 +10,7 @@ import type {
 	TopUpSessionData,
 	TopUpVerifyData,
 	Wallet,
+	WalletFundingRequest,
 	WalletListQuery,
 	WalletTransaction,
 	WalletTransactionsQuery,
@@ -46,7 +47,7 @@ export const WALLET_V2_API = {
 	): Promise<PaginatedWalletBalanceListResult> =>
 		await $http
 			.get(WALLET_V2_ENDPOINTS.balanceAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<Wallet>(res)),
 
 	CREATE_CREDIT: async (
 		tenantId: string,
@@ -65,14 +66,14 @@ export const WALLET_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<WalletFundingRequest>(res)),
 
 	ALL_FUNDING_REQUESTS: async (
 		params?: WalletListQuery,
 	): Promise<PaginatedWalletFundingRequestListResult> =>
 		await $http
 			.get(WALLET_V2_ENDPOINTS.fundingRequestsAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<WalletFundingRequest>(res)),
 
 	TOP_UP_CREATE_SESSION: async (
 		tenantId: string,
@@ -106,14 +107,14 @@ export const WALLET_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<WalletTransaction>(res)),
 
 	ALL_TRANSACTIONS: async (
 		params?: WalletTransactionsQuery,
 	): Promise<PaginatedWalletTransactionListResult> =>
 		await $http
 			.get(WALLET_V2_ENDPOINTS.transactionsAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<WalletTransaction>(res)),
 
 	TENANT_TRANSACTIONS_EXPORT: async (
 		tenantId: string,

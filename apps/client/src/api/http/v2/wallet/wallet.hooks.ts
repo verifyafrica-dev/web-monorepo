@@ -14,11 +14,9 @@ import type {
 	PaginatedWalletFundingRequestListResult,
 	PaginatedWalletTransactionListResult,
 	TopUpRequestPayload,
-	TopUpSessionData,
 	TopUpVerifyData,
 	Wallet,
 	WalletListQuery,
-	WalletTransaction,
 	WalletTransactionsQuery,
 } from "./wallet.types";
 
@@ -207,14 +205,3 @@ export const useExportWalletTransactionsV2Mutation = () =>
 			params?: WalletTransactionsQuery;
 		}) => WALLET_V2_API.TENANT_TRANSACTIONS_EXPORT(tenantId, params),
 	});
-
-export type {
-	AdminManualCreditData,
-	PaginatedWalletBalanceListResult,
-	PaginatedWalletFundingRequestListResult,
-	PaginatedWalletTransactionListResult,
-	TopUpSessionData,
-	TopUpVerifyData,
-	Wallet,
-	WalletTransaction,
-};

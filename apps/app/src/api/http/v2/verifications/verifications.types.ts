@@ -20,6 +20,7 @@ export {
 	type VerificationLink,
 	type VerificationRequest,
 	type VerificationRequestCreatePayload,
+	type VerificationProofs,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 export const VerificationListQuerySchema = z.object({
@@ -111,15 +112,6 @@ export type MixedVerificationUpsertPayload = z.infer<
 
 export interface VerificationProofUrlObject {
 	proof?: string;
-}
-
-export interface VerificationProofs {
-	access_token?: string;
-	address?: VerificationProofUrlObject;
-	document?: VerificationProofUrlObject;
-	face?: VerificationProofUrlObject;
-	verification_video?: string;
-	verification_report?: string;
 }
 
 export interface VerificationRequestDetail extends VerificationRequest {

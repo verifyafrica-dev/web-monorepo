@@ -7,8 +7,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.hooks";
 import { useAllActivityLogsV2Query } from "#/api/http/v2/activity-logs/activity-logs.hooks";
+import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.types";
 import { useUserV2DetailQuery } from "#/api/http/v2/users/users.hooks";
 import {
 	TablePagination,

@@ -41,10 +41,7 @@ const withTenantHeader = (tenantId: string) => ({
 export const BILLING_V2_API = {
 	BILLING_INFORMATION: async (tenantId: string): Promise<BillingInformation> =>
 		await $http
-			.get(
-				BILLING_V2_ENDPOINTS.billingInformation,
-				withTenantHeader(tenantId),
-			)
+			.get(BILLING_V2_ENDPOINTS.billingInformation, withTenantHeader(tenantId))
 			.then((res) => unwrapV2Data<BillingInformation>(res)),
 
 	CREATE_BILLING_INFORMATION: async (
@@ -79,14 +76,14 @@ export const BILLING_V2_API = {
 	): Promise<PaginatedBillingInformationListResult> =>
 		await $http
 			.get(BILLING_V2_ENDPOINTS.billingInformationAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<BillingInformation>(res)),
 
 	BILLING_PRICING_LIST: async (
 		params?: BillingPricingListQuery,
 	): Promise<PaginatedBillingPricingListResult> =>
 		await $http
 			.get(BILLING_V2_ENDPOINTS.billingPricing, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<BillingPricing>(res)),
 
 	BILLING_PRICING_DETAIL: async (id: string): Promise<BillingPricing> =>
 		await $http
@@ -122,14 +119,14 @@ export const BILLING_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<Invoice>(res)),
 
 	ALL_INVOICES_LIST: async (
 		params?: AllInvoicesListQuery,
 	): Promise<PaginatedAllInvoiceListResult> =>
 		await $http
 			.get(BILLING_V2_ENDPOINTS.invoicesAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<Invoice>(res)),
 
 	ALL_INVOICE_DETAIL: async (id: string): Promise<Invoice> =>
 		await $http

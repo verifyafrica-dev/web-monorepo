@@ -4,8 +4,8 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.hooks";
 import { useTenantActivityLogsV2Query } from "#/api/http/v2/activity-logs/activity-logs.hooks";
+import type { ActivityLog } from "#/api/http/v2/activity-logs/activity-logs.types";
 import {
 	TablePagination,
 	TablePaginationSkeleton,

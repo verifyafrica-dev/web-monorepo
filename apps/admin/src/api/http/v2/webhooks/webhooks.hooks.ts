@@ -3,7 +3,6 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { WEBHOOKS_V2_API } from "./webhooks.api";
 import type {
 	PaginatedWebhookEventListResult,
-	WebhookEvent,
 	WebhookEventsListQuery,
 } from "./webhooks.types";
 
@@ -25,5 +24,3 @@ export const useAllWebhookEventsV2Query = (
 		enabled,
 		staleTime: WEBHOOKS_V2_STALE_TIME,
 	});
-
-export type { PaginatedWebhookEventListResult, WebhookEvent };

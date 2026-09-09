@@ -1,6 +1,7 @@
 import { unwrapV2Paginated } from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
+	ActivityLog,
 	ActivityLogsListQuery,
 	PaginatedActivityLogListResult,
 } from "./activity-logs.types";
@@ -27,12 +28,12 @@ export const ACTIVITY_LOGS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<ActivityLog>(res)),
 
 	ALL_LIST: async (
 		params?: ActivityLogsListQuery,
 	): Promise<PaginatedActivityLogListResult> =>
 		await $http
 			.get(ACTIVITY_LOGS_V2_ENDPOINTS.list, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<ActivityLog>(res)),
 };

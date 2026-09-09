@@ -229,13 +229,3 @@ export const useDeleteBillingPricingV2Mutation = () => {
 		},
 	});
 };
-
-export type {
-	BillingInformation,
-	BillingPricing,
-	Invoice,
-	PaginatedAllInvoiceListResult,
-	PaginatedBillingInformationListResult,
-	PaginatedBillingPricingListResult,
-	PaginatedTenantInvoiceListResult,
-};

@@ -513,17 +513,3 @@ export const useRetryFailedVerificationBatchV2Mutation = () => {
 		},
 	});
 };
-
-export type {
-	PaginatedMixedVerificationListResult,
-	PaginatedVerificationBatchListResult,
-	PaginatedVerificationPriceListResult,
-	PaginatedVerificationRequestListResult,
-	PaginatedVerificationTypePriceListResult,
-	VerificationBatch,
-	VerificationLink,
-	VerificationPrice,
-	VerificationRequest,
-	VerificationRequestDetail,
-	VerificationTypeDefinition,
-};

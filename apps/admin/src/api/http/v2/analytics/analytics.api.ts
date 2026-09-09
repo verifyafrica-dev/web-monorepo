@@ -6,6 +6,7 @@ import type {
 	AnalyticsStatementsListQuery,
 	PaginatedStatementsListResult,
 	PlatformAnalyticsPayload,
+	Statement,
 } from "./analytics.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
@@ -53,5 +54,5 @@ export const ANALYTICS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<Statement>(res)),
 };

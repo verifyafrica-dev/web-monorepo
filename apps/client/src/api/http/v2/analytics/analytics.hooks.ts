@@ -83,9 +83,3 @@ export const useTenantStatementsV2Query = (
 		enabled,
 	});
 };
-
-export type {
-	AnalyticsPayload,
-	PaginatedStatementsListResult,
-	PlatformAnalyticsPayload,
-};

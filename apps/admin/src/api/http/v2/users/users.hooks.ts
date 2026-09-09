@@ -316,5 +316,3 @@ export const useReplaceUserV2DetailMutation = (id: string) =>
 	useMutation<AdminUser, UserLoginError, UserAdminPutUpdatePayload>({
 		mutationFn: (payload) => USERS_V2_API.REPLACE_DETAIL(id, payload),
 	});
-
-export type { PaginatedAdminUserListResult, LookupResponseData };

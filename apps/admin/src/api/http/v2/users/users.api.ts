@@ -15,6 +15,7 @@ import type {
 	InvitationCreateUserPayload,
 	LookupResponseData,
 	PaginatedAdminUserListResult,
+	RefreshTokenResponseData,
 	RegisterResponseData,
 	ResendActivationCodeResponseData,
 	UserActivateAccountPayload,
@@ -175,7 +176,7 @@ export const USERS_V2_API = {
 	REFRESH_TOKEN: async (): Promise<string> =>
 		await $http
 			.post(USER_V2_ENDPOINTS.refreshToken, {})
-			.then((res) => unwrapV2Data<{ access_token: string }>(res))
+			.then((res) => unwrapV2Data<RefreshTokenResponseData>(res))
 			.then((data) => data.access_token),
 
 	REGISTER: async (data: UserRegisterPayload): Promise<RegisterResponseData> =>
@@ -187,7 +188,10 @@ export const USERS_V2_API = {
 		data: UserResendActivationCodePayload,
 	): Promise<ResendActivationCodeResponseData> =>
 		await $http
-			.post(USER_V2_ENDPOINTS.resendActivationCode, data)
+			.post(
+				USER_V2_ENDPOINTS.resendActivationCode,
+				data,
+			)
 			.then((res) => unwrapV2Data<ResendActivationCodeResponseData>(res)),
 
 	RESET_PASSWORD: async (data: UserResetPasswordPayload): Promise<string> =>
@@ -199,7 +203,10 @@ export const USERS_V2_API = {
 		data: UserVerifyForgotPasswordTokenPayload,
 	): Promise<VerifyForgotPasswordTokenResponseData> =>
 		await $http
-			.post(USER_V2_ENDPOINTS.verifyForgotPasswordToken, data)
+			.post(
+				USER_V2_ENDPOINTS.verifyForgotPasswordToken,
+				data,
+			)
 			.then((res) => unwrapV2Data<VerifyForgotPasswordTokenResponseData>(res)),
 
 	ACCEPT_INVITATION: async (data: InvitationAcceptPayload): Promise<string> =>

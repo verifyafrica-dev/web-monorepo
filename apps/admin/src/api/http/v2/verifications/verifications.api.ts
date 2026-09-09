@@ -26,6 +26,7 @@ import type {
 	VerificationRequestDetail,
 	VerificationSendEmailData,
 	VerificationTypeDefinition,
+	VerificationTypePrice,
 } from "./verifications.types";
 
 const TENANT_ID_HEADER = "X-TENANT-ID";
@@ -83,8 +84,11 @@ export const VERIFICATIONS_V2_API = {
 		params?: VerificationListQuery,
 	): Promise<PaginatedVerificationRequestListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.requestsAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.requestsAll,
+				{ params },
+			)
+			.then((res) => unwrapV2Paginated<VerificationRequest>(res)),
 
 	TENANT_REQUESTS: async (
 		tenantId: string,
@@ -95,21 +99,27 @@ export const VERIFICATIONS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<VerificationRequest>(res)),
 
 	CREATE_REQUEST: async (
 		tenantId: string,
 		data: VerificationRequestCreatePayload,
 	): Promise<VerificationRequest> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.requests, data, withTenantHeader(tenantId))
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.requests,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<VerificationRequest>(res)),
 
 	REQUEST_DETAIL: async (
 		verificationId: string,
 	): Promise<VerificationRequestDetail> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.requestDetail(verificationId))
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.requestDetail(verificationId),
+			)
 			.then((res) => unwrapV2Data<VerificationRequestDetail>(res)),
 
 	REQUEST_PROOF: async (
@@ -126,47 +136,63 @@ export const VERIFICATIONS_V2_API = {
 		verificationId: string,
 	): Promise<VerificationSendEmailData> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.requestSendEmail(verificationId))
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.requestSendEmail(verificationId),
+			)
 			.then((res) => unwrapV2Data<VerificationSendEmailData>(res)),
 
 	REQUEST_REFRESH_STATUS: async (
 		verificationId: string,
 	): Promise<VerificationRequest> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.requestRefreshStatus(verificationId))
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.requestRefreshStatus(verificationId),
+			)
 			.then((res) => unwrapV2Data<VerificationRequest>(res)),
 
 	ALL_MIXED_VERIFICATIONS: async (
 		params?: MixedVerificationListQuery,
 	): Promise<PaginatedMixedVerificationListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationsAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerificationsAll,
+				{ params },
+			)
+			.then((res) => unwrapV2Paginated<MixedVerification>(res)),
 
 	TENANT_MIXED_VERIFICATIONS: async (
 		tenantId: string | undefined,
 		params?: MixedVerificationListQuery,
 	): Promise<PaginatedMixedVerificationListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.mixedVerifications, {
-				params,
-				...withOptionalTenantHeader(tenantId),
-			})
-			.then((res) => unwrapV2Paginated(res)),
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerifications,
+				{
+					params,
+					...withOptionalTenantHeader(tenantId),
+				},
+			)
+			.then((res) => unwrapV2Paginated<MixedVerification>(res)),
 
 	CREATE_MIXED_VERIFICATION: async (
 		data: MixedVerificationUpsertPayload,
 		tenantId?: string,
 	): Promise<MixedVerification> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.mixedVerifications, data, {
-				...withOptionalTenantHeader(tenantId),
-			})
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerifications,
+				data,
+				{
+					...withOptionalTenantHeader(tenantId),
+				},
+			)
 			.then((res) => unwrapV2Data<MixedVerification>(res)),
 
 	MIXED_VERIFICATION_DETAIL: async (id: string): Promise<MixedVerification> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id))
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id),
+			)
 			.then((res) => unwrapV2Data<MixedVerification>(res)),
 
 	UPDATE_MIXED_VERIFICATION: async (
@@ -175,16 +201,22 @@ export const VERIFICATIONS_V2_API = {
 		tenantId?: string,
 	): Promise<MixedVerification> =>
 		await $http
-			.patch(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id), data, {
-				...withOptionalTenantHeader(tenantId),
-			})
+			.patch(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id),
+				data,
+				{
+					...withOptionalTenantHeader(tenantId),
+				},
+			)
 			.then((res) => unwrapV2Data<MixedVerification>(res)),
 
 	DELETE_MIXED_VERIFICATION: async (
 		id: string,
 	): Promise<string> =>
 		await $http
-			.delete(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id))
+			.delete(
+				VERIFICATIONS_V2_ENDPOINTS.mixedVerificationDetail(id),
+			)
 			.then((res) => unwrapV2Message(res)),
 
 	START_MIXED_VERIFICATION: async (
@@ -203,37 +235,50 @@ export const VERIFICATIONS_V2_API = {
 		params?: VerificationBatchListQuery,
 	): Promise<PaginatedVerificationBatchListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.verificationBatchesAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.verificationBatchesAll,
+				{ params },
+			)
+			.then((res) => unwrapV2Paginated<VerificationBatch>(res)),
 
 	TENANT_BATCHES: async (
 		tenantId: string,
 		params?: VerificationBatchListQuery,
 	): Promise<PaginatedVerificationBatchListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.verificationBatches, {
-				params,
-				...withTenantHeader(tenantId),
-			})
-			.then((res) => unwrapV2Paginated(res)),
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.verificationBatches,
+				{
+					params,
+					...withTenantHeader(tenantId),
+				},
+			)
+			.then((res) => unwrapV2Paginated<VerificationBatch>(res)),
 
 	BATCH_DETAIL: async (id: string): Promise<VerificationBatch> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.verificationBatchDetail(id))
+			.get(
+				VERIFICATIONS_V2_ENDPOINTS.verificationBatchDetail(id),
+			)
 			.then((res) => unwrapV2Data<VerificationBatch>(res)),
 
 	ALL_PRICES: async (
 		params?: VerificationBatchListQuery,
 	): Promise<PaginatedVerificationPriceListResult> =>
 		await $http
-			.get(VERIFICATIONS_V2_ENDPOINTS.pricesAll, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.get(VERIFICATIONS_V2_ENDPOINTS.pricesAll, {
+				params,
+			})
+			.then((res) => unwrapV2Paginated<VerificationPrice>(res)),
 
 	CREATE_PRICE: async (
 		data: Partial<VerificationPrice>,
 	): Promise<VerificationPrice> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.pricesAll, data)
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.pricesAll,
+				data,
+			)
 			.then((res) => unwrapV2Data<VerificationPrice>(res)),
 
 	TENANT_PRICES: async (
@@ -245,7 +290,7 @@ export const VERIFICATIONS_V2_API = {
 				params,
 				...withTenantHeader(tenantId),
 			})
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<VerificationTypePrice>(res)),
 
 	PRICE_DETAIL: async (id: number): Promise<VerificationPrice> =>
 		await $http
@@ -257,7 +302,10 @@ export const VERIFICATIONS_V2_API = {
 		data: Partial<VerificationPrice>,
 	): Promise<VerificationPrice> =>
 		await $http
-			.patch(VERIFICATIONS_V2_ENDPOINTS.priceDetail(id), data)
+			.patch(
+				VERIFICATIONS_V2_ENDPOINTS.priceDetail(id),
+				data,
+			)
 			.then((res) => unwrapV2Data<VerificationPrice>(res)),
 
 	BULK_CREATE: async (
@@ -265,7 +313,11 @@ export const VERIFICATIONS_V2_API = {
 		data: BulkVerificationCreatePayload,
 	): Promise<VerificationBatch> =>
 		await $http
-			.post(VERIFICATIONS_V2_ENDPOINTS.bulk, data, withTenantHeader(tenantId))
+			.post(
+				VERIFICATIONS_V2_ENDPOINTS.bulk,
+				data,
+				withTenantHeader(tenantId),
+			)
 			.then((res) => unwrapV2Data<VerificationBatch>(res)),
 
 	RETRY_FAILED_BATCH: async (

@@ -48,6 +48,15 @@ export interface VerificationRequest {
 	submitted_at?: string | null;
 }
 
+export interface VerificationProofs {
+	access_token?: string;
+	address?: VerificationProofUrlObject;
+	document?: VerificationProofUrlObject;
+	face?: VerificationProofUrlObject;
+	verification_video?: string;
+	verification_report?: string;
+}
+
 export const VERIFICATION_TYPES_BY_PRODUCT = {
 	"Government Registry Checks": [
 		"za_said_verification",

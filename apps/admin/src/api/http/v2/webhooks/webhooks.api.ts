@@ -2,6 +2,7 @@ import { unwrapV2Paginated } from "@verifyafrica/api-client/http/shared";
 import $http from "../../xhr";
 import type {
 	PaginatedWebhookEventListResult,
+	WebhookEvent,
 	WebhookEventsListQuery,
 } from "./webhooks.types";
 
@@ -15,5 +16,5 @@ export const WEBHOOKS_V2_API = {
 	): Promise<PaginatedWebhookEventListResult> =>
 		await $http
 			.get(WEBHOOKS_V2_ENDPOINTS.events, { params })
-			.then((res) => unwrapV2Paginated(res)),
+			.then((res) => unwrapV2Paginated<WebhookEvent>(res)),
 };
