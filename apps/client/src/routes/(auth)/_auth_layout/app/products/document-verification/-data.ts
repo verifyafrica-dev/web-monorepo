@@ -19,12 +19,21 @@ type DirectFormValues = {
 	country: string;
 	firstName: string;
 	lastName: string;
+	dob: string;
+	age: string;
+	gender: string;
+	requireBackside: boolean;
 };
 
 function buildDocumentBlock(direct?: {
 	firstName: string;
 	lastName: string;
 	proof: string;
+	dob?: string;
+	age?: string;
+	gender?: string;
+	backsideProof?: string | null;
+	requireBackside?: boolean;
 }) {
 	const document: Record<string, unknown> = {
 		backside_proof_required: SHUFTI_CHOICES.NO,
@@ -41,6 +50,21 @@ function buildDocumentBlock(direct?: {
 			fuzzy_match: SHUFTI_CHOICES.YES,
 		};
 		document.proof = direct.proof;
+		if (direct.requireBackside) {
+			document.backside_proof_required = SHUFTI_CHOICES.YES;
+			if (direct.backsideProof) {
+				document.backside_proof = direct.backsideProof;
+			}
+		}
+		if (direct.dob) {
+			document.dob = direct.dob;
+		}
+		if (direct.age) {
+			document.age = direct.age;
+		}
+		if (direct.gender) {
+			document.gender = direct.gender;
+		}
 	}
 
 	return document;
@@ -76,6 +100,7 @@ export function buildDocumentVerificationLinkPayload(
 export function buildDocumentVerificationDirectPayload(
 	values: DirectFormValues,
 	proof: string,
+	backsideProof?: string | null,
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: DOCUMENT_VERIFICATION_TYPE,
@@ -88,6 +113,11 @@ export function buildDocumentVerificationDirectPayload(
 				firstName: values.firstName.trim(),
 				lastName: values.lastName.trim(),
 				proof,
+				dob: values.dob.trim() || undefined,
+				age: values.age.trim() || undefined,
+				gender: values.gender.trim() || undefined,
+				backsideProof,
+				requireBackside: values.requireBackside,
 			}),
 		},
 	};

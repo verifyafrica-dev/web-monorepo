@@ -2,8 +2,10 @@ import {
 	LinkIcon,
 	MagnifyingGlassIcon,
 	PaperPlaneTiltIcon,
+	SlidersHorizontalIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
+import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,11 +17,19 @@ import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { buildLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@verifyafrica/ui/components/ui/accordion";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@verifyafrica/ui/components/ui/radio-group";
+import { Switch } from "@verifyafrica/ui/components/ui/switch";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
 import {
 	Select,
@@ -36,6 +46,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { useTenantSupportedCountries } from "../../-countries";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
@@ -88,11 +99,28 @@ const linkFormSchema = z.object({
 	verificationInstructions: z.string(),
 });
 
+const GENDER_OPTIONS = [
+	{ value: "M", label: "Male" },
+	{ value: "F", label: "Female" },
+] as const;
+
 const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
 	firstName: z.string().trim().min(1, "First name is required"),
 	lastName: z.string().trim().min(1, "Last name is required"),
+	dob: z.string(),
+	age: z
+		.string()
+		.refine((value) => {
+			if (!value.trim()) {
+				return true;
+			}
+			const age = Number(value);
+			return Number.isInteger(age) && age >= 1 && age <= 150;
+		}, "Enter a valid age"),
+	gender: z.string(),
+	requireBackside: z.boolean(),
 	consent: verificationConsentSchema,
 });
 
@@ -100,6 +128,8 @@ export function DocumentVerificationForm() {
 	const [mode, setMode] = useState<VerificationMode>("link");
 	const [documentProofUrl, setDocumentProofUrl] = useState<string | null>(null);
 	const [isDocumentUploading, setIsDocumentUploading] = useState(false);
+	const [backsideProofUrl, setBacksideProofUrl] = useState<string | null>(null);
+	const [isBacksideUploading, setIsBacksideUploading] = useState(false);
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [verificationResult, setVerificationResult] =
 		useState<VerificationRequest | null>(null);
@@ -193,6 +223,10 @@ export function DocumentVerificationForm() {
 			country: "",
 			firstName: "",
 			lastName: "",
+			dob: "",
+			age: "",
+			gender: "",
+			requireBackside: false,
 			consent: false,
 		},
 		validators: {
@@ -205,8 +239,17 @@ export function DocumentVerificationForm() {
 				return;
 			}
 
+			if (value.requireBackside && !backsideProofUrl) {
+				toast.error("Please upload the back of the document");
+				return;
+			}
+
 			await submitVerification(
-				buildDocumentVerificationDirectPayload(value, documentProofUrl),
+				buildDocumentVerificationDirectPayload(
+					value,
+					documentProofUrl,
+					value.requireBackside ? backsideProofUrl : null,
+				),
 				{ mode: "direct" },
 			);
 		},
@@ -217,6 +260,8 @@ export function DocumentVerificationForm() {
 		directForm.reset();
 		setDocumentProofUrl(null);
 		setIsDocumentUploading(false);
+		setBacksideProofUrl(null);
+		setIsBacksideUploading(false);
 	}
 
 	function handleStartNewVerification() {
@@ -275,6 +320,8 @@ export function DocumentVerificationForm() {
 								if (value !== "direct") {
 									setDocumentProofUrl(null);
 									setIsDocumentUploading(false);
+									setBacksideProofUrl(null);
+									setIsBacksideUploading(false);
 								}
 							}}
 							variant="outline"
@@ -531,6 +578,143 @@ export function DocumentVerificationForm() {
 								emptyStateText="Click to upload a document (image or PDF)"
 								disabled={isSubmitting}
 							/>
+
+							<Accordion
+								type="single"
+								collapsible
+								className="rounded-lg border px-4"
+							>
+								<AccordionItem
+									value="additional-fields"
+									className="border-none"
+								>
+									<AccordionTrigger className="py-4 hover:no-underline">
+										<div className="flex items-center gap-3 text-left">
+											<SlidersHorizontalIcon className="size-5 shrink-0 text-secondary" />
+											<div>
+												<p className="text-sm font-medium">
+													Additional fields
+												</p>
+												<p className="text-xs font-normal text-muted-foreground">
+													Optional date of birth, age, gender, and backside
+												</p>
+											</div>
+										</div>
+									</AccordionTrigger>
+									<AccordionContent className="space-y-6 pb-4">
+										<directForm.Field name="dob">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="document-verification-direct-dob">
+														Date of birth
+													</FieldLabel>
+													<KycDatePicker
+														id="document-verification-direct-dob"
+														value={field.state.value || undefined}
+														disableFutureDates
+														onChange={(date) =>
+															field.handleChange(
+																date ? format(date, "yyyy-MM-dd") : "",
+															)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</directForm.Field>
+
+										<directForm.Field name="age">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="document-verification-direct-age">
+														Age
+													</FieldLabel>
+													<Input
+														id="document-verification-direct-age"
+														type="number"
+														inputMode="numeric"
+														min={1}
+														max={150}
+														placeholder="Age"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</directForm.Field>
+
+										<directForm.Field name="gender">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel>Gender</FieldLabel>
+													<RadioGroup
+														value={field.state.value}
+														onValueChange={field.handleChange}
+														className="grid gap-2 sm:grid-cols-2"
+														disabled={isSubmitting}
+													>
+														{GENDER_OPTIONS.map((option) => (
+															<Label
+																key={option.value}
+																htmlFor={`document-verification-direct-gender-${option.value}`}
+																className={cn(
+																	"flex w-full cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 font-normal",
+																	field.state.value === option.value &&
+																		"border-primary bg-primary/5",
+																)}
+															>
+																<RadioGroupItem
+																	value={option.value}
+																	id={`document-verification-direct-gender-${option.value}`}
+																/>
+																{option.label}
+															</Label>
+														))}
+													</RadioGroup>
+												</Field>
+											)}
+										</directForm.Field>
+
+										<directForm.Field name="requireBackside">
+											{(field) => (
+												<Field className="gap-3">
+													<div className="flex items-center justify-between gap-3">
+														<div className="space-y-1">
+															<FieldLabel htmlFor="document-verification-direct-require-backside">
+																Require backside
+															</FieldLabel>
+															<FieldDescription>
+																Upload the back of the identity document.
+															</FieldDescription>
+														</div>
+														<Switch
+															id="document-verification-direct-require-backside"
+															checked={field.state.value}
+															onCheckedChange={field.handleChange}
+															disabled={isSubmitting}
+														/>
+													</div>
+													<ProductProofUpload
+														label="Back of document"
+														verificationName={
+															PRODUCT_UPLOAD_VERIFICATIONS.documentVerification
+														}
+														proofUrl={backsideProofUrl}
+														onProofUrlChange={setBacksideProofUrl}
+														onUploadingChange={setIsBacksideUploading}
+														emptyStateText="Click to upload the back of the document"
+														disabled={isSubmitting || !field.state.value}
+													/>
+												</Field>
+											)}
+										</directForm.Field>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						</FieldGroup>
 					)}
 
@@ -570,8 +754,13 @@ export function DocumentVerificationForm() {
 							)}
 						</linkForm.Subscribe>
 					) : (
-						<directForm.Subscribe selector={(state) => state.canSubmit}>
-							{(canSubmit) => (
+						<directForm.Subscribe
+							selector={(state) => ({
+								canSubmit: state.canSubmit,
+								requireBackside: state.values.requireBackside,
+							})}
+						>
+							{({ canSubmit, requireBackside }) => (
 								<Button
 									type="submit"
 									className="w-full cursor-pointer"
@@ -579,6 +768,8 @@ export function DocumentVerificationForm() {
 										!canSubmit ||
 										!documentProofUrl ||
 										isDocumentUploading ||
+										(requireBackside &&
+											(!backsideProofUrl || isBacksideUploading)) ||
 										isSubmitting
 									}
 								>
