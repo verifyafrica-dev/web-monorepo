@@ -32,6 +32,7 @@ type NewVerifyChromeProps = {
 	children: ReactNode;
 	token: string;
 	contactEmail?: string;
+	verificationTitle?: string;
 };
 
 export function NewVerifyBrandingFooter() {
@@ -59,6 +60,7 @@ export function NewVerifyChrome({
 	children,
 	token,
 	contactEmail = "",
+	verificationTitle,
 }: NewVerifyChromeProps) {
 	const [isHelpOpen, setIsHelpOpen] = useState(false);
 	const [isContinueOnPhoneOpen, setIsContinueOnPhoneOpen] = useState(false);
@@ -156,6 +158,14 @@ export function NewVerifyChrome({
 						</Tooltip>
 					</div>
 				</header>
+
+				{verificationTitle ? (
+					<div className="px-6 pb-2">
+						<h1 className="text-lg font-semibold tracking-tight">
+							{verificationTitle}
+						</h1>
+					</div>
+				) : null}
 
 				<div className="flex min-h-0 flex-1 flex-col">{children}</div>
 				<NewVerifyBrandingFooter />

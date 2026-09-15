@@ -9,6 +9,7 @@ import {
 } from "@verifyafrica/api-client/lib/file-upload-storage";
 
 export const PRODUCT_UPLOAD_VERIFICATIONS = {
+	amlScreening: "AML Screening",
 	documentVerification: "Document Verification",
 	addressVerification: "Address Verification",
 	facialScreening: "Facial Screening",

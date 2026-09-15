@@ -13,6 +13,12 @@ import type {
 	NewVerifyFaceSubmitPayload,
 	NewVerifyFeedbackSubmitData,
 	NewVerifyFeedbackSubmitPayload,
+	NewVerifyAmlSubmitData,
+	NewVerifyAmlSubmitPayload,
+	NewVerifyBusinessAmlSubmitData,
+	NewVerifyBusinessAmlSubmitPayload,
+	NewVerifyKybSubmitData,
+	NewVerifyKybSubmitPayload,
 	NewVerifyPresignData,
 	NewVerifyPresignPayload,
 	NewVerifySession,
@@ -31,6 +37,12 @@ const NEW_VERIFY_V2_ENDPOINTS = {
 		`/v2/verifications/new-verify/${token}/address_verification/`,
 	faceVerification: (token: string) =>
 		`/v2/verifications/new-verify/${token}/face_verification/`,
+	amlScreening: (token: string) =>
+		`/v2/verifications/new-verify/${token}/aml_screening/`,
+	businessAmlScreening: (token: string) =>
+		`/v2/verifications/new-verify/${token}/business_aml_screening/`,
+	kybScreening: (token: string) =>
+		`/v2/verifications/new-verify/${token}/kyb_screening/`,
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -84,6 +96,30 @@ export const NEW_VERIFY_V2_API = {
 		await getHttpClient()
 			.post(NEW_VERIFY_V2_ENDPOINTS.faceVerification(token), data)
 			.then((res) => unwrapV2Data<NewVerifyFaceSubmitData>(res)),
+
+	AML_SCREENING: async (
+		token: string,
+		data: NewVerifyAmlSubmitPayload,
+	): Promise<NewVerifyAmlSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.amlScreening(token), data)
+			.then((res) => unwrapV2Data<NewVerifyAmlSubmitData>(res)),
+
+	BUSINESS_AML_SCREENING: async (
+		token: string,
+		data: NewVerifyBusinessAmlSubmitPayload,
+	): Promise<NewVerifyBusinessAmlSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.businessAmlScreening(token), data)
+			.then((res) => unwrapV2Data<NewVerifyBusinessAmlSubmitData>(res)),
+
+	KYB_SCREENING: async (
+		token: string,
+		data: NewVerifyKybSubmitPayload,
+	): Promise<NewVerifyKybSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.kybScreening(token), data)
+			.then((res) => unwrapV2Data<NewVerifyKybSubmitData>(res)),
 
 	FEEDBACK: async (
 		token: string,

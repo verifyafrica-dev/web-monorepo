@@ -70,7 +70,9 @@ const businessFieldsSchema = {
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	...businessFieldsSchema,
+	screeningCountry: z.string(),
+	businessName: z.string(),
+	incorporationDate: z.string(),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	consent: verificationConsentSchema,
 });
@@ -280,112 +282,130 @@ export function BusinessAmlScreeningForm() {
 						)}
 
 						{mode === "link" ? (
-							<linkForm.Field name="screeningCountry">
-								{(field) => (
-									<ScreeningCountryField
-										id="business-aml-link-country"
-										value={field.state.value}
-										onValueChange={field.handleChange}
-										countries={countries}
-										isLoading={isCountriesPending}
-									/>
-								)}
-							</linkForm.Field>
+							<Accordion
+								type="single"
+								collapsible
+								className="rounded-lg border bg-muted/60 px-4"
+							>
+								<AccordionItem
+									value="optional-business-aml-fields"
+									className="border-0"
+								>
+									<AccordionTrigger className="py-3 hover:no-underline">
+										Optional country, business name, and incorporation date
+									</AccordionTrigger>
+									<AccordionContent className="flex flex-col gap-4">
+										<FieldDescription>
+											Leave these blank so the customer can enter them. A
+											country or incorporation date you set here cannot be
+											changed by the customer. A business name is shown to the
+											customer and can still be edited.
+										</FieldDescription>
+										<linkForm.Field name="screeningCountry">
+											{(field) => (
+												<ScreeningCountryField
+													id="business-aml-link-country"
+													value={field.state.value}
+													onValueChange={field.handleChange}
+													countries={countries}
+													isLoading={isCountriesPending}
+												/>
+											)}
+										</linkForm.Field>
+										<div className="grid gap-4 sm:grid-cols-2">
+											<linkForm.Field name="businessName">
+												{(field) => (
+													<Field className="gap-1.5">
+														<FieldLabel htmlFor="business-aml-link-name">
+															Business Name
+														</FieldLabel>
+														<Input
+															id="business-aml-link-name"
+															placeholder="Business Name"
+															value={field.state.value}
+															onBlur={field.handleBlur}
+															onChange={(event) =>
+																field.handleChange(event.target.value)
+															}
+														/>
+													</Field>
+												)}
+											</linkForm.Field>
+											<linkForm.Field name="incorporationDate">
+												{(field) => (
+													<Field className="gap-1.5">
+														<FieldLabel htmlFor="business-aml-link-incorporation-date">
+															Business Incorporation Date
+														</FieldLabel>
+														<KycDatePicker
+															id="business-aml-link-incorporation-date"
+															value={parseIncorporationDate(field.state.value)}
+															onChange={(date) =>
+																field.handleChange(
+																	date ? format(date, "yyyy-MM-dd") : "",
+																)
+															}
+														/>
+													</Field>
+												)}
+											</linkForm.Field>
+										</div>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						) : (
-							<directForm.Field name="screeningCountry">
-								{(field) => (
-									<ScreeningCountryField
-										id="business-aml-direct-country"
-										value={field.state.value}
-										onValueChange={field.handleChange}
-										countries={countries}
-										isLoading={isCountriesPending}
-									/>
-								)}
-							</directForm.Field>
+							<>
+								<directForm.Field name="screeningCountry">
+									{(field) => (
+										<ScreeningCountryField
+											id="business-aml-direct-country"
+											value={field.state.value}
+											onValueChange={field.handleChange}
+											countries={countries}
+											isLoading={isCountriesPending}
+										/>
+									)}
+								</directForm.Field>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<directForm.Field name="businessName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="business-aml-direct-name">
+													Business Name
+												</FieldLabel>
+												<Input
+													id="business-aml-direct-name"
+													placeholder="Business Name"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+												/>
+											</Field>
+										)}
+									</directForm.Field>
+									<directForm.Field name="incorporationDate">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="business-aml-direct-incorporation-date">
+													Business Incorporation Date (Optional)
+												</FieldLabel>
+												<KycDatePicker
+													id="business-aml-direct-incorporation-date"
+													value={parseIncorporationDate(field.state.value)}
+													onChange={(date) =>
+														field.handleChange(
+															date ? format(date, "yyyy-MM-dd") : "",
+														)
+													}
+												/>
+											</Field>
+										)}
+									</directForm.Field>
+								</div>
+							</>
 						)}
-
-						<div className="grid gap-4 sm:grid-cols-2">
-							{mode === "link" ? (
-								<linkForm.Field name="businessName">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-link-name">
-												Business Name
-											</FieldLabel>
-											<Input
-												id="business-aml-link-name"
-												placeholder="Business Name"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(event) =>
-													field.handleChange(event.target.value)
-												}
-											/>
-										</Field>
-									)}
-								</linkForm.Field>
-							) : (
-								<directForm.Field name="businessName">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-direct-name">
-												Business Name
-											</FieldLabel>
-											<Input
-												id="business-aml-direct-name"
-												placeholder="Business Name"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(event) =>
-													field.handleChange(event.target.value)
-												}
-											/>
-										</Field>
-									)}
-								</directForm.Field>
-							)}
-
-							{mode === "link" ? (
-								<linkForm.Field name="incorporationDate">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-link-incorporation-date">
-												Business Incorporation Date (Optional)
-											</FieldLabel>
-											<KycDatePicker
-												id="business-aml-link-incorporation-date"
-												value={parseIncorporationDate(field.state.value)}
-												onChange={(date) =>
-													field.handleChange(
-														date ? format(date, "yyyy-MM-dd") : "",
-													)
-												}
-											/>
-										</Field>
-									)}
-								</linkForm.Field>
-							) : (
-								<directForm.Field name="incorporationDate">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-direct-incorporation-date">
-												Business Incorporation Date (Optional)
-											</FieldLabel>
-											<KycDatePicker
-												id="business-aml-direct-incorporation-date"
-												value={parseIncorporationDate(field.state.value)}
-												onChange={(date) =>
-													field.handleChange(
-														date ? format(date, "yyyy-MM-dd") : "",
-													)
-												}
-											/>
-										</Field>
-									)}
-								</directForm.Field>
-							)}
-						</div>
 
 						{mode === "link" && (
 							<linkForm.Field name="urlLimit">

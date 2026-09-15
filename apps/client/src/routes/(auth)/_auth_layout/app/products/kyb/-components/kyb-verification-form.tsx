@@ -1,7 +1,19 @@
-import { PaperPlaneTiltIcon } from "@phosphor-icons/react";
+import {
+	LinkIcon,
+	MagnifyingGlassIcon,
+	PaperPlaneTiltIcon,
+} from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { z } from "zod";
 
+import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@verifyafrica/ui/components/ui/accordion";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -12,6 +24,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
 	FieldDescription,
@@ -20,13 +34,28 @@ import {
 } from "@verifyafrica/ui/components/ui/field";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
-import { verificationConsentSchema } from "../../../-components/VerificationConsentCheckbox/data";
+import {
+	DEFAULT_VERIFICATION_URL_LIMIT,
+	VERIFICATION_MODES,
+	VERIFICATION_URL_LIMITS,
+	type VerificationMode,
+	verificationConsentSchema,
+} from "../../../-components/VerificationConsentCheckbox/data";
 import { useTenantSupportedCountries } from "../../-countries";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import { buildKybVerificationPayload } from "../-data";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import {
+	buildKybVerificationLinkPayload,
+	buildKybVerificationPayload,
+} from "../-data";
 
-const kybFormSchema = z.object({
+const linkFormSchema = z.object({
+	email: z.email("Enter a valid email address"),
+	businessJurisdiction: z.string(),
+	urlLimit: z.string().min(1, "Select a verification URL limit"),
+	consent: verificationConsentSchema,
+});
+
+const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	businessJurisdiction: z.string().min(1, "Business jurisdiction is required"),
 	companyName: z.string().trim().min(1, "Company name is required"),
@@ -38,6 +67,7 @@ const kybFormSchema = z.object({
 });
 
 export function KybVerificationForm() {
+	const [mode, setMode] = useState<VerificationMode>("link");
 	const {
 		submitVerification,
 		linkResult,
@@ -52,7 +82,33 @@ export function KybVerificationForm() {
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries();
 
-	const form = useForm({
+	const linkForm = useForm({
+		defaultValues: {
+			email: "",
+			businessJurisdiction: "",
+			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
+			consent: false,
+		},
+		validators: {
+			onChange: linkFormSchema,
+			onSubmit: linkFormSchema,
+		},
+		onSubmit: async ({ value }) => {
+			const submitted = await submitVerification(
+				buildKybVerificationLinkPayload(value),
+				{
+					mode: "link",
+					email: value.email,
+					urlLimit: value.urlLimit,
+				},
+			);
+			if (submitted) {
+				resetForms();
+			}
+		},
+	});
+
+	const directForm = useForm({
 		defaultValues: {
 			email: "",
 			businessJurisdiction: "",
@@ -61,15 +117,14 @@ export function KybVerificationForm() {
 			consent: false,
 		},
 		validators: {
-			onChange: kybFormSchema,
-			onSubmit: kybFormSchema,
+			onChange: directFormSchema,
+			onSubmit: directFormSchema,
 		},
 		onSubmit: async ({ value }) => {
 			const submitted = await submitVerification(
 				buildKybVerificationPayload(value),
 				{ mode: "direct" },
 			);
-
 			if (submitted) {
 				resetForms();
 			}
@@ -77,8 +132,11 @@ export function KybVerificationForm() {
 	});
 
 	function resetForms() {
-		form.reset();
+		linkForm.reset();
+		directForm.reset();
 	}
+
+	const activeForm = mode === "direct" ? directForm : linkForm;
 
 	return (
 		<Card>
@@ -88,119 +146,274 @@ export function KybVerificationForm() {
 					onSubmit={(event) => {
 						event.preventDefault();
 						event.stopPropagation();
-						void form.handleSubmit();
+						void activeForm.handleSubmit();
 					}}
 				>
-					<FieldGroup className="gap-4">
-						<form.Field name="email">
-							{(field) => (
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor="kyb-verification-email">
-										Email Address
-									</FieldLabel>
-									<Input
-										id="kyb-verification-email"
-										type="email"
-										autoComplete="email"
-										placeholder="Email Address"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
-									/>
-								</Field>
-							)}
-						</form.Field>
-
-						<form.Field name="businessJurisdiction">
-							{(field) => (
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor="kyb-verification-jurisdiction">
-										Business Jurisdiction{" "}
-										<span className="text-destructive">*</span>
-									</FieldLabel>
-									<Select
-										value={field.state.value || undefined}
-										onValueChange={field.handleChange}
-										disabled={isCountriesPending}
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-sm font-medium text-muted-foreground">
+							Verification Mode
+						</p>
+						<ToggleGroup
+							type="single"
+							value={mode}
+							onValueChange={(value) => {
+								if (value) {
+									setMode(value as VerificationMode);
+								}
+							}}
+							className="w-full sm:w-auto"
+						>
+							{VERIFICATION_MODES.map((option) => {
+								const Icon =
+									option.value === "link" ? LinkIcon : MagnifyingGlassIcon;
+								return (
+									<ToggleGroupItem
+										key={option.value}
+										value={option.value}
+										className={cn("flex-1 sm:flex-none")}
 									>
-										<SelectTrigger
-											id="kyb-verification-jurisdiction"
-											className="w-full"
+										<Icon className="size-4" />
+										{option.label}
+									</ToggleGroupItem>
+								);
+							})}
+						</ToggleGroup>
+					</div>
+
+					{mode === "link" ? (
+						<FieldGroup className="gap-4">
+							<linkForm.Field name="email">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-link-email">
+											Email Address
+										</FieldLabel>
+										<Input
+											id="kyb-link-email"
+											type="email"
+											autoComplete="email"
+											placeholder="Email Address"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
+									</Field>
+								)}
+							</linkForm.Field>
+							<Accordion type="single" collapsible>
+								<AccordionItem value="optional-kyb-jurisdiction">
+									<AccordionTrigger>
+										Optional jurisdiction lock
+									</AccordionTrigger>
+									<AccordionContent className="flex flex-col gap-4">
+										<FieldDescription>
+											Leave this blank so the customer can pick a jurisdiction
+											from the countries you have access to. If you set it, the
+											customer cannot change it.
+										</FieldDescription>
+										<linkForm.Field name="businessJurisdiction">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="kyb-link-jurisdiction">
+														Business Jurisdiction
+													</FieldLabel>
+													<Select
+														value={field.state.value || undefined}
+														onValueChange={field.handleChange}
+														disabled={isCountriesPending}
+													>
+														<SelectTrigger
+															id="kyb-link-jurisdiction"
+															className="w-full"
+														>
+															<SelectValue
+																placeholder={
+																	isCountriesPending
+																		? "Loading jurisdictions..."
+																		: "Select a jurisdiction"
+																}
+															/>
+														</SelectTrigger>
+														<SelectContent className="max-h-60">
+															{countries.map((country) => (
+																<SelectItem
+																	key={country.code}
+																	value={country.code}
+																>
+																	<CountryOptionLabel
+																		name={country.name}
+																		countryCode={country.code}
+																	/>
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</Field>
+											)}
+										</linkForm.Field>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
+							<linkForm.Field name="urlLimit">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-url-limit">
+											Verification URL Limit
+										</FieldLabel>
+										<Select
+											value={field.state.value}
+											onValueChange={field.handleChange}
 										>
-											<SelectValue
-												placeholder={
-													isCountriesPending
-														? "Loading jurisdictions..."
-														: "Select a jurisdiction"
-												}
-											/>
-										</SelectTrigger>
-										<SelectContent className="max-h-60">
-											{countries.map((country) => (
-												<SelectItem key={country.code} value={country.code}>
-													<CountryOptionLabel
-														name={country.name}
-														countryCode={country.code}
-													/>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									<FieldDescription>
-										Choose the jurisdiction where the company is registered
-									</FieldDescription>
-								</Field>
-							)}
-						</form.Field>
+											<SelectTrigger id="kyb-url-limit" className="w-full">
+												<SelectValue placeholder="Select duration" />
+											</SelectTrigger>
+											<SelectContent>
+												{VERIFICATION_URL_LIMITS.map((option) => (
+													<SelectItem
+														key={option.value}
+														value={option.value}
+													>
+														{option.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										<FieldDescription>
+											How long the verification link stays active
+										</FieldDescription>
+									</Field>
+								)}
+							</linkForm.Field>
+						</FieldGroup>
+					) : (
+						<FieldGroup className="gap-4">
+							<directForm.Field name="email">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-verification-email">
+											Email Address
+										</FieldLabel>
+										<Input
+											id="kyb-verification-email"
+											type="email"
+											autoComplete="email"
+											placeholder="Email Address"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
+									</Field>
+								)}
+							</directForm.Field>
+							<directForm.Field name="businessJurisdiction">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-verification-jurisdiction">
+											Business Jurisdiction{" "}
+											<span className="text-destructive">*</span>
+										</FieldLabel>
+										<Select
+											value={field.state.value || undefined}
+											onValueChange={field.handleChange}
+											disabled={isCountriesPending}
+										>
+											<SelectTrigger
+												id="kyb-verification-jurisdiction"
+												className="w-full"
+											>
+												<SelectValue
+													placeholder={
+														isCountriesPending
+															? "Loading jurisdictions..."
+															: "Select a jurisdiction"
+													}
+												/>
+											</SelectTrigger>
+											<SelectContent className="max-h-60">
+												{countries.map((country) => (
+													<SelectItem
+														key={country.code}
+														value={country.code}
+													>
+														<CountryOptionLabel
+															name={country.name}
+															countryCode={country.code}
+														/>
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+								)}
+							</directForm.Field>
+							<directForm.Field name="companyName">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-verification-company-name">
+											Company Name{" "}
+											<span className="text-destructive">*</span>
+										</FieldLabel>
+										<Input
+											id="kyb-verification-company-name"
+											placeholder="Company Name"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
+									</Field>
+								)}
+							</directForm.Field>
+							<directForm.Field name="companyRegistrationNumber">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="kyb-verification-registration-number">
+											Company Registration Number{" "}
+											<span className="text-destructive">*</span>
+										</FieldLabel>
+										<Input
+											id="kyb-verification-registration-number"
+											placeholder="Company Registration Number"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+										/>
+									</Field>
+								)}
+							</directForm.Field>
+						</FieldGroup>
+					)}
 
-						<form.Field name="companyName">
+					{mode === "link" ? (
+						<linkForm.Field name="consent">
 							{(field) => (
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor="kyb-verification-company-name">
-										Company Name{" "}
-										<span className="text-destructive">*</span>
-									</FieldLabel>
-									<Input
-										id="kyb-verification-company-name"
-										placeholder="Company Name"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
-									/>
-								</Field>
+								<VerificationConsentCheckbox
+									id="kyb-link-consent"
+									checked={field.state.value}
+									onCheckedChange={field.handleChange}
+								/>
 							)}
-						</form.Field>
-
-						<form.Field name="companyRegistrationNumber">
+						</linkForm.Field>
+					) : (
+						<directForm.Field name="consent">
 							{(field) => (
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor="kyb-verification-registration-number">
-										Company Registration Number{" "}
-										<span className="text-destructive">*</span>
-									</FieldLabel>
-									<Input
-										id="kyb-verification-registration-number"
-										placeholder="Company Registration Number"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
-									/>
-								</Field>
+								<VerificationConsentCheckbox
+									id="kyb-direct-consent"
+									checked={field.state.value}
+									onCheckedChange={field.handleChange}
+								/>
 							)}
-						</form.Field>
-					</FieldGroup>
+						</directForm.Field>
+					)}
 
-					<form.Field name="consent">
-						{(field) => (
-							<VerificationConsentCheckbox
-								id="kyb-verification-consent"
-								checked={field.state.value}
-								onCheckedChange={field.handleChange}
-							/>
-						)}
-					</form.Field>
-
-					<form.Subscribe selector={(state) => state.canSubmit}>
+					<activeForm.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
@@ -211,7 +424,7 @@ export function KybVerificationForm() {
 								{isSubmitting ? "Submitting..." : "Submit Verification"}
 							</Button>
 						)}
-					</form.Subscribe>
+					</activeForm.Subscribe>
 				</form>
 			</CardContent>
 

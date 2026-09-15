@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useCreateNewVerifyV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 import { useCreateVerificationRequestV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import type {
 	VerificationRequest,
@@ -35,6 +36,7 @@ export function useProductVerificationSubmit(
 ) {
 	const { tenantId } = useCurrentTenant();
 	const createVerificationMutation = useCreateVerificationRequestV2Mutation();
+	const createNewVerifyMutation = useCreateNewVerifyV2Mutation();
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [verificationResult, setVerificationResult] =
 		useState<VerificationRequest | null>(null);
@@ -50,10 +52,19 @@ export function useProductVerificationSubmit(
 		}
 
 		try {
-			const verification = await createVerificationMutation.mutateAsync({
-				tenantId,
-				payload,
-			});
+			const verification =
+				submitOptions.mode === "link"
+					? await createNewVerifyMutation.mutateAsync({
+							tenantId,
+							payload: {
+								...payload,
+								method_type: "new_link",
+							},
+						})
+					: await createVerificationMutation.mutateAsync({
+							tenantId,
+							payload,
+						});
 
 			if (submitOptions.mode === "link") {
 				setLinkResult(
@@ -93,7 +104,8 @@ export function useProductVerificationSubmit(
 		verificationResult,
 		isResultDialogOpen,
 		setIsResultDialogOpen,
-		isSubmitting: createVerificationMutation.isPending,
+		isSubmitting:
+			createVerificationMutation.isPending || createNewVerifyMutation.isPending,
 		handleStartNewVerification,
 	};
 }

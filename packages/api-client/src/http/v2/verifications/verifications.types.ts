@@ -439,10 +439,19 @@ export interface AmlBackgroundChecksInput {
 	alias_search?: string;
 	dob?: string;
 	legacy_version?: string;
-	ongoing?: string;
+	biometric_search_image?: string;
+	context?: string;
+}
+
+export interface AmlScreeningFiltersInput {
+	filters?: string[];
+	match_score?: number;
+	rca_search?: boolean | string;
+	alias_search?: boolean | string;
 }
 
 export interface AmlScreeningInputData extends VerificationInputDataBase {
+	filters?: AmlScreeningFiltersInput;
 	background_checks?: AmlBackgroundChecksInput;
 }
 
@@ -509,6 +518,7 @@ export interface VerificationInputData extends VerificationInputDataBase {
 	face?: FaceVerificationInputFace;
 	collect?: VerificationCollectConfig;
 	background_checks?: AmlBackgroundChecksInput;
+	filters?: AmlScreeningFiltersInput;
 	aml_for_businesses?: BusinessAmlScreeningInput;
 	kyb?: KybScreeningInput;
 	risk_assessment?: RiskAssessmentInput;
