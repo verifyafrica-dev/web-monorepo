@@ -101,7 +101,7 @@ export function AmlScreeningForm() {
 		errorMessage: "Failed to submit AML screening verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({ verificationType: "aml_screening" });
 
 	const hasSelectedFilters = useMemo(
 		() => Object.values(filters).some(Boolean),

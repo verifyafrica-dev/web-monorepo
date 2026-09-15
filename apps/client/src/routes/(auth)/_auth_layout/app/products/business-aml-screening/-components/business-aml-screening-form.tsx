@@ -108,7 +108,9 @@ export function BusinessAmlScreeningForm() {
 		errorMessage: "Failed to submit business AML screening verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({
+			verificationType: "business_aml_screening",
+		});
 
 	const hasSelectedFilters = useMemo(
 		() => Object.values(filters).some(Boolean),

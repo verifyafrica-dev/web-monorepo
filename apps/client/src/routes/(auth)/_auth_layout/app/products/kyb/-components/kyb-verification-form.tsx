@@ -80,7 +80,7 @@ export function KybVerificationForm() {
 		errorMessage: "Failed to submit KYB verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({ verificationType: "kyb_screening" });
 
 	const linkForm = useForm({
 		defaultValues: {

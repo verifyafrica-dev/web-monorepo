@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { useSupportedCountriesV2Query } from "#/api/http/v2/tenants/tenants.hooks";
+import { useVerificationSupportedCountriesV2Query } from "#/api/http/v2/verifications/verifications.hooks";
 import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { useCurrentTenant } from "../team/-data";
 
@@ -25,6 +26,7 @@ export function filterCountriesByTenant(
 
 type UseTenantSupportedCountriesOptions = {
 	filter?: (countries: SupportedCountry[]) => SupportedCountry[];
+	verificationType?: string;
 };
 
 export function useTenantSupportedCountries(
@@ -32,6 +34,10 @@ export function useTenantSupportedCountries(
 ) {
 	const { tenant } = useCurrentTenant();
 	const countriesQuery = useSupportedCountriesV2Query();
+	const shuftiCountriesQuery = useVerificationSupportedCountriesV2Query(
+		options?.verificationType ?? "",
+		Boolean(options?.verificationType),
+	);
 
 	const enabledCountries =
 		tenant?.enabled_countries && tenant.enabled_countries.length > 0
@@ -44,18 +50,37 @@ export function useTenantSupportedCountries(
 			supportedCountries,
 			enabledCountries,
 		);
+		const shuftiCodes = new Set(
+			(shuftiCountriesQuery.data?.countries ?? []).map((country) =>
+				country.code.trim().toUpperCase(),
+			),
+		);
+		const coverageCountries =
+			options?.verificationType && shuftiCodes.size > 0
+				? tenantCountries.filter((country) =>
+						shuftiCodes.has(country.code.trim().toUpperCase()),
+					)
+				: tenantCountries;
 		const filteredCountries = options?.filter
-			? options.filter(tenantCountries)
-			: tenantCountries;
+			? options.filter(coverageCountries)
+			: coverageCountries;
 
 		return filteredCountries.sort((left, right) =>
 			left.name.localeCompare(right.name),
 		);
-	}, [countriesQuery.data, enabledCountries, options?.filter]);
+	}, [
+		countriesQuery.data,
+		enabledCountries,
+		options?.filter,
+		options?.verificationType,
+		shuftiCountriesQuery.data,
+	]);
 
 	return {
 		countries,
-		isPending: countriesQuery.isPending,
-		isFetching: countriesQuery.isFetching,
+		isPending:
+			countriesQuery.isPending ||
+			(Boolean(options?.verificationType) && shuftiCountriesQuery.isPending),
+		isFetching: countriesQuery.isFetching || shuftiCountriesQuery.isFetching,
 	};
 }
