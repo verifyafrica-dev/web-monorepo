@@ -53,8 +53,25 @@ export function BusinessAmlScreeningInfoPanel() {
 						<div className="space-y-1">
 							<p className="text-sm font-medium">Screening Countries</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Optional ISO country codes used to narrow the scope. Leave empty
-								to run a global screen.
+								Optional ISO country codes used to narrow the scope. Select one or
+								more, or leave empty to run a global screen.
+							</p>
+						</div>
+
+						<div className="space-y-1">
+							<p className="text-sm font-medium">Biometric and individual face</p>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								Optional JPEG or PNG (up to 5MB) for biometric matching, plus an
+								optional JPEG, PNG, or PDF (up to 16MB) for individual face search.
+							</p>
+						</div>
+
+						<div className="space-y-1">
+							<p className="text-sm font-medium">RCA, alias, and context</p>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								RCA includes relatives and close associates. Alias search matches
+								known alternative names. Context adds extra notes for match
+								assessment.
 							</p>
 						</div>
 					</div>

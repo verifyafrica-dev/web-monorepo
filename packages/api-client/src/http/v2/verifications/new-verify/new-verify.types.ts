@@ -30,6 +30,7 @@ export interface NewVerifySessionPrefilled {
 	full_name?: string;
 	dob?: string;
 	country?: string;
+	countries?: string;
 	business_name?: string;
 	incorporation_date?: string;
 	company_name?: string;
@@ -193,12 +194,14 @@ export interface NewVerifyFaceSubmitData {
 export interface NewVerifyAmlSubmitPayload {
 	full_name: string;
 	country?: string | null;
+	countries?: string[] | null;
 	dob?: string | null;
 }
 
 export interface NewVerifyBusinessAmlSubmitPayload {
 	business_name: string;
 	country?: string | null;
+	countries?: string[] | null;
 	incorporation_date?: string | null;
 }
 

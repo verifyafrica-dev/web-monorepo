@@ -435,8 +435,8 @@ export interface AmlBackgroundChecksInput {
 	filters?: string[];
 	countries?: string[];
 	match_score?: number;
-	rca_search?: string;
-	alias_search?: string;
+	rca_search?: boolean | string;
+	alias_search?: boolean | string;
 	dob?: string;
 	legacy_version?: string;
 	biometric_search_image?: string;
@@ -458,14 +458,18 @@ export interface AmlScreeningInputData extends VerificationInputDataBase {
 export interface BusinessAmlScreeningInput {
 	filters?: string[];
 	match_score?: number;
-	alias_search?: string;
-	rca_search?: string;
+	alias_search?: boolean | string;
+	rca_search?: boolean | string;
 	business_name?: string;
 	business_incorporation_date?: string;
 	countries?: string[];
+	biometric_search_image?: string;
+	individual_face?: string;
+	context?: string;
 }
 
 export interface BusinessAmlScreeningInputData extends VerificationInputDataBase {
+	filters?: AmlScreeningFiltersInput;
 	aml_for_businesses?: BusinessAmlScreeningInput;
 }
 

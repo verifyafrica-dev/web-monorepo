@@ -10,6 +10,7 @@ import {
 
 export const PRODUCT_UPLOAD_VERIFICATIONS = {
 	amlScreening: "AML Screening",
+	businessAmlScreening: "Business AML Screening",
 	documentVerification: "Document Verification",
 	addressVerification: "Address Verification",
 	facialScreening: "Facial Screening",

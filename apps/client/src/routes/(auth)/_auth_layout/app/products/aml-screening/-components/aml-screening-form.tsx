@@ -33,9 +33,9 @@ import { VerificationConsentCheckbox } from "../../../-components/VerificationCo
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
+import { ScreeningCountriesMultiSelect } from "@verifyafrica/ui/components/ui-extended/screening-countries-multi-select";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
 	VERIFICATION_MODES,
@@ -54,7 +54,7 @@ import {
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	screeningCountry: z.string(),
+	screeningCountries: z.array(z.string()),
 	dateOfBirth: z.string(),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	consent: verificationConsentSchema,
@@ -62,7 +62,7 @@ const linkFormSchema = z.object({
 
 const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	screeningCountry: z.string(),
+	screeningCountries: z.array(z.string()),
 	fullName: z.string().trim().min(1, "Full name is required"),
 	dateOfBirth: z.string(),
 	consent: verificationConsentSchema,
@@ -120,7 +120,7 @@ export function AmlScreeningForm() {
 	const linkForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [],
 			dateOfBirth: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
 			consent: false,
@@ -153,7 +153,7 @@ export function AmlScreeningForm() {
 	const directForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [],
 			fullName: "",
 			dateOfBirth: "",
 			consent: false,
@@ -281,44 +281,15 @@ export function AmlScreeningForm() {
 											Leave these blank so the customer can enter them. If you
 											set them here, the customer cannot change them.
 										</FieldDescription>
-										<linkForm.Field name="screeningCountry">
+										<linkForm.Field name="screeningCountries">
 											{(field) => (
-												<Field className="gap-1.5">
-													<FieldLabel htmlFor="aml-screening-link-country">
-														Screening country
-													</FieldLabel>
-													<Select
-														value={field.state.value || undefined}
-														onValueChange={field.handleChange}
-														disabled={isCountriesPending}
-													>
-														<SelectTrigger
-															id="aml-screening-link-country"
-															className="w-full"
-														>
-															<SelectValue
-																placeholder={
-																	isCountriesPending
-																		? "Loading countries..."
-																		: "Select a country"
-																}
-															/>
-														</SelectTrigger>
-														<SelectContent className="max-h-60">
-															{countries.map((country) => (
-																<SelectItem
-																	key={country.code}
-																	value={country.code}
-																>
-																	<CountryOptionLabel
-																		name={country.name}
-																		countryCode={country.code}
-																	/>
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												</Field>
+												<ScreeningCountriesMultiSelect
+													id="aml-screening-link-country"
+													value={field.state.value}
+													onValueChange={field.handleChange}
+													countries={countries}
+													isLoading={isCountriesPending}
+												/>
 											)}
 										</linkForm.Field>
 										<linkForm.Field name="dateOfBirth">
@@ -397,44 +368,15 @@ export function AmlScreeningForm() {
 								)}
 							</directForm.Field>
 
-							<directForm.Field name="screeningCountry">
+							<directForm.Field name="screeningCountries">
 								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="aml-screening-direct-country">
-											Screening Countries
-										</FieldLabel>
-										<Select
-											value={field.state.value || undefined}
-											onValueChange={field.handleChange}
-											disabled={isCountriesPending}
-										>
-											<SelectTrigger
-												id="aml-screening-direct-country"
-												className="w-full"
-											>
-												<SelectValue
-													placeholder={
-														isCountriesPending
-															? "Loading countries..."
-															: "Select a country"
-													}
-												/>
-											</SelectTrigger>
-											<SelectContent className="max-h-60">
-												{countries.map((country) => (
-													<SelectItem key={country.code} value={country.code}>
-														<CountryOptionLabel
-															name={country.name}
-															countryCode={country.code}
-														/>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FieldDescription>
-											Choose the country to screen against
-										</FieldDescription>
-									</Field>
+									<ScreeningCountriesMultiSelect
+										id="aml-screening-direct-country"
+										value={field.state.value}
+										onValueChange={field.handleChange}
+										countries={countries}
+										isLoading={isCountriesPending}
+									/>
 								)}
 							</directForm.Field>
 

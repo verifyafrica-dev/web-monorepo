@@ -238,6 +238,7 @@ function ComboboxChip({
   ...props
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean
+  value?: string
 }) {
   return (
     <ComboboxPrimitive.Chip

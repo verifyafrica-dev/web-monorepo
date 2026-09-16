@@ -10,14 +10,7 @@ import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifica
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Field, FieldLabel } from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@verifyafrica/ui/components/ui/select";
+import { ScreeningCountriesMultiSelect } from "@verifyafrica/ui/components/ui-extended/screening-countries-multi-select";
 import { KycDatePicker } from "../../../../../(auth)/_auth_layout/app/kyc/-components/kyc-form-primitives";
 
 import { MerchantPrefillCard } from "./merchant-prefill-card";
@@ -39,7 +32,7 @@ export function BusinessAmlScreeningVerification({
 	const form = useForm({
 		defaultValues: {
 			businessName: session.prefilled?.business_name ?? "",
-			country: countryLocked ? (session.prefilled?.country ?? "") : "",
+			countries: [] as string[],
 			incorporationDate: dateLocked
 				? (session.prefilled?.incorporation_date ?? "")
 				: "",
@@ -47,7 +40,7 @@ export function BusinessAmlScreeningVerification({
 		validators: {
 			onSubmit: z.object({
 				businessName: z.string().trim().min(1, "Business name is required"),
-				country: z.string(),
+				countries: z.array(z.string()),
 				incorporationDate: z.string(),
 			}),
 		},
@@ -57,7 +50,7 @@ export function BusinessAmlScreeningVerification({
 					token: session.token,
 					payload: {
 						business_name: value.businessName.trim(),
-						country: countryLocked ? undefined : value.country || undefined,
+						countries: countryLocked ? undefined : value.countries,
 						incorporation_date: dateLocked
 							? undefined
 							: value.incorporationDate || undefined,
@@ -100,31 +93,15 @@ export function BusinessAmlScreeningVerification({
 				)}
 			</form.Field>
 			{countryLocked ? null : (
-				<form.Field name="country">
+				<form.Field name="countries">
 					{(field) => (
-						<Field className="gap-1.5">
-							<FieldLabel htmlFor="business-aml-country">
-								Country (optional)
-							</FieldLabel>
-							<Select
-								value={field.state.value || undefined}
-								onValueChange={field.handleChange}
-							>
-								<SelectTrigger id="business-aml-country" className="w-full">
-									<SelectValue placeholder="Select a country" />
-								</SelectTrigger>
-								<SelectContent className="max-h-60">
-									{countries.map((country) => (
-										<SelectItem key={country.code} value={country.code}>
-											<CountryOptionLabel
-												name={country.name}
-												countryCode={country.code}
-											/>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</Field>
+						<ScreeningCountriesMultiSelect
+							id="business-aml-country"
+							label="Countries (optional)"
+							value={field.state.value}
+							onValueChange={field.handleChange}
+							countries={countries}
+						/>
 					)}
 				</form.Field>
 			)}
