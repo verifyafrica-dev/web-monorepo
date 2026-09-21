@@ -65,8 +65,8 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 	priceDetail: (id: number) =>
 		["verifications-v2", "prices", "detail", id] as const,
 	linkDetail: (link: string) => ["verifications-v2", "links", link] as const,
-	supportedCountries: (verificationType: string) =>
-		["verifications-v2", "supported-countries", verificationType] as const,
+	supportedCountries: (verificationType: string, kybBase?: string) =>
+		["verifications-v2", "supported-countries", verificationType, kybBase ?? ""] as const,
 } as const;
 
 export const useVerificationTypesV2Query = (
@@ -288,11 +288,13 @@ export const useVerificationLinkDetailV2Query = (
 export const useVerificationSupportedCountriesV2Query = (
 	verificationType: string,
 	enabled = true,
+	kybBase?: string,
 ): UseQueryResult<VerificationSupportedCountriesData> =>
 	useQuery<VerificationSupportedCountriesData>({
 		queryKey:
-			VERIFICATIONS_V2_QUERY_KEYS.supportedCountries(verificationType),
-		queryFn: () => VERIFICATIONS_V2_API.SUPPORTED_COUNTRIES(verificationType),
+			VERIFICATIONS_V2_QUERY_KEYS.supportedCountries(verificationType, kybBase),
+		queryFn: () =>
+			VERIFICATIONS_V2_API.SUPPORTED_COUNTRIES(verificationType, kybBase),
 		enabled: enabled && Boolean(verificationType),
 		staleTime: VERIFICATIONS_V2_STALE_TIME,
 	});

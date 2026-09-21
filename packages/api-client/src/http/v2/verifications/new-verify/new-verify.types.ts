@@ -12,6 +12,7 @@ export interface NewVerifyCollectConfig {
 	dob_locked?: boolean;
 	incorporation_date_locked?: boolean;
 	jurisdiction_locked?: boolean;
+	search_by_locked?: boolean;
 }
 
 export interface NewVerifySessionFilters {
@@ -24,6 +25,11 @@ export interface NewVerifySessionFilters {
 export interface NewVerifySessionCountry {
 	code: string;
 	name: string;
+	iso?: string;
+	identifiers?: string[];
+	documents?: Array<
+		string | { payload_name?: string; name?: string; authority?: string }
+	>;
 }
 
 export interface NewVerifySessionPrefilled {
@@ -36,6 +42,9 @@ export interface NewVerifySessionPrefilled {
 	company_name?: string;
 	company_registration_number?: string;
 	jurisdiction_code?: string;
+	search_by?: string;
+	search_word?: string;
+	search_type?: string;
 }
 
 export const ShuftiDocumentSupportedTypeSchema = z.enum([
@@ -138,6 +147,11 @@ export interface NewVerifySession {
 	filters?: NewVerifySessionFilters;
 	prefilled?: NewVerifySessionPrefilled;
 	countries?: NewVerifySessionCountry[];
+	kyb_base?: "search" | "document" | "document_purchase";
+	identifiers?: string[];
+	documents?: Array<
+		string | { payload_name?: string; name?: string; authority?: string }
+	>;
 }
 
 export interface NewVerifyPresignPayload {
@@ -206,9 +220,15 @@ export interface NewVerifyBusinessAmlSubmitPayload {
 }
 
 export interface NewVerifyKybSubmitPayload {
-	company_name: string;
-	company_registration_number: string;
+	company_name?: string;
+	company_registration_number?: string;
 	country?: string | null;
+	search_by?: string;
+	search_word?: string;
+	document_proof?: string;
+	proofs?: Array<{ label: string; file: string }>;
+	additional_proof_labels?: string[];
+	required_documents?: string[];
 }
 
 export type NewVerifyAmlSubmitData = NewVerifyFaceSubmitData;

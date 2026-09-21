@@ -6,7 +6,12 @@ import { getContext } from "./integrations/tanstack-query/root-provider";
 import { routeTree } from "./routeTree.gen";
 
 function AppNotFoundPage() {
-	return <NotFoundPage ctaHref="/" ctaLabel="Go to Verification" />;
+	return (
+		<NotFoundPage
+			ctaHref="/"
+			ctaLabel="Go to Verification"
+		/>
+	);
 }
 
 export function getRouter() {
@@ -20,7 +25,6 @@ export function getRouter() {
 		defaultPreloadStaleTime: 0,
 		defaultNotFoundComponent: AppNotFoundPage,
 	});
-
 
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
 

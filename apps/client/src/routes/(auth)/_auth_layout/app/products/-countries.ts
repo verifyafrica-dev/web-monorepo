@@ -27,6 +27,7 @@ export function filterCountriesByTenant(
 type UseTenantSupportedCountriesOptions = {
 	filter?: (countries: SupportedCountry[]) => SupportedCountry[];
 	verificationType?: string;
+	kybBase?: string;
 };
 
 export function useTenantSupportedCountries(
@@ -37,6 +38,7 @@ export function useTenantSupportedCountries(
 	const shuftiCountriesQuery = useVerificationSupportedCountriesV2Query(
 		options?.verificationType ?? "",
 		Boolean(options?.verificationType),
+		options?.kybBase,
 	);
 
 	const enabledCountries =
@@ -45,6 +47,33 @@ export function useTenantSupportedCountries(
 			: undefined;
 
 	const countries = useMemo(() => {
+		const enabledCodes = new Set(
+			(enabledCountries ?? []).map((code) => code.trim().toLowerCase()),
+		);
+		if (options?.kybBase) {
+			const coverageCountries = (shuftiCountriesQuery.data?.countries ?? [])
+				.filter((country) => {
+					if (enabledCodes.size === 0) {
+						return true;
+					}
+					const code = country.code.trim().toLowerCase();
+					const iso = (country.iso ?? country.code.split("_")[0]).trim().toLowerCase();
+					return enabledCodes.has(code) || enabledCodes.has(iso);
+				})
+				.map((country) => ({
+					code: country.code,
+					name: country.name,
+					iso: country.iso,
+					identifiers: country.identifiers,
+					documents: country.documents,
+				}));
+			const filteredCountries = options?.filter
+				? options.filter(coverageCountries)
+				: coverageCountries;
+			return filteredCountries.sort((left, right) =>
+				left.name.localeCompare(right.name),
+			);
+		}
 		const supportedCountries = countriesQuery.data ?? [];
 		const tenantCountries = filterCountriesByTenant(
 			supportedCountries,
@@ -72,6 +101,7 @@ export function useTenantSupportedCountries(
 		countriesQuery.data,
 		enabledCountries,
 		options?.filter,
+		options?.kybBase,
 		options?.verificationType,
 		shuftiCountriesQuery.data,
 	]);

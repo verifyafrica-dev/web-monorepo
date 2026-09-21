@@ -291,7 +291,18 @@ export type VerificationSendEmailData = {
 
 export interface VerificationSupportedCountriesData {
 	verification_type: string;
-	countries: Array<{ name: string; code: string }>;
+	kyb_base?: string | null;
+	countries: Array<{
+		name: string;
+		code: string;
+		iso?: string;
+		identifiers?: string[];
+		country_names?: string[];
+		documents?: Array<
+			| string
+			| { payload_name?: string; name?: string; authority?: string }
+		>;
+	}>;
 }
 
 export type VerificationRequestResponse =
@@ -479,10 +490,25 @@ export interface CryptoWalletScreeningInputData extends VerificationInputDataBas
 	background_checks?: AmlBackgroundChecksInput;
 }
 
+export type KybBase = "search" | "document" | "document_purchase";
+
 export interface KybScreeningInput {
+	base?: KybBase;
+	company_name?: string;
+	company_names?: string[];
 	company_registration_number?: string;
 	company_jurisdiction_code?: string;
-	search_type?: string;
+	search_type?: "fuzzy" | "contains" | "start_with";
+	search_by?: string;
+	search_word?: string;
+	advanced_search?: boolean | string;
+	ai_business_insights?: boolean | string;
+	country_names?: string[];
+	document_proof?: string;
+	proofs?: Array<{ label: string; file: string }>;
+	additional_proof_labels?: string[];
+	validate_document?: boolean | string | number;
+	required_documents?: string[];
 }
 
 export interface KybScreeningInputData extends VerificationInputDataBase {
