@@ -15,6 +15,7 @@ import { cn } from "@verifyafrica/ui/lib/utils";
 import { isPlainObject } from "@verifyafrica/ui/lib/validators";
 import { asNonEmptyString, asRecord } from "../-utils";
 import { AmlScreeningDownloadReport } from "./aml-screening/aml-screening-download-report";
+import { AmlScreeningInput } from "./aml-screening-input";
 import { ReportOverviewCard } from "./report-overview-card";
 import { ReportDetailField } from "./report-detail-field";
 import { VerificationMetadataCard } from "./verification-metadata-card";
@@ -629,6 +630,7 @@ export function AmlScreeningReport({
 
 	return (
 		<div className="space-y-6">
+			<AmlScreeningInput verification={verification} />
 			<ReportOverviewCard
 				status={<StatusPill status={verification.status} />}
 				verificationType={formatLabel(verification.verification_type)}
