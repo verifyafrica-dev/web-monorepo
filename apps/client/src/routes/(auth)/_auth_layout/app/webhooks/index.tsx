@@ -507,16 +507,18 @@ function UsageInstructionsCard({
 							<p className="text-sm text-muted-foreground">
 								When a verification reaches a terminal status, we POST a JSON
 								payload to your saved webhook URL with your webhook token in the
-								Authorization header. Successful checks use{" "}
-								<code>verification.completed</code>; failed checks use{" "}
-								<code>verification.failed</code>:
+								Authorization header. 								Successful checks use{" "}
+								<code>sf.verification.completed</code> or{" "}
+								<code>kr.verification.completed</code>; failed checks use{" "}
+								<code>sf.verification.failed</code> or{" "}
+								<code>kr.verification.failed</code>:
 							</p>
 							<pre className="min-w-full overflow-x-auto rounded-lg bg-zinc-900 px-4 py-3 text-sm text-emerald-400">
 								<code className="break-all whitespace-pre-wrap">{`Authorization: Bearer ${webhookTokenPreview}
 
 {
   "status": "success" | "failure",
-  "event": "verification.completed" | "verification.failed",
+  "event": "sf.verification.completed" | "kr.verification.completed" | "sf.verification.failed" | "kr.verification.failed",
   "data": { ... }
 }`}</code>
 							</pre>
