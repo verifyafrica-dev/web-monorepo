@@ -28,18 +28,27 @@ import {
 import { MerchantPrefillCard } from "./merchant-prefill-card";
 import { VerificationSubmittedDialog } from "./verification-submitted-dialog";
 
+function titleCaseLabel(value: string) {
+	return value
+		.replaceAll("_", " ")
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ");
+}
+
 const IDENTIFIER_LABELS: Record<string, string> = {
-	company_name: "Company name",
-	registration_number: "Company registration number",
-	vat_number: "VAT number",
-	freelance_number: "Freelance number",
-	tax_identification_number: "Tax identification number",
-	commercial_registration_number: "Commercial registration number",
-	cnpj_number: "CNPJ number",
-	trn_number: "TRN number",
-	iban_number: "IBAN number",
-	license_number: "License number",
-	vat_certificate_number: "VAT certificate number",
+	company_name: "Company Name",
+	registration_number: "Company Registration Number",
+	vat_number: "VAT Number",
+	freelance_number: "Freelance Number",
+	tax_identification_number: "Tax Identification Number",
+	commercial_registration_number: "Commercial Registration Number",
+	cnpj_number: "CNPJ Number",
+	trn_number: "TRN Number",
+	iban_number: "IBAN Number",
+	license_number: "License Number",
+	vat_certificate_number: "VAT Certificate Number",
 };
 
 type KybScreeningVerificationProps = {
@@ -241,7 +250,7 @@ export function KybScreeningVerification({
 													value={identifier}
 												>
 													{IDENTIFIER_LABELS[identifier] ??
-														identifier.replaceAll("_", " ")}
+														titleCaseLabel(identifier)}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -363,9 +372,9 @@ export function KybScreeningVerification({
 											/>
 											<Label
 												htmlFor={`kyb-req-${label}`}
-												className="font-normal capitalize"
+												className="font-normal"
 											>
-												{label.replaceAll("_", " ")}
+												{titleCaseLabel(label)}
 											</Label>
 										</div>
 									))}

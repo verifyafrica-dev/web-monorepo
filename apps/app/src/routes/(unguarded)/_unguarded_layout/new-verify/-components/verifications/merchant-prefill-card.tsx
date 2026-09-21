@@ -5,30 +5,76 @@ type MerchantPrefillCardProps = {
 	session: NewVerifySession;
 };
 
-const labels: Record<string, string> = {
-	full_name: "Full name",
-	dob: "Date of birth",
+const LABELS: Record<string, string> = {
+	full_name: "Full Name",
+	dob: "Date Of Birth",
 	country: "Country",
 	countries: "Countries",
-	business_name: "Business name",
-	incorporation_date: "Incorporation date",
-	company_name: "Company name",
-	company_registration_number: "Registration number",
-	jurisdiction_code: "Jurisdiction",
+	business_name: "Business Name",
+	incorporation_date: "Incorporation Date",
+	company_name: "Company Name",
+	company_registration_number: "Company Registration Number",
+	jurisdiction_code: "Business Jurisdiction",
+	search_by: "Search Identifier",
+	search_word: "Other Identifier Value",
+	search_type: "Search Type",
 };
+
+const VALUE_LABELS: Record<string, string> = {
+	fuzzy: "Fuzzy",
+	contains: "Contains",
+	start_with: "Starts With",
+	company_name: "Company Name",
+	registration_number: "Company Registration Number",
+	vat_number: "VAT Number",
+	freelance_number: "Freelance Number",
+	tax_identification_number: "Tax Identification Number",
+	commercial_registration_number: "Commercial Registration Number",
+	cnpj_number: "CNPJ Number",
+	trn_number: "TRN Number",
+	iban_number: "IBAN Number",
+	license_number: "License Number",
+	vat_certificate_number: "VAT Certificate Number",
+};
+
+function titleCase(value: string) {
+	return value
+		.replaceAll("_", " ")
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ");
+}
+
+function formatLabel(key: string) {
+	return LABELS[key] ?? titleCase(key);
+}
 
 function formatCountryCodes(value: string) {
 	return value
 		.split(/[,\s]+/)
 		.map((code) => code.trim())
 		.filter(Boolean)
-		.map((code) => getCountryName(code) || code)
+		.map((code) => getCountryName(code) || code.replaceAll("_", " ").toUpperCase())
 		.join(", ");
+}
+
+function looksLikeDate(value: string) {
+	return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
 function formatPrefillValue(key: string, value: string) {
 	if (key === "country" || key === "jurisdiction_code" || key === "countries") {
 		return formatCountryCodes(value);
+	}
+	if (looksLikeDate(value) || value.includes("@") || value.startsWith("http")) {
+		return value;
+	}
+	if (VALUE_LABELS[value]) {
+		return VALUE_LABELS[value];
+	}
+	if (value.includes("_") || value === value.toLowerCase()) {
+		return titleCase(value);
 	}
 	return value;
 }
@@ -36,11 +82,12 @@ function formatPrefillValue(key: string, value: string) {
 export function MerchantPrefillCard({ session }: MerchantPrefillCardProps) {
 	const prefilled = session.prefilled ?? {};
 	const hasCountries = Boolean(prefilled.countries);
+	const hasJurisdiction = Boolean(prefilled.jurisdiction_code);
 	const entries = Object.entries(prefilled).filter(([key, value]) => {
 		if (!value) {
 			return false;
 		}
-		if (key === "country" && hasCountries) {
+		if (key === "country" && (hasCountries || hasJurisdiction)) {
 			return false;
 		}
 		return true;
@@ -59,8 +106,10 @@ export function MerchantPrefillCard({ session }: MerchantPrefillCardProps) {
 			<dl className="mt-3 grid gap-2 text-sm">
 				{entries.map(([key, value]) => (
 					<div key={key} className="flex justify-between gap-4">
-						<dt className="text-muted-foreground">{labels[key] ?? key}</dt>
-						<dd className="font-medium">{formatPrefillValue(key, value)}</dd>
+						<dt className="text-muted-foreground">{formatLabel(key)}</dt>
+						<dd className="font-medium text-right">
+							{formatPrefillValue(key, value)}
+						</dd>
 					</div>
 				))}
 			</dl>
