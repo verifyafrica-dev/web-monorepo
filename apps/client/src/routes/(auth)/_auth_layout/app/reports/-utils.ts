@@ -7,6 +7,15 @@ export function asRecord(value: unknown): UnknownRecord | null {
 	return isPlainObject(value) ? (value as UnknownRecord) : null;
 }
 
+export function asUnknownArray(value: unknown): unknown[] {
+	return Array.isArray(value) ? value : [];
+}
+
+export function getResponsePayload(responseData: unknown): UnknownRecord {
+	const record = asRecord(responseData) ?? {};
+	return asRecord(record.data) ?? record;
+}
+
 export function asNonEmptyString(value: unknown): string | undefined {
 	if (typeof value !== "string") {
 		return undefined;

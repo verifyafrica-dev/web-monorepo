@@ -1,6 +1,6 @@
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { BusinessAmlScreeningInput } from "./business-aml-screening-input";
-import { GenericVerificationDetailReport } from "./generic-verification-detail-report";
+import { BusinessAmlScreeningOutcome } from "./business-aml-screening-outcome";
 
 export function BusinessAmlScreeningReport({
 	verification,
@@ -10,7 +10,7 @@ export function BusinessAmlScreeningReport({
 	return (
 		<div className="flex flex-col gap-6">
 			<BusinessAmlScreeningInput verification={verification} />
-			<GenericVerificationDetailReport verification={verification} />
+			<BusinessAmlScreeningOutcome verification={verification} />
 		</div>
 	);
 }
