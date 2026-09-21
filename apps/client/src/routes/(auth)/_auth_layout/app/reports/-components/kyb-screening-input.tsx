@@ -47,10 +47,6 @@ export function KybScreeningInput({
 }) {
 	const inputData = verification.input_data;
 	const kyb = inputData.kyb;
-	const mode =
-		typeof (inputData as { mode?: string }).mode === "string"
-			? (inputData as { mode?: string }).mode
-			: undefined;
 	const jurisdiction = kyb?.company_jurisdiction_code || inputData.country;
 
 	return (
@@ -70,13 +66,11 @@ export function KybScreeningInput({
 					value={displayValue(inputData.language)}
 				/>
 				<ReportDetailField
-					label="Mode"
-					value={displayValue(mode ? formatHumanLabel(mode) : undefined)}
-				/>
-				<ReportDetailField
 					label="KYB Base"
 					value={displayValue(
-						kyb?.base ? KYB_BASE_LABELS[kyb.base] ?? formatHumanLabel(kyb.base) : undefined,
+						kyb?.base
+							? (KYB_BASE_LABELS[kyb.base] ?? formatHumanLabel(kyb.base))
+							: undefined,
 					)}
 				/>
 				<ReportDetailField

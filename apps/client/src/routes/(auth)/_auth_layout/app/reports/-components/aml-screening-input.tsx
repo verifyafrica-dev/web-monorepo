@@ -33,10 +33,6 @@ export function AmlScreeningInput({
 	const inputData = verification.input_data;
 	const background = inputData.background_checks;
 	const filters = inputData.filters;
-	const mode =
-		typeof (inputData as { mode?: string }).mode === "string"
-			? (inputData as { mode?: string }).mode
-			: undefined;
 
 	return (
 		<Card>
@@ -53,10 +49,6 @@ export function AmlScreeningInput({
 				<ReportDetailField
 					label="Language"
 					value={displayValue(inputData.language)}
-				/>
-				<ReportDetailField
-					label="Mode"
-					value={displayValue(mode ? formatHumanLabel(mode) : undefined)}
 				/>
 				<ReportDetailField
 					label="Full Name"

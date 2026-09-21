@@ -58,8 +58,6 @@ export function formatStringList(values?: string[]) {
 	return values.map(formatHumanLabel).join(", ");
 }
 
- 
-
 export const PROOF_LABELS = {
 	address: "Address Proof",
 	document: "Document Proof",

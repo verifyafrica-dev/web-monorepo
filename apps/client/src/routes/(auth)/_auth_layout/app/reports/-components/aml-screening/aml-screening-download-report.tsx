@@ -7,6 +7,7 @@ import type {
 	AmlScreeningVerificationRequestDetail,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { asNonEmptyString, asRecord } from "../../-utils";
+import { AmlScreeningInput } from "../aml-screening-input";
 import { ReportOverviewCard } from "../report-overview-card";
 import { ReportDetailField } from "../report-detail-field";
 
@@ -310,6 +311,7 @@ export function AmlScreeningDownloadReport({
 
 	return (
 		<div className="space-y-6">
+			<AmlScreeningInput verification={verification} />
 			<ReportOverviewCard
 				status={verification.status}
 				verificationType={formatLabel(verification.verification_type)}
