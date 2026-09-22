@@ -313,7 +313,6 @@ export function buildGovernmentRegistryLinkPayload(
 		email: values.email.trim(),
 		language: "EN",
 		ttl: Number(values.urlLimit),
-		country: values.country.trim().toUpperCase(),
 		require_selfie: values.requireSelfie,
 	};
 
