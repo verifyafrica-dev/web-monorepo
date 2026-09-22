@@ -37,6 +37,38 @@ export function displayValue(value: unknown): string {
 	return String(value);
 }
 
+/**
+ * Prefer `response_data.event` (Shufti/Korapay prefixed). For Korapay identity
+ * results that predate event synthesis, derive from terminal status.
+ */
+export function resolveVerificationEvent(verification: {
+	source?: string | null;
+	status?: string | null;
+	response_data?: { event?: unknown } | null;
+}): string | undefined {
+	const stored = asNonEmptyString(verification.response_data?.event);
+	if (stored) {
+		return stored;
+	}
+
+	const source = (verification.source ?? "").toLowerCase();
+	if (source !== "korapay") {
+		return undefined;
+	}
+
+	switch (verification.status) {
+		case "SUCCESS":
+			return "kr.verification.completed";
+		case "FAILED":
+		case "ERROR":
+			return "kr.verification.failed";
+		case "PENDING":
+			return "kr.verification.pending";
+		default:
+			return undefined;
+	}
+}
+
 export function formatHumanLabel(value: string) {
 	return value
 		.replaceAll("_", " ")

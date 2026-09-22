@@ -13,6 +13,10 @@ import { KybScreeningVerification } from "./verifications/kyb-screening-verifica
 import { NewVerifyChrome } from "./new-verify-chrome";
 import { NewVerifyConsent } from "./new-verify-consent";
 
+const GOVERNMENT_REGISTRY_TYPES = new Set<string>(
+	VERIFICATION_TYPES_BY_PRODUCT["Government Registry Checks"],
+);
+
 const NEW_VERIFY_VERIFICATION_COMPONENTS = {
 	id_document: IdDocumentVerification,
 	address_verification: AddressVerification,
@@ -32,13 +36,20 @@ function titleForVerificationType(verificationType: string) {
 	return verificationType.replaceAll("_", " ");
 }
 
+function isGovernmentRegistrySession(session: NewVerifySession) {
+	return (
+		Boolean(session.registry_fields) ||
+		GOVERNMENT_REGISTRY_TYPES.has(session.verification_type)
+	);
+}
+
 type NewVerifySessionViewProps = {
 	session: NewVerifySession;
 };
 
 export function NewVerifySessionView({ session }: NewVerifySessionViewProps) {
 	const [hasConsented, setHasConsented] = useState(false);
-	const VerificationComponent = session.registry_fields
+	const VerificationComponent = isGovernmentRegistrySession(session)
 		? GovernmentRegistryVerification
 		: NEW_VERIFY_VERIFICATION_COMPONENTS[
 				session.verification_type as keyof typeof NEW_VERIFY_VERIFICATION_COMPONENTS

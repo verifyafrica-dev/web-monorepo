@@ -1,3 +1,4 @@
+import { CaretLeftIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
@@ -9,8 +10,14 @@ import { useSubmitNewVerifyGovernmentRegistryV2Mutation } from "#/api/http/v2/ve
 import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 import { uploadNewVerifyProofFile } from "@verifyafrica/api-client/lib/new-verify-proof-upload";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Field, FieldLabel } from "@verifyafrica/ui/components/ui/field";
+import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
+import {
+	Field,
+	FieldError,
+	FieldLabel,
+} from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
+import { Label } from "@verifyafrica/ui/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -20,16 +27,16 @@ import {
 } from "@verifyafrica/ui/components/ui/select";
 
 import { KycDatePicker } from "../../../../../(auth)/_auth_layout/app/kyc/-components/kyc-form-primitives";
-import {
-	IdDocumentCapture,
-	type IdDocumentCaptureResult,
-} from "./id-document-capture";
+import { FacialCapture } from "./facial-biometrics/facial-capture";
+import { FacialReadyInstructions } from "./facial-biometrics/facial-ready-instructions";
 import { MerchantPrefillCard } from "./merchant-prefill-card";
 import { VerificationSubmittedDialog } from "./verification-submitted-dialog";
 
 type GovernmentRegistryVerificationProps = {
 	session: NewVerifySession;
 };
+
+type Step = "form" | "selfie-ready" | "selfie-capture" | "submitted";
 
 function RequiredMark() {
 	return <span className="text-destructive"> *</span>;
@@ -44,10 +51,10 @@ export function GovernmentRegistryVerification({
 	const optionalFields = registryFields?.optional_fields ?? [];
 	const fieldLabels = registryFields?.field_labels ?? {};
 	const allowSelfie = registryFields?.selfie_supported === true;
-	const requireSelfie = Boolean(session.require_selfie);
+	const requireSelfie = Boolean(session.require_selfie) && allowSelfie;
 	const allowFileUpload = session.allow_file_upload !== false;
 
-	const [step, setStep] = useState<"form" | "selfie" | "submitted">("form");
+	const [step, setStep] = useState<Step>("form");
 	const [includeSelfie, setIncludeSelfie] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const mutation = useSubmitNewVerifyGovernmentRegistryV2Mutation();
@@ -60,19 +67,16 @@ export function GovernmentRegistryVerification({
 		[lockedFields, optionalFields, requiredFields],
 	);
 
-	const showValidationFields = useMemo(
-		() =>
-			visibleFields.some((field) =>
-				["first_name", "last_name", "date_of_birth"].includes(field),
-			),
-		[visibleFields],
-	);
+	const needsSelfieStep = allowSelfie && (requireSelfie || includeSelfie);
 
 	const formSchema = useMemo(() => {
 		const shape: Record<string, z.ZodTypeAny> = {};
 		for (const field of visibleFields) {
 			if (requiredFields.includes(field)) {
-				shape[field] = z.string().trim().min(1, `${fieldLabels[field] ?? field} is required`);
+				shape[field] = z
+					.string()
+					.trim()
+					.min(1, `${fieldLabels[field] ?? field} is required`);
 			} else {
 				shape[field] = z.string();
 			}
@@ -97,8 +101,10 @@ export function GovernmentRegistryVerification({
 			onSubmit: formSchema,
 		},
 		onSubmit: async ({ value }) => {
-			if (allowSelfie && (requireSelfie || includeSelfie)) {
-				setStep("selfie");
+			const shouldCaptureSelfie =
+				allowSelfie && (requireSelfie || includeSelfie);
+			if (shouldCaptureSelfie) {
+				setStep("selfie-ready");
 				return;
 			}
 			await submitPayload(value);
@@ -135,16 +141,13 @@ export function GovernmentRegistryVerification({
 		}
 	}
 
-	async function handleSelfieComplete(result: IdDocumentCaptureResult) {
+	async function handleSelfieComplete(file: File) {
 		if (isSubmitting) {
 			return;
 		}
 		setIsSubmitting(true);
 		try {
-			const selfieUrl = await uploadNewVerifyProofFile(
-				session.token,
-				result.front,
-			);
+			const selfieUrl = await uploadNewVerifyProofFile(session.token, file);
 			await submitPayload(form.state.values, selfieUrl);
 		} catch (error) {
 			const message = (error as V2AxiosError).response?.data?.message;
@@ -162,25 +165,76 @@ export function GovernmentRegistryVerification({
 		);
 	}
 
-	if (step === "selfie") {
+	if (step === "selfie-ready") {
 		return (
-			<IdDocumentCapture
-				country={session.country ?? "NG"}
-				title="Selfie capture"
-				requireBackside={false}
-				isSubmitting={isSubmitting}
-				allowFileUpload={allowFileUpload}
-				onBack={() => setStep("form")}
-				onComplete={(result) => void handleSelfieComplete(result)}
-			/>
+			<div className="flex min-h-0 flex-1 flex-col">
+				<div className="flex items-center justify-between gap-3 px-4 pt-1 pb-3 md:px-5">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="-ml-1"
+						onClick={() => setStep("form")}
+						disabled={isSubmitting}
+						aria-label="Go back"
+					>
+						<CaretLeftIcon
+							className="size-5"
+							weight="bold"
+						/>
+					</Button>
+					<h2 className="truncate text-lg font-semibold tracking-tight">
+						Selfie
+					</h2>
+					<span className="size-8" />
+				</div>
+				<FacialReadyInstructions
+					verificationMode="image_only"
+					onContinue={() => setStep("selfie-capture")}
+				/>
+			</div>
+		);
+	}
+
+	if (step === "selfie-capture") {
+		return (
+			<div className="flex min-h-0 flex-1 flex-col">
+				<div className="flex items-center justify-between gap-3 px-4 pt-1 pb-3 md:px-5">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="-ml-1"
+						onClick={() => setStep("selfie-ready")}
+						disabled={isSubmitting}
+						aria-label="Go back"
+					>
+						<CaretLeftIcon
+							className="size-5"
+							weight="bold"
+						/>
+					</Button>
+					<h2 className="truncate text-lg font-semibold tracking-tight">
+						Selfie capture
+					</h2>
+					<span className="size-8" />
+				</div>
+				<FacialCapture
+					verificationMode="image_only"
+					allowFileUpload={allowFileUpload}
+					isSubmitting={isSubmitting}
+					onComplete={(file) => void handleSelfieComplete(file)}
+				/>
+			</div>
 		);
 	}
 
 	return (
 		<form
-			className="flex flex-col gap-4 px-6 pb-8"
+			className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 py-6"
 			onSubmit={(event) => {
 				event.preventDefault();
+				event.stopPropagation();
 				void form.handleSubmit();
 			}}
 		>
@@ -190,16 +244,26 @@ export function GovernmentRegistryVerification({
 				<p className="text-base font-semibold text-foreground">
 					Complete your registry check
 				</p>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-muted-foreground text-pretty">
 					Fields marked with <span className="text-destructive">*</span> are
 					required. Optional fields can improve match accuracy.
 				</p>
 			</div>
 
+			{visibleFields.length === 0 && !needsSelfieStep ? (
+				<p className="text-sm text-muted-foreground text-pretty">
+					Your merchant already provided the required details. Submit to
+					continue.
+				</p>
+			) : null}
+
 			{visibleFields.map((fieldName) => (
-				<form.Field key={fieldName} name={fieldName}>
+				<form.Field
+					key={fieldName}
+					name={fieldName}
+				>
 					{(field) => (
-						<Field className="gap-1.5">
+						<Field className="gap-2">
 							<FieldLabel htmlFor={`registry-${fieldName}`}>
 								{fieldLabels[fieldName] ?? fieldName}
 								{requiredFields.includes(fieldName) ? <RequiredMark /> : null}
@@ -210,7 +274,10 @@ export function GovernmentRegistryVerification({
 									onValueChange={field.handleChange}
 									disabled={isSubmitting}
 								>
-									<SelectTrigger id={`registry-${fieldName}`}>
+									<SelectTrigger
+										id={`registry-${fieldName}`}
+										className="h-12 w-full rounded-xl"
+									>
 										<SelectValue placeholder="Select identity type" />
 									</SelectTrigger>
 									<SelectContent>
@@ -221,11 +288,8 @@ export function GovernmentRegistryVerification({
 							) : fieldName === "date_of_birth" ? (
 								<KycDatePicker
 									id={`registry-${fieldName}`}
-									value={
-										field.state.value
-											? new Date(`${field.state.value}T00:00:00`)
-											: undefined
-									}
+									value={field.state.value || undefined}
+									disableFutureDates
 									onChange={(date) =>
 										field.handleChange(date ? format(date, "yyyy-MM-dd") : "")
 									}
@@ -238,44 +302,65 @@ export function GovernmentRegistryVerification({
 									onBlur={field.handleBlur}
 									onChange={(event) => field.handleChange(event.target.value)}
 									disabled={isSubmitting}
+									className="h-9 rounded-xl"
+									placeholder={fieldLabels[fieldName] ?? fieldName}
 								/>
 							)}
+							<FieldError errors={field.state.meta.errors} />
 						</Field>
 					)}
 				</form.Field>
 			))}
 
-			{showValidationFields ? (
-				<p className="text-xs text-muted-foreground">
-					Name and date-of-birth fields are optional unless your merchant marked
-					them as required.
-				</p>
-			) : null}
-
 			{allowSelfie && !requireSelfie ? (
-				<label className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4 text-sm">
-					<input
-						type="checkbox"
-						className="mt-1"
+				<div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-4">
+					<Checkbox
+						id="registry-include-selfie"
 						checked={includeSelfie}
-						onChange={(event) => setIncludeSelfie(event.target.checked)}
+						onCheckedChange={(checked) => setIncludeSelfie(checked === true)}
 						disabled={isSubmitting}
 					/>
-					<span>
-						Include a selfie for facial matching (optional).
-					</span>
-				</label>
+					<div className="space-y-1">
+						<Label
+							htmlFor="registry-include-selfie"
+							className="font-medium"
+						>
+							Include a selfie for facial matching
+						</Label>
+						<p className="text-sm text-muted-foreground text-pretty">
+							{allowFileUpload
+								? "Optional. You can use your camera or upload a photo on the next step."
+								: "Optional. You will capture a selfie with your camera on the next step."}
+						</p>
+					</div>
+				</div>
 			) : null}
 
-			{allowSelfie && requireSelfie ? (
-				<p className="text-sm text-muted-foreground">
-					A selfie is required on the next step.
+			{requireSelfie ? (
+				<p className="text-sm text-muted-foreground text-pretty">
+					{allowFileUpload
+						? "A selfie is required next. You can use your camera or upload a photo."
+						: "A selfie is required next. Camera capture only — file upload is not available for this check."}
 				</p>
 			) : null}
 
-			<Button type="submit" disabled={isSubmitting}>
-				{allowSelfie ? "Continue" : isSubmitting ? "Submitting..." : "Submit"}
-			</Button>
+			<form.Subscribe selector={(state) => state.canSubmit}>
+				{(canSubmit) => (
+					<div className="flex justify-end pt-1">
+						<Button
+							type="submit"
+							className="rounded-full px-6"
+							disabled={!canSubmit || isSubmitting}
+						>
+							{isSubmitting
+								? "Submitting…"
+								: needsSelfieStep
+									? "Continue"
+									: "Submit"}
+						</Button>
+					</div>
+				)}
+			</form.Subscribe>
 		</form>
 	);
 }

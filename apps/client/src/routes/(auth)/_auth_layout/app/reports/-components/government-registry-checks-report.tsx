@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { asNonEmptyString, asRecord, displayValue } from "../-utils";
+import { asNonEmptyString, asRecord, displayValue, resolveVerificationEvent } from "../-utils";
 import { ReportOverviewCard } from "./report-overview-card";
 import { ReportDetailField } from "./report-detail-field";
 import { ProofImagePreviewDialog } from "./verification-proofs/proof-image-preview-dialog";
@@ -241,12 +241,7 @@ export function GovernmentRegistryChecksReport({
 					? verification.input_data.email
 					: undefined;
 
-	const verificationEvent =
-		typeof responseData.event === "string"
-			? responseData.event
-			: typeof sourceData.event === "string"
-				? sourceData.event
-				: undefined;
+	const verificationEvent = resolveVerificationEvent(verification);
 
 	const customerUniqueId =
 		typeof responseData.customer_unique_id === "string"
