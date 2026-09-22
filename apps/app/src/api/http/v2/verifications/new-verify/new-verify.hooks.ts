@@ -18,6 +18,7 @@ import type {
 	NewVerifyDocumentSubmitPayload,
 	NewVerifyFaceSubmitPayload,
 	NewVerifyFeedbackSubmitPayload,
+	NewVerifyGovernmentRegistrySubmitPayload,
 	NewVerifyKybSubmitPayload,
 	NewVerifyPresignPayload,
 	NewVerifySession,
@@ -137,6 +138,17 @@ export const useSubmitNewVerifyKybV2Mutation = () =>
 			token: string;
 			payload: NewVerifyKybSubmitPayload;
 		}) => NEW_VERIFY_V2_API.KYB_SCREENING(token, payload),
+	});
+
+export const useSubmitNewVerifyGovernmentRegistryV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyGovernmentRegistrySubmitPayload;
+		}) => NEW_VERIFY_V2_API.GOVERNMENT_REGISTRY(token, payload),
 	});
 
 export const useSubmitNewVerifyFeedbackV2Mutation = () =>

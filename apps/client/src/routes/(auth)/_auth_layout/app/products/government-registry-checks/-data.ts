@@ -269,18 +269,19 @@ type GovernmentRegistryFormValues = {
 	validationDateOfBirth: string;
 };
 
-export function buildGovernmentRegistryPayload(
+function appendRegistryFieldValues(
+	inputData: Record<string, unknown>,
 	values: GovernmentRegistryFormValues,
 	options?: { selfieProofUrl?: string | null },
-): VerificationRequestCreatePayload {
+) {
 	const inputField = getPrimaryInputParameter(values.verificationType);
 	if (!inputField) {
 		throw new Error("Unsupported verification type");
 	}
 
-	const inputData: Record<string, unknown> = {
-		[inputField]: values.input.trim(),
-	};
+	if (values.input.trim()) {
+		inputData[inputField] = values.input.trim();
+	}
 
 	if (requiresLastNameField(values.verificationType) && values.lastName.trim()) {
 		inputData.last_name = values.lastName.trim();
@@ -295,10 +296,64 @@ export function buildGovernmentRegistryPayload(
 	if (options?.selfieProofUrl) {
 		inputData.selfie = options.selfieProofUrl;
 	}
+}
+
+export function buildGovernmentRegistryLinkPayload(
+	values: GovernmentRegistryFormValues & {
+		email: string;
+		urlLimit: string;
+		requireSelfie: boolean;
+	},
+): VerificationRequestCreatePayload {
+	const inputData: Record<string, unknown> = {
+		email: values.email.trim(),
+		language: "EN",
+		ttl: Number(values.urlLimit),
+		country: values.country.trim().toUpperCase(),
+		require_selfie: values.requireSelfie,
+	};
+
+	appendRegistryFieldValues(inputData, values);
+
+	return {
+		verification_type: values.verificationType as VerificationType,
+		method_type: "new_link",
+		input_data: inputData,
+	};
+}
+
+export function buildGovernmentRegistryDirectPayload(
+	values: GovernmentRegistryFormValues,
+	options?: { selfieProofUrl?: string | null },
+): VerificationRequestCreatePayload {
+	const inputField = getPrimaryInputParameter(values.verificationType);
+	if (!inputField) {
+		throw new Error("Unsupported verification type");
+	}
+
+	const inputData: Record<string, unknown> = {};
+	appendRegistryFieldValues(inputData, values, options);
+
+	if (!inputData[inputField]) {
+		throw new Error("Input data is required for direct mode");
+	}
 
 	return {
 		verification_type: values.verificationType as VerificationType,
 		method_type: "offsite",
 		input_data: inputData,
 	};
+}
+
+/** @deprecated Use buildGovernmentRegistryDirectPayload */
+export function buildGovernmentRegistryPayload(
+	values: GovernmentRegistryFormValues,
+	options?: { selfieProofUrl?: string | null },
+): VerificationRequestCreatePayload {
+	return buildGovernmentRegistryDirectPayload(values, options);
+}
+
+export function registryTypeSupportsSelfie(verificationType: string) {
+	const type = getRegistryVerificationType(verificationType);
+	return Boolean(type?.validationParameters.includes("selfie"));
 }

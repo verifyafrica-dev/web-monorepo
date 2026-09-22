@@ -320,10 +320,11 @@ export interface TenantVerificationConfigListData {
 export type HostedCaptureVerificationType =
 	| "id_document"
 	| "face_match"
-	| "address_verification";
+	| "address_verification"
+	| (string & {});
 
 export interface TenantProductSettingRow {
-	verification_type: HostedCaptureVerificationType | string;
+	verification_type: HostedCaptureVerificationType;
 	allow_file_upload: boolean;
 }
 
@@ -332,11 +333,7 @@ export interface TenantProductSettingListData {
 }
 
 export const TenantProductSettingUpdateSchema = z.object({
-	verification_type: z.enum([
-		"id_document",
-		"face_match",
-		"address_verification",
-	]),
+	verification_type: z.string().min(1),
 	allow_file_upload: z.boolean(),
 });
 

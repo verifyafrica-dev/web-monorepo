@@ -45,6 +45,31 @@ export interface NewVerifySessionPrefilled {
 	search_by?: string;
 	search_word?: string;
 	search_type?: string;
+	bvn?: string;
+	nin?: string;
+	virtual_nin?: string;
+	phone_number?: string;
+	cac_number?: string;
+	passport_id?: string;
+	passport_number?: string;
+	voter_id?: string;
+	ssnit_number?: string;
+	license_number?: string;
+	national_id?: string;
+	tax_pin?: string;
+	id_number?: string;
+	first_name?: string;
+	last_name?: string;
+	date_of_birth?: string;
+	registration_name?: string;
+	type?: string;
+}
+
+export interface NewVerifyRegistryFields {
+	required_fields: string[];
+	optional_fields: string[];
+	selfie_supported: boolean;
+	field_labels: Record<string, string>;
 }
 
 export const ShuftiDocumentSupportedTypeSchema = z.enum([
@@ -152,7 +177,12 @@ export interface NewVerifySession {
 	documents?: Array<
 		string | { payload_name?: string; name?: string; authority?: string }
 	>;
+	registry_fields?: NewVerifyRegistryFields;
+	locked_fields?: string[];
+	require_selfie?: boolean;
 }
+
+export type NewVerifyGovernmentRegistrySubmitPayload = Record<string, string>;
 
 export interface NewVerifyPresignPayload {
 	file_name: string;

@@ -8,6 +8,7 @@ import { AmlScreeningVerification } from "./verifications/aml-screening-verifica
 import { BusinessAmlScreeningVerification } from "./verifications/business-aml-screening-verification";
 import { FacialBiometricsVerification } from "./verifications/facial-biometrics/facial-biometrics-verification";
 import { IdDocumentVerification } from "./verifications/id-document-verification";
+import { GovernmentRegistryVerification } from "./verifications/government-registry-verification";
 import { KybScreeningVerification } from "./verifications/kyb-screening-verification";
 import { NewVerifyChrome } from "./new-verify-chrome";
 import { NewVerifyConsent } from "./new-verify-consent";
@@ -37,10 +38,11 @@ type NewVerifySessionViewProps = {
 
 export function NewVerifySessionView({ session }: NewVerifySessionViewProps) {
 	const [hasConsented, setHasConsented] = useState(false);
-	const VerificationComponent =
-		NEW_VERIFY_VERIFICATION_COMPONENTS[
-			session.verification_type as keyof typeof NEW_VERIFY_VERIFICATION_COMPONENTS
-		];
+	const VerificationComponent = session.registry_fields
+		? GovernmentRegistryVerification
+		: NEW_VERIFY_VERIFICATION_COMPONENTS[
+				session.verification_type as keyof typeof NEW_VERIFY_VERIFICATION_COMPONENTS
+			];
 
 	return (
 		<NewVerifyChrome

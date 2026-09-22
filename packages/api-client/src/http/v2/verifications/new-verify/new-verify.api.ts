@@ -17,6 +17,7 @@ import type {
 	NewVerifyAmlSubmitPayload,
 	NewVerifyBusinessAmlSubmitData,
 	NewVerifyBusinessAmlSubmitPayload,
+	NewVerifyGovernmentRegistrySubmitPayload,
 	NewVerifyKybSubmitData,
 	NewVerifyKybSubmitPayload,
 	NewVerifyPresignData,
@@ -43,6 +44,8 @@ const NEW_VERIFY_V2_ENDPOINTS = {
 		`/v2/verifications/new-verify/${token}/business_aml_screening/`,
 	kybScreening: (token: string) =>
 		`/v2/verifications/new-verify/${token}/kyb_screening/`,
+	governmentRegistry: (token: string) =>
+		`/v2/verifications/new-verify/${token}/government_registry/`,
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -120,6 +123,14 @@ export const NEW_VERIFY_V2_API = {
 		await getHttpClient()
 			.post(NEW_VERIFY_V2_ENDPOINTS.kybScreening(token), data)
 			.then((res) => unwrapV2Data<NewVerifyKybSubmitData>(res)),
+
+	GOVERNMENT_REGISTRY: async (
+		token: string,
+		data: NewVerifyGovernmentRegistrySubmitPayload,
+	): Promise<NewVerifyAddressSubmitData> =>
+		await getHttpClient()
+			.post(NEW_VERIFY_V2_ENDPOINTS.governmentRegistry(token), data)
+			.then((res) => unwrapV2Data<NewVerifyAddressSubmitData>(res)),
 
 	FEEDBACK: async (
 		token: string,

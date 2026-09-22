@@ -1,5 +1,6 @@
 import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { getProduct } from "../-data";
@@ -20,6 +21,7 @@ export const Route = createFileRoute(
 
 function GovernmentRegistryChecksPage() {
 	const product = getProduct("government-registry-checks");
+	const [verificationType, setVerificationType] = useState("");
 
 	if (!product) {
 		return null;
@@ -44,8 +46,13 @@ function GovernmentRegistryChecksPage() {
 			</div>
 
 			<div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-				<GovernmentRegistryChecksForm />
-				<GovernmentRegistryChecksInfoPanel />
+				<GovernmentRegistryChecksForm
+					verificationType={verificationType}
+					onVerificationTypeChange={setVerificationType}
+				/>
+				<GovernmentRegistryChecksInfoPanel
+					verificationType={verificationType}
+				/>
 			</div>
 		</div>
 	);
