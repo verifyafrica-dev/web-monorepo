@@ -287,9 +287,13 @@ function appendRegistryFieldValues(
 		inputData.last_name = values.lastName.trim();
 	}
 
-	if (values.includeValidation) {
+	if (values.validationFirstName.trim()) {
 		inputData.first_name = values.validationFirstName.trim();
+	}
+	if (values.validationLastName.trim()) {
 		inputData.last_name = values.validationLastName.trim();
+	}
+	if (values.validationDateOfBirth.trim()) {
 		inputData.date_of_birth = values.validationDateOfBirth.trim();
 	}
 

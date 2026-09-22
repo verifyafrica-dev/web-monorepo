@@ -3,6 +3,7 @@ import {
 	LinkIcon,
 	MagnifyingGlassIcon,
 	PaperPlaneTiltIcon,
+	UserCircleCheckIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { format } from "date-fns";
@@ -22,6 +23,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@verifyafrica/ui/components/ui/accordion";
 import {
 	Field,
 	FieldDescription,
@@ -118,32 +125,6 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 			});
 		}
 
-		if (values.includeValidation) {
-			if (!values.validationFirstName.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationFirstName"],
-					message: "First name is required for validation",
-				});
-			}
-
-			if (!values.validationLastName.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationLastName"],
-					message: "Last name is required for validation",
-				});
-			}
-
-			if (!values.validationDateOfBirth.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationDateOfBirth"],
-					message: "Date of birth is required for validation",
-				});
-			}
-		}
-
 		const consentResult = verificationConsentSchema.safeParse(values.consent);
 		if (!consentResult.success) {
 			context.addIssue({
@@ -184,7 +165,6 @@ export function GovernmentRegistryChecksForm({
 	const [selfieProofUrl, setSelfieProofUrl] = useState<string | null>(null);
 	const [isProofUploading, setIsProofUploading] = useState(false);
 	const [country, setCountry] = useState("");
-	const [includeValidation, setIncludeValidation] = useState(false);
 	const [includeSelfie, setIncludeSelfie] = useState(false);
 	const {
 		submitVerification,
@@ -264,7 +244,6 @@ export function GovernmentRegistryChecksForm({
 		form.setFieldValue("validationDateOfBirth", "");
 		form.setFieldValue("includeSelfie", false);
 		form.setFieldValue("consent", false);
-		setIncludeValidation(false);
 		setIncludeSelfie(false);
 		setSelfieProofUrl(null);
 	};
@@ -273,7 +252,6 @@ export function GovernmentRegistryChecksForm({
 		form.reset();
 		setCountry("");
 		onVerificationTypeChange("");
-		setIncludeValidation(false);
 		setIncludeSelfie(false);
 		setSelfieProofUrl(null);
 		setIsProofUploading(false);
@@ -525,107 +503,99 @@ export function GovernmentRegistryChecksForm({
 					</FieldGroup>
 
 					{showFullForm && allowValidation ? (
-						<form.Field name="includeValidation">
-							{(field) => (
-								<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
-									<Checkbox
-										id="government-registry-checks-include-validation"
-										checked={field.state.value}
-										onCheckedChange={(checked) => {
-											const isChecked = checked === true;
-											field.handleChange(isChecked);
-											setIncludeValidation(isChecked);
-
-											if (!isChecked) {
-												form.setFieldValue("validationFirstName", "");
-												form.setFieldValue("validationLastName", "");
-												form.setFieldValue("validationDateOfBirth", "");
-											}
-										}}
-										disabled={isSubmitting}
-									/>
-									<div className="space-y-1">
-										<Label
-											htmlFor="government-registry-checks-include-validation"
-											className="font-medium"
-										>
-											Validate Customer Data
-										</Label>
-										<p className="text-sm text-muted-foreground">
-											Verify identity document details and compare with data
-											submitted.
-										</p>
+						<Accordion
+							type="single"
+							collapsible
+							className="rounded-lg border px-4"
+						>
+							<AccordionItem
+								value="customer-data-validation"
+								className="border-none"
+							>
+								<AccordionTrigger className="py-4 hover:no-underline">
+									<div className="flex items-center gap-3 text-left">
+										<UserCircleCheckIcon className="size-5 shrink-0 text-secondary" />
+										<div>
+											<p className="text-sm font-medium">
+												Customer data validation
+											</p>
+											<p className="text-xs font-normal text-muted-foreground">
+												Optional first name, last name, and date of birth
+											</p>
+										</div>
 									</div>
-								</div>
-							)}
-						</form.Field>
-					) : null}
+								</AccordionTrigger>
+								<AccordionContent className="space-y-4 pb-4">
+									<p className="text-sm text-muted-foreground text-pretty">
+										{isLinkMode
+											? "Prefill any of these fields to lock them on the hosted link. Leave them blank so the customer enters their own details. Values you send are compared against the registry response when present."
+											: "Optionally include name and date of birth to compare against the registry response. Leave blank to run the check with the primary identifier only."}
+									</p>
+									<div className="grid gap-4 md:grid-cols-3">
+										<form.Field name="validationFirstName">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-first-name">
+														First Name
+													</FieldLabel>
+													<Input
+														id="government-registry-checks-validation-first-name"
+														placeholder="Optional"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
 
-					{showFullForm && includeValidation ? (
-						<div className="grid gap-4 md:grid-cols-3">
-							<form.Field name="validationFirstName">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-first-name">
-											First Name{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<Input
-											id="government-registry-checks-validation-first-name"
-											placeholder="Enter first name"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
+										<form.Field name="validationLastName">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-last-name">
+														Last Name
+													</FieldLabel>
+													<Input
+														id="government-registry-checks-validation-last-name"
+														placeholder="Optional"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
 
-							<form.Field name="validationLastName">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-last-name">
-											Last Name{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<Input
-											id="government-registry-checks-validation-last-name"
-											placeholder="Enter last name"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
-
-							<form.Field name="validationDateOfBirth">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-dob">
-											Date of Birth{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<KycDatePicker
-											id="government-registry-checks-validation-dob"
-											value={field.state.value || undefined}
-											onChange={(date) => {
-												field.handleChange(
-													date ? format(date, "yyyy-MM-dd") : "",
-												);
-											}}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
-						</div>
+										<form.Field name="validationDateOfBirth">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-dob">
+														Date of Birth
+													</FieldLabel>
+													<KycDatePicker
+														id="government-registry-checks-validation-dob"
+														value={field.state.value || undefined}
+														disableFutureDates
+														onChange={(date) => {
+															field.handleChange(
+																date ? format(date, "yyyy-MM-dd") : "",
+															);
+														}}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
+									</div>
+								</AccordionContent>
+							</AccordionItem>
+						</Accordion>
 					) : null}
 
 					{showFullForm && isLinkMode && supportsSelfie && verificationType ? (
