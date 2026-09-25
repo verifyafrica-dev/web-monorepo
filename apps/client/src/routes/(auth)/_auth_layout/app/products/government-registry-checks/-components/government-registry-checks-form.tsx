@@ -517,6 +517,7 @@ export function GovernmentRegistryChecksForm({
 												const next = event.target.value;
 												const inputField =
 													getPrimaryInputParameter(verificationType);
+
 												field.handleChange(
 													isCiIdentityIdParameter(inputField)
 														? normalizeCiIdentityId(next)
