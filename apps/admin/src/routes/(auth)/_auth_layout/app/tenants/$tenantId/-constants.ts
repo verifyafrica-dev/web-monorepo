@@ -30,8 +30,8 @@ export type ComplianceSubTab =
 export const COMPLIANCE_SUB_TAB_VALUES = Object.values(COMPLIANCE_SUB_TABS);
 
 export const VERIFICATION_PROVIDER_TABS = {
-	SHUFTI: "shufti",
-	KORAPAY: "korapay",
+	SHUFTI: "sf",
+	KORAPAY: "kr",
 } as const;
 
 export type VerificationProviderTab =

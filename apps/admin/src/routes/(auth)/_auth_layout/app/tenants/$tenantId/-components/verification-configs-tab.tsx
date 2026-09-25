@@ -63,7 +63,7 @@ export function VerificationConfigsTab({
 
 				return acc;
 			},
-			{ shufti: [], korapay: [] },
+			{ sf: [], kr: [] },
 		);
 	}, [configs]);
 

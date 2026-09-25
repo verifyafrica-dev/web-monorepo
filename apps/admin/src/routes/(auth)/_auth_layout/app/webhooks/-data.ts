@@ -78,11 +78,11 @@ export function getWebhookSourceBadgeClass(source: string) {
 		return "border-violet-200 bg-violet-50 text-violet-700";
 	}
 
-	if (normalizedSource.includes("shufti")) {
+	if (normalizedSource.includes("shufti") || normalizedSource === "sf") {
 		return "border-blue-200 bg-blue-50 text-blue-700";
 	}
 
-	if (normalizedSource.includes("korapay")) {
+	if (normalizedSource.includes("korapay") || normalizedSource === "kr") {
 		return "border-emerald-200 bg-emerald-50 text-emerald-700";
 	}
 

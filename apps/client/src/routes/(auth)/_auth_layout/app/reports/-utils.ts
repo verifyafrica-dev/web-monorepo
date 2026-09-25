@@ -52,7 +52,7 @@ export function resolveVerificationEvent(verification: {
 	}
 
 	const source = (verification.source ?? "").toLowerCase();
-	if (source !== "korapay") {
+	if (source !== "kr" && source !== "korapay") {
 		return undefined;
 	}
 
