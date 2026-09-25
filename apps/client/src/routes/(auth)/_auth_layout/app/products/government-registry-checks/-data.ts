@@ -4,7 +4,7 @@ import type {
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 
-export const REGISTRY_COUNTRY_CODES = ["ng", "za", "gh", "ke"] as const;
+export const REGISTRY_COUNTRY_CODES = ["ng", "za", "gh", "ke", "ci"] as const;
 
 export type RegistryCountryCode = (typeof REGISTRY_COUNTRY_CODES)[number];
 
@@ -146,6 +146,22 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		requiredParameters: ["tax_pin"],
 		validationParameters: [],
 	},
+	{
+		value: VERIFICATION_TYPES.CI_NATIONAL_ID_LOOKUP.value,
+		label: "Côte d'Ivoire National ID",
+		countryCode: "ci",
+		description: "Verify Ivorian National ID",
+		requiredParameters: ["national_id"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+	},
+	{
+		value: VERIFICATION_TYPES.CI_RESIDENCE_CARD_LOOKUP.value,
+		label: "Côte d'Ivoire Residence Card",
+		countryCode: "ci",
+		description: "Verify Ivorian Residence Card",
+		requiredParameters: ["residence_card_id"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+	},
 ];
 
 const REGISTRY_VERIFICATION_TYPES_BY_VALUE = Object.fromEntries(
@@ -164,6 +180,8 @@ const VERIFICATION_TYPES_ALLOWING_VALIDATION = new Set([
 	VERIFICATION_TYPES.GH_DRIVERS_LICENSE_LOOKUP.value,
 	VERIFICATION_TYPES.KE_PASSPORT_LOOKUP.value,
 	VERIFICATION_TYPES.KE_NATIONAL_ID_LOOKUP.value,
+	VERIFICATION_TYPES.CI_NATIONAL_ID_LOOKUP.value,
+	VERIFICATION_TYPES.CI_RESIDENCE_CARD_LOOKUP.value,
 ]);
 
 const VERIFICATION_TYPES_REQUIRING_LAST_NAME = new Set([
@@ -183,6 +201,7 @@ const PARAMETER_LABELS: Record<string, string> = {
 	ssnit_number: "SSNIT Number",
 	license_number: "License Number",
 	national_id: "National ID",
+	residence_card_id: "Residence Card ID",
 	tax_pin: "Tax PIN",
 	last_name: "Last Name",
 };
@@ -225,6 +244,26 @@ export function getPrimaryInputLabel(verificationType: string) {
 	}
 
 	return PARAMETER_LABELS[parameter] ?? "Input Data";
+}
+
+const CI_ID_PARAMETER_KEYS = new Set(["national_id", "residence_card_id"]);
+
+/** Korapay CI IDs: 7–12 alphanumeric characters, uppercase. */
+export function normalizeCiIdentityId(value: string): string {
+	return value.trim().toUpperCase();
+}
+
+export function isValidCiIdentityId(value: string): boolean {
+	const normalized = normalizeCiIdentityId(value);
+	return (
+		normalized.length >= 7 &&
+		normalized.length <= 12 &&
+		/^[A-Z0-9]+$/.test(normalized)
+	);
+}
+
+export function isCiIdentityIdParameter(parameter: string | null | undefined) {
+	return Boolean(parameter && CI_ID_PARAMETER_KEYS.has(parameter));
 }
 
 export function normalizeCountryCode(value: string | undefined) {
@@ -280,7 +319,10 @@ function appendRegistryFieldValues(
 	}
 
 	if (values.input.trim()) {
-		inputData[inputField] = values.input.trim();
+		const trimmed = values.input.trim();
+		inputData[inputField] = isCiIdentityIdParameter(inputField)
+			? normalizeCiIdentityId(trimmed)
+			: trimmed;
 	}
 
 	if (requiresLastNameField(values.verificationType) && values.lastName.trim()) {

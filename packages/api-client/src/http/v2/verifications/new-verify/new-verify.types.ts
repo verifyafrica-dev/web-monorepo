@@ -56,6 +56,7 @@ export interface NewVerifySessionPrefilled {
 	ssnit_number?: string;
 	license_number?: string;
 	national_id?: string;
+	residence_card_id?: string;
 	tax_pin?: string;
 	id_number?: string;
 	first_name?: string;

@@ -302,6 +302,14 @@ export const VERIFICATION_TYPES = {
 		value: "ke_tax_pin_verification",
 		label: "Kenya - Tax PIN",
 	},
+	CI_NATIONAL_ID_LOOKUP: {
+		value: "ci_national_id_lookup",
+		label: "Côte d'Ivoire - National ID",
+	},
+	CI_RESIDENCE_CARD_LOOKUP: {
+		value: "ci_residence_card_lookup",
+		label: "Côte d'Ivoire - Residence Card",
+	},
 };
 
 export const SHUFTI_CHOICES = {

@@ -23,6 +23,7 @@ const LABELS: Record<string, string> = {
 	ssnit_number: "SSNIT Number",
 	license_number: "Driver's License Number",
 	national_id: "National ID",
+	residence_card_id: "Residence Card ID",
 	tax_pin: "Tax PIN",
 	id_number: "ID Number",
 	type: "ID Type",

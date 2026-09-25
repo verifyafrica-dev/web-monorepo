@@ -38,6 +38,21 @@ type GovernmentRegistryVerificationProps = {
 
 type Step = "form" | "selfie-ready" | "selfie-capture" | "submitted";
 
+const CI_ID_FIELDS = new Set(["national_id", "residence_card_id"]);
+
+function normalizeCiIdentityId(value: string) {
+	return value.trim().toUpperCase();
+}
+
+function isValidCiIdentityId(value: string) {
+	const normalized = normalizeCiIdentityId(value);
+	return (
+		normalized.length >= 7 &&
+		normalized.length <= 12 &&
+		/^[A-Z0-9]+$/.test(normalized)
+	);
+}
+
 function RequiredMark() {
 	return <span className="text-destructive"> *</span>;
 }
@@ -72,6 +87,21 @@ export function GovernmentRegistryVerification({
 	const formSchema = useMemo(() => {
 		const shape: Record<string, z.ZodTypeAny> = {};
 		for (const field of visibleFields) {
+			if (CI_ID_FIELDS.has(field)) {
+				const label = fieldLabels[field] ?? field;
+				const base = z
+					.string()
+					.transform((value) => normalizeCiIdentityId(value))
+					.refine((value) => value === "" || isValidCiIdentityId(value), {
+						message: `${label} must be 7 to 12 alphanumeric characters`,
+					});
+				shape[field] = requiredFields.includes(field)
+					? base.refine((value) => value.length > 0, {
+							message: `${label} is required`,
+						})
+					: base;
+				continue;
+			}
 			if (requiredFields.includes(field)) {
 				shape[field] = z
 					.string()
@@ -120,9 +150,12 @@ export function GovernmentRegistryVerification({
 			const payload: Record<string, string> = {};
 			for (const [key, raw] of Object.entries(values)) {
 				const trimmed = raw.trim();
-				if (trimmed) {
-					payload[key] = trimmed;
+				if (!trimmed) {
+					continue;
 				}
+				payload[key] = CI_ID_FIELDS.has(key)
+					? normalizeCiIdentityId(trimmed)
+					: trimmed;
 			}
 			if (selfieUrl) {
 				payload.selfie = selfieUrl;
@@ -300,10 +333,20 @@ export function GovernmentRegistryVerification({
 									id={`registry-${fieldName}`}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
+									onChange={(event) => {
+										const next = event.target.value;
+										field.handleChange(
+											CI_ID_FIELDS.has(fieldName)
+												? normalizeCiIdentityId(next)
+												: next,
+										);
+									}}
 									disabled={isSubmitting}
 									className="h-9 rounded-xl"
 									placeholder={fieldLabels[fieldName] ?? fieldName}
+									autoCapitalize={
+										CI_ID_FIELDS.has(fieldName) ? "characters" : undefined
+									}
 								/>
 							)}
 							<FieldError errors={field.state.meta.errors} />

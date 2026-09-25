@@ -35,7 +35,10 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
-import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@verifyafrica/ui/components/ui/toggle-group";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import {
@@ -59,9 +62,13 @@ import {
 	buildGovernmentRegistryDirectPayload,
 	buildGovernmentRegistryLinkPayload,
 	filterToRegistryCountries,
-	registryTypeSupportsSelfie,
 	getPrimaryInputLabel,
+	getPrimaryInputParameter,
 	getRegistryVerificationTypes,
+	isCiIdentityIdParameter,
+	isValidCiIdentityId,
+	normalizeCiIdentityId,
+	registryTypeSupportsSelfie,
 	requiresLastNameField,
 } from "../-data";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
@@ -114,6 +121,20 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 			});
 		}
 
+		if (values.input.trim()) {
+			const inputField = getPrimaryInputParameter(values.verificationType);
+			if (
+				isCiIdentityIdParameter(inputField) &&
+				!isValidCiIdentityId(values.input)
+			) {
+				context.addIssue({
+					code: "custom",
+					path: ["input"],
+					message: "Must be 7 to 12 alphanumeric characters",
+				});
+			}
+		}
+
 		if (
 			requiresLastNameField(values.verificationType) &&
 			!values.lastName.trim()
@@ -130,7 +151,8 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 			context.addIssue({
 				code: "custom",
 				path: ["consent"],
-				message: consentResult.error.issues[0]?.message ?? "Consent is required",
+				message:
+					consentResult.error.issues[0]?.message ?? "Consent is required",
 			});
 		}
 	});
@@ -179,7 +201,7 @@ export function GovernmentRegistryChecksForm({
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({ filter: filterToRegistryCountries });
-
+	console.log(countries);
 	const verificationTypes = useMemo(
 		() => (country ? getRegistryVerificationTypes(country) : []),
 		[country],
@@ -290,9 +312,7 @@ export function GovernmentRegistryChecksForm({
 						>
 							{VERIFICATION_MODES.map((option) => {
 								const Icon =
-									option.value === "link"
-										? LinkIcon
-										: MagnifyingGlassIcon;
+									option.value === "link" ? LinkIcon : MagnifyingGlassIcon;
 
 								return (
 									<ToggleGroupItem
@@ -313,8 +333,7 @@ export function GovernmentRegistryChecksForm({
 							{(field) => (
 								<Field className="gap-1.5">
 									<FieldLabel htmlFor="government-registry-checks-country">
-										Select Country{" "}
-										<span className="text-destructive">*</span>
+										Select Country <span className="text-destructive">*</span>
 									</FieldLabel>
 									<Select
 										value={field.state.value || undefined}
@@ -375,9 +394,7 @@ export function GovernmentRegistryChecksForm({
 												onVerificationTypeChange(value);
 												resetDependentFields();
 											}}
-											disabled={
-												isSubmitting || verificationTypes.length === 0
-											}
+											disabled={isSubmitting || verificationTypes.length === 0}
 										>
 											<SelectTrigger
 												id="government-registry-checks-type"
@@ -387,7 +404,10 @@ export function GovernmentRegistryChecksForm({
 											</SelectTrigger>
 											<SelectContent>
 												{verificationTypes.map((type) => (
-													<SelectItem key={type.value} value={type.value}>
+													<SelectItem
+														key={type.value}
+														value={type.value}
+													>
 														{type.label}
 													</SelectItem>
 												))}
@@ -406,8 +426,7 @@ export function GovernmentRegistryChecksForm({
 								{(field) => (
 									<Field className="gap-1.5">
 										<FieldLabel htmlFor="government-registry-checks-last-name">
-											Last Name{" "}
-											<span className="text-destructive">*</span>
+											Last Name <span className="text-destructive">*</span>
 										</FieldLabel>
 										<Input
 											id="government-registry-checks-last-name"
@@ -464,7 +483,10 @@ export function GovernmentRegistryChecksForm({
 												</SelectTrigger>
 												<SelectContent>
 													{VERIFICATION_URL_LIMITS.map((limit) => (
-														<SelectItem key={limit.value} value={limit.value}>
+														<SelectItem
+															key={limit.value}
+															value={limit.value}
+														>
 															{limit.label}
 														</SelectItem>
 													))}
@@ -491,10 +513,24 @@ export function GovernmentRegistryChecksForm({
 											placeholder="Enter document number"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
+											onChange={(event) => {
+												const next = event.target.value;
+												const inputField =
+													getPrimaryInputParameter(verificationType);
+												field.handleChange(
+													isCiIdentityIdParameter(inputField)
+														? normalizeCiIdentityId(next)
+														: next,
+												);
+											}}
 											disabled={isSubmitting}
+											autoCapitalize={
+												isCiIdentityIdParameter(
+													getPrimaryInputParameter(verificationType),
+												)
+													? "characters"
+													: undefined
+											}
 										/>
 									</Field>
 								)}
@@ -618,8 +654,8 @@ export function GovernmentRegistryChecksForm({
 											Require customer selfie
 										</Label>
 										<p className="text-sm text-muted-foreground">
-											When enabled, the customer must capture or upload a
-											selfie on the hosted link.
+											When enabled, the customer must capture or upload a selfie
+											on the hosted link.
 										</p>
 									</div>
 								</div>
