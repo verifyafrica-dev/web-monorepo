@@ -18,6 +18,7 @@ import {
 } from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
+import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 import {
 	Select,
 	SelectContent,
@@ -55,7 +56,6 @@ function isValidCiIdentityId(value: string) {
 
 const US_SSN_FIELD_PLACEHOLDERS: Record<string, string> = {
 	ssn: "9-digit SSN, e.g. 765439022",
-	phone_number: "US number, e.g. +12109041086",
 };
 
 function getFieldPlaceholder(
@@ -342,6 +342,17 @@ export function GovernmentRegistryVerification({
 									onChange={(date) =>
 										field.handleChange(date ? format(date, "yyyy-MM-dd") : "")
 									}
+									disabled={isSubmitting}
+								/>
+							) : fieldName === "phone_number" &&
+								session.verification_type === "us_ssn_verification" ? (
+								<PhoneInput
+									id={`registry-${fieldName}`}
+									lockedCountry="US"
+									placeholder="+1 210 904 1086"
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={field.handleChange}
 									disabled={isSubmitting}
 								/>
 							) : (

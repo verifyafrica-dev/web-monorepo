@@ -61,9 +61,9 @@ export function GovernmentRegistryChecksInfoPanel({
 							<div className="space-y-1">
 								<p className="font-medium">Link mode</p>
 								<p className="leading-relaxed text-muted-foreground">
-									Send a hosted link to your customer. Prefill registry fields
-									to lock them; the customer completes the rest. Billing runs
-									when the check is submitted to the registry provider.
+									Available only for checks that support selfie matching.
+									The customer captures a selfie on the hosted page. Billing
+									runs when the check is submitted to the registry provider.
 								</p>
 							</div>
 						</div>

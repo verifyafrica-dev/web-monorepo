@@ -96,7 +96,7 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghanaian passport",
 		requiredParameters: ["passport_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
 	},
 	{
 		value: VERIFICATION_TYPES.GH_VOTER_CARD_LOOKUP.value,
@@ -402,7 +402,10 @@ function appendRegistryFieldValues(
 		inputData.phone_number = values.phoneNumber.trim();
 	}
 
-	if (options?.selfieProofUrl) {
+	if (
+		options?.selfieProofUrl &&
+		registryTypeSupportsSelfie(values.verificationType)
+	) {
 		inputData.selfie = options.selfieProofUrl;
 	}
 }
