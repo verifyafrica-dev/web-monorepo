@@ -1,6 +1,7 @@
 import { CaretDownIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -138,9 +139,14 @@ export function FullJsonResponse({
 			</CardHeader>
 			{expanded ? (
 				<CardContent className="pt-0">
-					<pre className="max-h-96 overflow-auto rounded-md border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap break-all">
-						{json}
-					</pre>
+					<CodeBlock
+						code={json}
+						language="json"
+						showLineNumbers
+						wrap
+						size="xs"
+						className="max-h-96"
+					/>
 				</CardContent>
 			) : null}
 		</Card>

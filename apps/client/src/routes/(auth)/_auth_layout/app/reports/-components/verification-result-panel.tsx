@@ -1,3 +1,4 @@
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
 import { isPlainObject } from "@verifyafrica/ui/lib/validators";
@@ -51,9 +52,11 @@ function renderPrimitiveValue(value: unknown) {
 
 	if (typeof value === "object") {
 		return (
-			<pre className="overflow-x-auto rounded-md bg-muted/40 p-3 text-xs">
-				{JSON.stringify(value, null, 2)}
-			</pre>
+			<CodeBlock
+				code={JSON.stringify(value, null, 2)}
+				language="json"
+				size="xs"
+			/>
 		);
 	}
 

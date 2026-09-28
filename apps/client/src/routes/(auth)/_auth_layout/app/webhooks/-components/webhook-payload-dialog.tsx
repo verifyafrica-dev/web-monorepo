@@ -1,3 +1,4 @@
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import type { TenantWebhookEvent } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import {
 	Dialog,
@@ -31,13 +32,20 @@ export function WebhookPayloadDialog({
 							: "Outbound delivery payload"}
 					</DialogDescription>
 				</DialogHeader>
-				<pre className="max-h-[60vh] overflow-auto rounded-lg bg-zinc-900 px-4 py-3 text-sm text-emerald-400">
-					<code>
-						{event?.payload
-							? JSON.stringify(event.payload, null, 2)
-							: "No payload stored for this delivery."}
-					</code>
-				</pre>
+				{event?.payload ? (
+					<CodeBlock
+						code={JSON.stringify(event.payload, null, 2)}
+						language="json"
+						showLineNumbers
+						copyable
+						copySuccessMessage="Webhook payload copied."
+						className="max-h-[60vh]"
+					/>
+				) : (
+					<p className="rounded-lg bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+						No payload stored for this delivery.
+					</p>
+				)}
 			</DialogContent>
 		</Dialog>
 	);
