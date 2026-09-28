@@ -53,6 +53,22 @@ function isValidCiIdentityId(value: string) {
 	);
 }
 
+const US_SSN_FIELD_PLACEHOLDERS: Record<string, string> = {
+	ssn: "9-digit SSN, e.g. 765439022",
+	phone_number: "US number, e.g. +12109041086",
+};
+
+function getFieldPlaceholder(
+	verificationType: string,
+	fieldName: string,
+	label: string,
+) {
+	if (verificationType === "us_ssn_verification") {
+		return US_SSN_FIELD_PLACEHOLDERS[fieldName] ?? label;
+	}
+	return label;
+}
+
 function RequiredMark() {
 	return <span className="text-destructive"> *</span>;
 }
@@ -343,7 +359,12 @@ export function GovernmentRegistryVerification({
 									}}
 									disabled={isSubmitting}
 									className="h-9 rounded-xl"
-									placeholder={fieldLabels[fieldName] ?? fieldName}
+									placeholder={getFieldPlaceholder(
+										session.verification_type,
+										fieldName,
+										fieldLabels[fieldName] ?? fieldName,
+									)}
+									type={fieldName === "phone_number" ? "tel" : undefined}
 									autoCapitalize={
 										CI_ID_FIELDS.has(fieldName) ? "characters" : undefined
 									}

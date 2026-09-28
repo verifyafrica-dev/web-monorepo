@@ -310,6 +310,10 @@ export const VERIFICATION_TYPES = {
 		value: "ci_residence_card_lookup",
 		label: "Côte d'Ivoire - Residence Card",
 	},
+	US_SSN_VERIFICATION: {
+		value: "us_ssn_verification",
+		label: "United States - SSN",
+	},
 };
 
 export const SHUFTI_CHOICES = {

@@ -4,7 +4,15 @@ import type {
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 
-export const REGISTRY_COUNTRY_CODES = ["ng", "za", "gh", "ke", "ci"] as const;
+/** Sorted alphabetically by country name. */
+export const REGISTRY_COUNTRY_CODES = [
+	"ci",
+	"gh",
+	"ke",
+	"ng",
+	"za",
+	"us",
+] as const;
 
 export type RegistryCountryCode = (typeof REGISTRY_COUNTRY_CODES)[number];
 
@@ -162,6 +170,20 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		requiredParameters: ["residence_card_id"],
 		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
 	},
+	{
+		value: VERIFICATION_TYPES.US_SSN_VERIFICATION.value,
+		label: "United States SSN Verification",
+		countryCode: "us",
+		description: "Verify US Social Security Numbers",
+		requiredParameters: [
+			"ssn",
+			"first_name",
+			"last_name",
+			"phone_number",
+			"date_of_birth",
+		],
+		validationParameters: [],
+	},
 ];
 
 const REGISTRY_VERIFICATION_TYPES_BY_VALUE = Object.fromEntries(
@@ -188,6 +210,11 @@ const VERIFICATION_TYPES_REQUIRING_LAST_NAME = new Set([
 	VERIFICATION_TYPES.NG_PASSPORT_VERIFICATION.value,
 ]);
 
+/** Checks where first name, last name, date of birth, and phone are required inputs. */
+const VERIFICATION_TYPES_REQUIRING_IDENTITY_DETAILS = new Set([
+	VERIFICATION_TYPES.US_SSN_VERIFICATION.value,
+]);
+
 const PARAMETER_LABELS: Record<string, string> = {
 	id_number: "ID Number",
 	bvn: "BVN",
@@ -203,8 +230,16 @@ const PARAMETER_LABELS: Record<string, string> = {
 	national_id: "National ID",
 	residence_card_id: "Residence Card ID",
 	tax_pin: "Tax PIN",
+	ssn: "SSN",
 	last_name: "Last Name",
 };
+
+const IDENTITY_DETAIL_PARAMETERS = new Set([
+	"first_name",
+	"last_name",
+	"phone_number",
+	"date_of_birth",
+]);
 
 export function getRegistryVerificationTypes(countryCode: string) {
 	return REGISTRY_VERIFICATION_TYPES.filter(
@@ -224,14 +259,22 @@ export function requiresLastNameField(verificationType: string) {
 	return VERIFICATION_TYPES_REQUIRING_LAST_NAME.has(verificationType);
 }
 
+export function requiresIdentityDetails(verificationType: string) {
+	return VERIFICATION_TYPES_REQUIRING_IDENTITY_DETAILS.has(verificationType);
+}
+
 export function getPrimaryInputParameter(verificationType: string) {
 	const type = getRegistryVerificationType(verificationType);
 	if (!type) {
 		return null;
 	}
 
+	const skipped = requiresIdentityDetails(verificationType)
+		? IDENTITY_DETAIL_PARAMETERS
+		: new Set(["last_name"]);
+
 	return (
-		type.requiredParameters.find((parameter) => parameter !== "last_name") ??
+		type.requiredParameters.find((parameter) => !skipped.has(parameter)) ??
 		type.requiredParameters[0] ??
 		null
 	);
@@ -264,6 +307,19 @@ export function isValidCiIdentityId(value: string): boolean {
 
 export function isCiIdentityIdParameter(parameter: string | null | undefined) {
 	return Boolean(parameter && CI_ID_PARAMETER_KEYS.has(parameter));
+}
+
+/** Korapay US SSN: 9 digits; dashes and spaces are stripped. */
+export function isValidUsSsn(value: string): boolean {
+	return /^\d{9}$/.test(value.replace(/[\s-]/g, ""));
+}
+
+/** Korapay US phone: +1 followed by 10 digits; 10-digit local numbers are accepted. */
+export function isValidUsPhoneNumber(value: string): boolean {
+	const digits = value.replace(/\D/g, "");
+	return (
+		digits.length === 10 || (digits.length === 11 && digits.startsWith("1"))
+	);
 }
 
 export function normalizeCountryCode(value: string | undefined) {
@@ -306,6 +362,7 @@ type GovernmentRegistryFormValues = {
 	validationFirstName: string;
 	validationLastName: string;
 	validationDateOfBirth: string;
+	phoneNumber: string;
 };
 
 function appendRegistryFieldValues(
@@ -337,6 +394,12 @@ function appendRegistryFieldValues(
 	}
 	if (values.validationDateOfBirth.trim()) {
 		inputData.date_of_birth = values.validationDateOfBirth.trim();
+	}
+	if (
+		requiresIdentityDetails(values.verificationType) &&
+		values.phoneNumber.trim()
+	) {
+		inputData.phone_number = values.phoneNumber.trim();
 	}
 
 	if (options?.selfieProofUrl) {

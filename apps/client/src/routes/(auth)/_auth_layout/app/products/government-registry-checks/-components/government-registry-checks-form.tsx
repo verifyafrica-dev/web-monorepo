@@ -67,8 +67,11 @@ import {
 	getRegistryVerificationTypes,
 	isCiIdentityIdParameter,
 	isValidCiIdentityId,
+	isValidUsPhoneNumber,
+	isValidUsSsn,
 	normalizeCiIdentityId,
 	registryTypeSupportsSelfie,
+	requiresIdentityDetails,
 	requiresLastNameField,
 } from "../-data";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
@@ -85,6 +88,7 @@ const baseFormSchema = z.object({
 	validationFirstName: z.string(),
 	validationLastName: z.string(),
 	validationDateOfBirth: z.string(),
+	phoneNumber: z.string(),
 	includeSelfie: z.boolean(),
 	consent: z.boolean(),
 });
@@ -133,6 +137,39 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 					message: "Must be 7 to 12 alphanumeric characters",
 				});
 			}
+			if (inputField === "ssn" && !isValidUsSsn(values.input)) {
+				context.addIssue({
+					code: "custom",
+					path: ["input"],
+					message: "SSN must be 9 digits",
+				});
+			}
+		}
+
+		if (requiresIdentityDetails(values.verificationType)) {
+			if (mode === "direct") {
+				const requiredDetails = [
+					["validationFirstName", "First name is required"],
+					["validationLastName", "Last name is required"],
+					["validationDateOfBirth", "Date of birth is required"],
+					["phoneNumber", "Phone number is required"],
+				] as const;
+				for (const [path, message] of requiredDetails) {
+					if (!values[path].trim()) {
+						context.addIssue({ code: "custom", path: [path], message });
+					}
+				}
+			}
+			if (
+				values.phoneNumber.trim() &&
+				!isValidUsPhoneNumber(values.phoneNumber)
+			) {
+				context.addIssue({
+					code: "custom",
+					path: ["phoneNumber"],
+					message: "Enter a US phone number, e.g. +12109041086",
+				});
+			}
 		}
 
 		if (
@@ -170,6 +207,7 @@ const defaultValues = {
 	validationFirstName: "",
 	validationLastName: "",
 	validationDateOfBirth: "",
+	phoneNumber: "",
 	includeSelfie: false,
 	consent: false,
 };
@@ -210,6 +248,7 @@ export function GovernmentRegistryChecksForm({
 	const showFullForm = Boolean(country && verificationType);
 	const isLinkMode = mode === "link";
 	const showLastName = requiresLastNameField(verificationType);
+	const showIdentityDetails = requiresIdentityDetails(verificationType);
 	const allowValidation = allowsCustomerDataValidation(verificationType);
 	const supportsSelfie = registryTypeSupportsSelfie(verificationType);
 	const inputLabel = verificationType
@@ -264,6 +303,7 @@ export function GovernmentRegistryChecksForm({
 		form.setFieldValue("validationFirstName", "");
 		form.setFieldValue("validationLastName", "");
 		form.setFieldValue("validationDateOfBirth", "");
+		form.setFieldValue("phoneNumber", "");
 		form.setFieldValue("includeSelfie", false);
 		form.setFieldValue("consent", false);
 		setIncludeSelfie(false);
@@ -536,6 +576,124 @@ export function GovernmentRegistryChecksForm({
 									</Field>
 								)}
 							</form.Field>
+						) : null}
+
+						{showFullForm && showIdentityDetails ? (
+							<div className="flex flex-col gap-4 rounded-lg border p-4">
+								<div className="flex items-start gap-3">
+									<UserCircleCheckIcon className="size-5 shrink-0 text-secondary" />
+									<div>
+										<p className="text-sm font-medium">Identity details</p>
+										<p className="text-xs text-muted-foreground text-pretty">
+											{isLinkMode
+												? "Prefill any of these fields to lock them on the hosted link. Leave them blank so the customer enters their own details."
+												: "Required for this check. Must match the SSN holder's records."}
+										</p>
+									</div>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<form.Field name="validationFirstName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-first-name">
+													First Name{" "}
+													{!isLinkMode ? (
+														<span className="text-destructive">*</span>
+													) : null}
+												</FieldLabel>
+												<Input
+													id="government-registry-checks-identity-first-name"
+													placeholder={
+														isLinkMode ? "Optional" : "Enter first name"
+													}
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="validationLastName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-last-name">
+													Last Name{" "}
+													{!isLinkMode ? (
+														<span className="text-destructive">*</span>
+													) : null}
+												</FieldLabel>
+												<Input
+													id="government-registry-checks-identity-last-name"
+													placeholder={
+														isLinkMode ? "Optional" : "Enter last name"
+													}
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="validationDateOfBirth">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-dob">
+													Date of Birth{" "}
+													{!isLinkMode ? (
+														<span className="text-destructive">*</span>
+													) : null}
+												</FieldLabel>
+												<KycDatePicker
+													id="government-registry-checks-identity-dob"
+													value={field.state.value || undefined}
+													disableFutureDates
+													onChange={(date) => {
+														field.handleChange(
+															date ? format(date, "yyyy-MM-dd") : "",
+														);
+													}}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="phoneNumber">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-phone">
+													Phone Number{" "}
+													{!isLinkMode ? (
+														<span className="text-destructive">*</span>
+													) : null}
+												</FieldLabel>
+												<Input
+													id="government-registry-checks-identity-phone"
+													type="tel"
+													placeholder="+12109041086"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+													disabled={isSubmitting}
+												/>
+												<FieldDescription>
+													US number with country code
+												</FieldDescription>
+											</Field>
+										)}
+									</form.Field>
+								</div>
+							</div>
 						) : null}
 					</FieldGroup>
 

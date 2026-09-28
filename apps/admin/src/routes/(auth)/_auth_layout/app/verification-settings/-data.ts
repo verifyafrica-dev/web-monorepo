@@ -1,10 +1,12 @@
 import type { VerificationPrice } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const COUNTRY_NAMES: Record<string, string> = {
-	ng: "Nigeria",
-	ke: "Kenya",
+	ci: "Côte d'Ivoire",
 	gh: "Ghana",
+	ke: "Kenya",
+	ng: "Nigeria",
 	za: "South Africa",
+	us: "United States",
 };
 
 export type VerificationPriceDraft = {
@@ -27,7 +29,7 @@ export function formatVerificationSettingsLabel(value: string) {
 	const countryPrefix = value.trim().toLowerCase().slice(0, 2);
 	const countryName = COUNTRY_NAMES[countryPrefix] ?? "";
 	const readableName = value
-		.replace(/^(ng|za|gh|ke)_/, "")
+		.replace(/^(ci|gh|ke|ng|za|us)_/, "")
 		.replace(/_/g, " ")
 		.replace(/\bverification\b/gi, "")
 		.trim()

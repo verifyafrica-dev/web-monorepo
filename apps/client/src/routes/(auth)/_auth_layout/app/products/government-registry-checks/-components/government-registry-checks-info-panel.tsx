@@ -42,9 +42,10 @@ export function GovernmentRegistryChecksInfoPanel({
 							Government Registry Lookup
 						</div>
 						<p className="text-sm leading-relaxed text-muted-foreground">
-							Submit registry identifiers for Nigeria, South Africa, Ghana, or
-							Kenya. VerifyAfrica queries the relevant government registry and
-							returns structured identity or business records.
+							Submit registry identifiers for Côte d'Ivoire, Ghana, Kenya,
+							Nigeria, South Africa, or the United States. VerifyAfrica queries
+							the relevant government registry and returns structured identity
+							or business records.
 						</p>
 					</div>
 				</section>
@@ -99,8 +100,8 @@ export function GovernmentRegistryChecksInfoPanel({
 							<p className="text-sm font-medium">Registry Identifier</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
 								The primary document or registry number required for the
-								selected check, such as BVN, NIN, SA ID, passport number, or CAC
-								number.
+								selected check, such as BVN, NIN, SA ID, SSN, passport number,
+								or CAC number.
 							</p>
 						</div>
 
