@@ -28,6 +28,8 @@ type UseTenantSupportedCountriesOptions = {
 	filter?: (countries: SupportedCountry[]) => SupportedCountry[];
 	verificationType?: string;
 	kybBase?: string;
+	/** Product slug; applies the platform's per-product country switches. */
+	product?: string;
 };
 
 export function useTenantSupportedCountries(
@@ -41,10 +43,21 @@ export function useTenantSupportedCountries(
 		options?.kybBase,
 	);
 
-	const enabledCountries =
-		tenant?.enabled_countries && tenant.enabled_countries.length > 0
+	const enabledCountries = useMemo(() => {
+		const productCountries = options?.product
+			? tenant?.product_countries?.[options.product]
+			: undefined;
+		if (productCountries) return productCountries;
+		if (tenant?.available_countries) return tenant.available_countries;
+		return tenant?.enabled_countries && tenant.enabled_countries.length > 0
 			? tenant.enabled_countries
 			: undefined;
+	}, [
+		options?.product,
+		tenant?.available_countries,
+		tenant?.enabled_countries,
+		tenant?.product_countries,
+	]);
 
 	const countries = useMemo(() => {
 		const enabledCodes = new Set(
@@ -53,7 +66,7 @@ export function useTenantSupportedCountries(
 		if (options?.kybBase) {
 			const coverageCountries = (shuftiCountriesQuery.data?.countries ?? [])
 				.filter((country) => {
-					if (enabledCodes.size === 0) {
+					if (enabledCountries === undefined) {
 						return true;
 					}
 					const code = country.code.trim().toLowerCase();

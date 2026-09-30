@@ -30,6 +30,8 @@ type ScreeningCountriesMultiSelectProps = {
 	isLoading?: boolean;
 	disabled?: boolean;
 	description?: string;
+	/** Replaces the description when `countries` is empty (as opposed to a search with no matches). */
+	unavailableMessage?: string;
 };
 
 export function ScreeningCountriesMultiSelect({
@@ -41,8 +43,11 @@ export function ScreeningCountriesMultiSelect({
 	isLoading = false,
 	disabled = false,
 	description = "Select one or more countries. Leave empty to run a global screen.",
+	unavailableMessage,
 }: ScreeningCountriesMultiSelectProps) {
 	const chipsAnchor = useComboboxAnchor();
+	const isUnavailable =
+		!isLoading && countries.length === 0 && Boolean(unavailableMessage);
 	const selected = value
 		.map((code) => code.trim().toUpperCase())
 		.filter(Boolean);
@@ -116,7 +121,9 @@ export function ScreeningCountriesMultiSelect({
 					</ComboboxList>
 				</ComboboxContent>
 			</Combobox>
-			<FieldDescription>{description}</FieldDescription>
+			<FieldDescription>
+				{isUnavailable ? unavailableMessage : description}
+			</FieldDescription>
 		</Field>
 	);
 }

@@ -49,6 +49,7 @@ import {
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
@@ -250,7 +251,10 @@ export function GovernmentRegistryChecksForm({
 		errorMessage: "Failed to submit government registry verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries({ filter: filterToRegistryCountries });
+		useTenantSupportedCountries({
+			filter: filterToRegistryCountries,
+			product: "government_registry_checks",
+		});
 	const verificationTypes = useMemo(
 		() => (country ? getRegistryVerificationTypes(country) : []),
 		[country],
@@ -449,6 +453,9 @@ export function GovernmentRegistryChecksForm({
 											))}
 										</SelectContent>
 									</Select>
+									{!isCountriesPending && countries.length === 0 && (
+										<NoCountriesNotice />
+									)}
 								</Field>
 							)}
 						</form.Field>

@@ -32,6 +32,7 @@ import {
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NO_COUNTRIES_MESSAGE } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
@@ -101,7 +102,10 @@ export function AmlScreeningForm() {
 		errorMessage: "Failed to submit AML screening verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries({ verificationType: "aml_screening" });
+		useTenantSupportedCountries({
+			verificationType: "aml_screening",
+			product: "aml_screening",
+		});
 
 	const hasSelectedFilters = useMemo(
 		() => Object.values(filters).some(Boolean),
@@ -288,6 +292,7 @@ export function AmlScreeningForm() {
 													value={field.state.value}
 													onValueChange={field.handleChange}
 													countries={countries}
+													unavailableMessage={NO_COUNTRIES_MESSAGE}
 													isLoading={isCountriesPending}
 												/>
 											)}
@@ -375,6 +380,7 @@ export function AmlScreeningForm() {
 										value={field.state.value}
 										onValueChange={field.handleChange}
 										countries={countries}
+										unavailableMessage={NO_COUNTRIES_MESSAGE}
 										isLoading={isCountriesPending}
 									/>
 								)}

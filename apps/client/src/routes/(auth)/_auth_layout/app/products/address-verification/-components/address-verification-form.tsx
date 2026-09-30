@@ -29,6 +29,7 @@ import {
 } from "@verifyafrica/ui/components/ui/field";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
@@ -94,7 +95,7 @@ export function AddressVerificationForm() {
 		errorMessage: "Failed to submit address verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({ product: "address_verification" });
 
 	const linkForm = useForm({
 		defaultValues: {
@@ -264,6 +265,9 @@ export function AddressVerificationForm() {
 												))}
 											</SelectContent>
 										</Select>
+										{!isCountriesPending && countries.length === 0 && (
+											<NoCountriesNotice />
+										)}
 									</Field>
 								)}
 							</linkForm.Field>
@@ -419,6 +423,9 @@ export function AddressVerificationForm() {
 													))}
 												</SelectContent>
 											</Select>
+											{!isCountriesPending && countries.length === 0 && (
+												<NoCountriesNotice />
+											)}
 										</Field>
 									)}
 								</directForm.Field>

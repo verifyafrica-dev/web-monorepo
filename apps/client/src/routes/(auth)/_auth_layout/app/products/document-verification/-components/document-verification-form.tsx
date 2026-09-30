@@ -49,6 +49,7 @@ import {
 import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
@@ -138,7 +139,7 @@ export function DocumentVerificationForm() {
 	const createVerificationMutation = useCreateVerificationRequestV2Mutation();
 	const createNewVerifyMutation = useCreateNewVerifyV2Mutation();
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({ product: "document_verification" });
 	const isSubmitting =
 		createVerificationMutation.isPending || createNewVerifyMutation.isPending;
 
@@ -521,6 +522,9 @@ export function DocumentVerificationForm() {
 												))}
 											</SelectContent>
 										</Select>
+										{!isCountriesPending && countries.length === 0 && (
+											<NoCountriesNotice />
+										)}
 									</Field>
 								)}
 							</directForm.Field>

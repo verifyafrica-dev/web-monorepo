@@ -343,6 +343,10 @@ export interface UserTenantMembership {
 	slug: string;
 	email: string;
 	enabled_countries?: string[];
+	/** Tenant countries that are also enabled platform-wide. */
+	available_countries?: string[];
+	/** Per-product country codes after global, product, and tenant switches. */
+	product_countries?: Record<string, string[]>;
 	role: UserRole;
 	date_added: string;
 	/** True when the user created this organization (not only invited into it). */

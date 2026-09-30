@@ -6,6 +6,8 @@ import {
 import $http from "../../xhr";
 import type {
 	BulkVerificationCreatePayload,
+	CountryAvailability,
+	CountryAvailabilityUpdatePayload,
 	MixedVerification,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
@@ -59,6 +61,7 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 	batchRetryFailed: (batchId: string) =>
 		`/v2/verifications/batch/${batchId}/retry-failed/`,
 	linkDetail: (link: string) => `/v2/verifications/links/${link}/`,
+	countryAvailability: "/v2/verifications/country-availability/",
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -336,4 +339,16 @@ export const VERIFICATIONS_V2_API = {
 		await $http
 			.get(VERIFICATIONS_V2_ENDPOINTS.linkDetail(link))
 			.then((res) => unwrapV2Data<VerificationLink>(res)),
+
+	COUNTRY_AVAILABILITY: async (): Promise<CountryAvailability> =>
+		await $http
+			.get(VERIFICATIONS_V2_ENDPOINTS.countryAvailability)
+			.then((res) => unwrapV2Data<CountryAvailability>(res)),
+
+	UPDATE_COUNTRY_AVAILABILITY: async (
+		data: CountryAvailabilityUpdatePayload,
+	): Promise<CountryAvailability> =>
+		await $http
+			.put(VERIFICATIONS_V2_ENDPOINTS.countryAvailability, data)
+			.then((res) => unwrapV2Data<CountryAvailability>(res)),
 };

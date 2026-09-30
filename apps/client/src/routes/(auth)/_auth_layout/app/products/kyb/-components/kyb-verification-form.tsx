@@ -48,6 +48,7 @@ import {
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
 import {
 	buildKybVerificationLinkPayload,
@@ -174,6 +175,7 @@ export function KybVerificationForm() {
 		useTenantSupportedCountries({
 			verificationType: "kyb_screening",
 			kybBase: base,
+			product: "kyb",
 		});
 	const coverageCountries = countries as KybCoverageCountry[];
 
@@ -855,6 +857,9 @@ function JurisdictionField({
 							))}
 						</SelectContent>
 					</Select>
+					{!isCountriesPending && countries.length === 0 && (
+						<NoCountriesNotice />
+					)}
 				</Field>
 			)}
 		</form.Field>

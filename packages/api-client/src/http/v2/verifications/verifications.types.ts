@@ -831,6 +831,23 @@ const GOVERNMENT_REGISTRY_CHECKS_TYPES = [
 	"government-registry-checks",
 ] as const;
 
+export interface CountryAvailabilityProduct {
+	slug: string;
+	label: string;
+}
+
+export interface CountryAvailability {
+	global_disabled: string[];
+	product_disabled: Record<string, string[]>;
+	products: CountryAvailabilityProduct[];
+}
+
+export interface CountryAvailabilityUpdatePayload {
+	/** Empty string for the global switch, otherwise a product slug. */
+	product: string;
+	disabled_countries: string[];
+}
+
 export function isGovernmentRegistryChecksVerificationDetail(
 	verification: VerificationRequestDetail,
 ): verification is GovernmentRegistryChecksVerificationRequestDetail {

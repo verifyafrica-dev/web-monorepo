@@ -42,6 +42,7 @@ import {
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NO_COUNTRIES_MESSAGE } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
@@ -129,6 +130,7 @@ export function BusinessAmlScreeningForm() {
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
 			verificationType: "business_aml_screening",
+			product: "business_aml_screening",
 		});
 
 	const hasSelectedFilters = useMemo(
@@ -344,6 +346,7 @@ export function BusinessAmlScreeningForm() {
 													value={field.state.value}
 													onValueChange={field.handleChange}
 													countries={countries}
+													unavailableMessage={NO_COUNTRIES_MESSAGE}
 													isLoading={isCountriesPending}
 												/>
 											)}
@@ -398,6 +401,7 @@ export function BusinessAmlScreeningForm() {
 											value={field.state.value}
 											onValueChange={field.handleChange}
 											countries={countries}
+											unavailableMessage={NO_COUNTRIES_MESSAGE}
 											isLoading={isCountriesPending}
 										/>
 									)}
