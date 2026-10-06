@@ -202,7 +202,7 @@ export interface TenantListItem {
 export const TenantAccessRestrictionTypeSchema = z.enum([
 	"none",
 	"account_disabled",
-	"account_deactivated_period",
+	"account_activation_period",
 ]);
 export type TenantAccessRestrictionType = z.infer<
 	typeof TenantAccessRestrictionTypeSchema
@@ -210,9 +210,9 @@ export type TenantAccessRestrictionType = z.infer<
 
 export interface TenantAccessRestriction {
 	restriction_type: TenantAccessRestrictionType;
-	/** First deactivated day (yyyy-MM-dd, inclusive). */
+	/** First active day (yyyy-MM-dd, inclusive). */
 	start_date: string | null;
-	/** Last deactivated day (yyyy-MM-dd, inclusive until 23:59). */
+	/** Last active day (yyyy-MM-dd, inclusive until 23:59). */
 	end_date: string | null;
 	/** Whether the restriction is in effect today. */
 	is_active: boolean;
@@ -430,7 +430,7 @@ export const TenantAccessRestrictionUpdateSchema = z.discriminatedUnion(
 		z.object({ restriction_type: z.literal("account_disabled") }),
 		z
 			.object({
-				restriction_type: z.literal("account_deactivated_period"),
+				restriction_type: z.literal("account_activation_period"),
 				start_date: z.iso.date({ message: "Start date is required" }),
 				end_date: z.iso.date({ message: "End date is required" }),
 			})

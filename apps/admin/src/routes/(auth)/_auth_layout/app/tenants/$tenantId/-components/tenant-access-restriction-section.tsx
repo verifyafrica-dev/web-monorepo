@@ -62,7 +62,7 @@ const AccessRestrictionFormSchema = z
 		if (!value.startDate || !value.endDate) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Select a start and end date for the deactivation period",
+				message: "Select a start and end date for the activation period",
 				path: ["startDate"],
 			});
 			return;
@@ -84,7 +84,7 @@ function toFormValues(
 
 	return {
 		restricted: type !== "none",
-		dateBased: type === "account_deactivated_period",
+		dateBased: type === "account_activation_period",
 		startDate: restriction?.start_date ?? "",
 		endDate: restriction?.end_date ?? "",
 	};
@@ -102,7 +102,7 @@ function toPayload(
 	}
 
 	return {
-		restriction_type: "account_deactivated_period",
+		restriction_type: "account_activation_period",
 		start_date: value.startDate,
 		end_date: value.endDate,
 	};
@@ -125,16 +125,16 @@ function AccessStatusBadge({
 		return <Badge variant="destructive">Disabled</Badge>;
 	}
 
-	if (restriction.is_active) {
-		return <Badge variant="destructive">Deactivated</Badge>;
+	if (!restriction.is_active) {
+		return <Badge variant="default">Active</Badge>;
 	}
 
 	const today = format(startOfToday(), ISO_DATE_FORMAT);
 	if (restriction.start_date && restriction.start_date > today) {
-		return <Badge variant="outline">Deactivation scheduled</Badge>;
+		return <Badge variant="destructive">Not yet active</Badge>;
 	}
 
-	return <Badge variant="outline">Deactivation period ended</Badge>;
+	return <Badge variant="destructive">Activation period ended</Badge>;
 }
 
 export function TenantAccessRestrictionSection({
@@ -215,11 +215,11 @@ export function TenantAccessRestrictionSection({
 							Blocks dashboard sign-in, API requests and pending verifications
 							for every user in this tenant.
 						</p>
-						{restriction.restriction_type === "account_deactivated_period" &&
+						{restriction.restriction_type === "account_activation_period" &&
 							restriction.start_date &&
 							restriction.end_date && (
 								<p className="mt-2 text-sm text-muted-foreground">
-									Deactivated from{" "}
+									Active only from{" "}
 									<strong>{formatDisplayDate(restriction.start_date)}</strong>{" "}
 									to <strong>{formatDisplayDate(restriction.end_date)}</strong>
 								</p>
@@ -266,11 +266,11 @@ export function TenantAccessRestrictionSection({
 										<Field orientation="horizontal">
 											<FieldContent>
 												<FieldLabel htmlFor="tenant-access-date-based">
-													Date-based deactivation
+													Date-based activation
 												</FieldLabel>
 												<FieldDescription>
 													{field.state.value
-														? "Access is blocked only within the selected dates."
+														? "Access is allowed only within the selected dates and blocked outside them."
 														: "Access stays disabled until you restore it."}
 												</FieldDescription>
 											</FieldContent>
@@ -311,7 +311,7 @@ export function TenantAccessRestrictionSection({
 												data-invalid={field.state.meta.errors.length > 0}
 											>
 												<div className="flex flex-wrap items-center justify-between gap-3">
-													<FieldLabel>Deactivation period</FieldLabel>
+													<FieldLabel>Activation period</FieldLabel>
 													<p className="flex items-center gap-1.5 text-sm text-muted-foreground">
 														<CalendarBlankIcon className="size-4" />
 														{startDate && endDate
@@ -321,9 +321,10 @@ export function TenantAccessRestrictionSection({
 																: "Select start and end dates"}
 													</p>
 												</div>
-												<div className="w-fit rounded-lg border p-3">
+												<div className="w-fit! rounded-lg border p-3">
 													<Calendar
 														mode="range"
+														className="w-fit"
 														numberOfMonths={2}
 														selected={selected}
 														defaultMonth={selected?.from ?? startOfToday()}
@@ -344,9 +345,9 @@ export function TenantAccessRestrictionSection({
 													/>
 												</div>
 												<FieldDescription>
-													Both dates are inclusive: access is blocked from 00:00
+													Both dates are inclusive: access is allowed from 00:00
 													on the start date until 23:59 on the end date (West
-													Africa Time).
+													Africa Time) and blocked before and after.
 												</FieldDescription>
 												<FieldError errors={field.state.meta.errors} />
 											</Field>
@@ -369,10 +370,7 @@ export function TenantAccessRestrictionSection({
 							>
 								Cancel
 							</Button>
-							<Button
-								type="submit"
-								disabled={!isDirty || isSubmitting}
-							>
+							<Button type="submit" disabled={!isDirty || isSubmitting}>
 								{isSubmitting ? "Saving..." : "Save Changes"}
 							</Button>
 						</div>
@@ -393,17 +391,17 @@ export function TenantAccessRestrictionSection({
 						<AlertDialogTitle>Restrict Account Access?</AlertDialogTitle>
 						<AlertDialogDescription>
 							{pendingPayload?.restriction_type ===
-							"account_deactivated_period" ? (
+							"account_activation_period" ? (
 								<>
-									Users of <strong>{tenantName}</strong> will not be able to use
-									the dashboard or API from{" "}
+									Users of <strong>{tenantName}</strong> will only be able to
+									use the dashboard and API from{" "}
 									<strong>
 										{formatDisplayDate(pendingPayload.start_date)}
 									</strong>{" "}
 									to{" "}
 									<strong>{formatDisplayDate(pendingPayload.end_date)}</strong>.
-									They will be notified by email when the deactivation takes
-									effect.
+									Outside this period their access is blocked, and they will be
+									notified by email when it is.
 								</>
 							) : (
 								<>

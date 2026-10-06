@@ -355,7 +355,7 @@ export interface UserTenantMembership {
 	access_restricted?: boolean;
 	access_restriction_type?:
 		| "account_disabled"
-		| "account_deactivated_period"
+		| "account_activation_period"
 		| null;
 }
 
