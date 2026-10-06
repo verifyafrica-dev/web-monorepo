@@ -15,6 +15,8 @@ import type {
 	TenantAPIKey,
 	TenantAPIKeyPutUpdatePayload,
 	TenantAPIKeyUpdatePayload,
+	TenantAccessRestriction,
+	TenantAccessRestrictionUpdatePayload,
 	TenantAllListItem,
 	TenantAllListQuery,
 	TenantComplianceDataPayload,
@@ -50,6 +52,7 @@ const TENANTS_V2_ENDPOINTS = {
 	root: "/v2/tenants/",
 	all: "/v2/tenants/all/",
 	list: "/v2/tenants/list/",
+	accessRestriction: "/v2/tenants/access-restriction/",
 	apiKey: "/v2/tenants/api-key/",
 	complianceDocuments: "/v2/tenants/compliance/documents/",
 	complianceSubmit: "/v2/tenants/compliance/submit/",
@@ -122,6 +125,28 @@ export const TENANTS_V2_API = {
 		await $http
 			.get(TENANTS_V2_ENDPOINTS.list, { params })
 			.then((res) => unwrapV2Paginated<TenantListItem>(res)),
+
+	ACCESS_RESTRICTION: async (
+		tenantId: string,
+	): Promise<TenantAccessRestriction> =>
+		await $http
+			.get(
+				TENANTS_V2_ENDPOINTS.accessRestriction,
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantAccessRestriction>(res)),
+
+	UPDATE_ACCESS_RESTRICTION: async (
+		tenantId: string,
+		data: TenantAccessRestrictionUpdatePayload,
+	): Promise<TenantAccessRestriction> =>
+		await $http
+			.put(
+				TENANTS_V2_ENDPOINTS.accessRestriction,
+				data,
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantAccessRestriction>(res)),
 
 	API_KEY: async (tenantId: string): Promise<TenantAPIKey> =>
 		await $http

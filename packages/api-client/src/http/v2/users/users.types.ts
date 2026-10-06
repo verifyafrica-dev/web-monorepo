@@ -351,6 +351,12 @@ export interface UserTenantMembership {
 	date_added: string;
 	/** True when the user created this organization (not only invited into it). */
 	is_owner?: boolean;
+	/** True while a superuser has deactivated this tenant; switching into it is blocked. */
+	access_restricted?: boolean;
+	access_restriction_type?:
+		| "account_disabled"
+		| "account_deactivated_period"
+		| null;
 }
 
 export interface UserDetail {

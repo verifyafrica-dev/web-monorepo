@@ -59,7 +59,12 @@ export function getUserTenantMembership(
 	user: Pick<UserDetail, "tenants" | "email">,
 	tenantId?: string,
 ): UserTenantMembership | undefined {
-	const memberships = normalizeUserTenants(user.tenants);
+	const allMemberships = normalizeUserTenants(user.tenants);
+	const accessibleMemberships = allMemberships.filter(
+		(tenant) => !tenant.access_restricted,
+	);
+	const memberships =
+		accessibleMemberships.length > 0 ? accessibleMemberships : allMemberships;
 
 	if (tenantId) {
 		return (
