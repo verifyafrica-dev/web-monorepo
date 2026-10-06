@@ -40,9 +40,11 @@ export function AdvancedTab({
 									Danger Zone
 								</h3>
 								<p className="mt-2 text-sm text-red-700">
-									Deleting a tenant is a permanent action and cannot be undone.
-									All associated data, including users, transactions, invoices,
-									and compliance information will be permanently deleted.
+									Deleting a tenant is a soft delete. The tenant is hidden
+									across the platform, its API keys stop working and its members
+									lose access to it. Its data, including users, transactions,
+									invoices and compliance information, is retained but cannot be
+									restored from the dashboard.
 								</p>
 							</div>
 							<Button variant="destructive" onClick={onDeleteTenant}>
