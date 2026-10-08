@@ -13,9 +13,13 @@ import { VERIFICATIONS_V2_QUERY_KEYS } from "../verifications.hooks";
 import { NEW_VERIFY_V2_API } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.api";
 import type {
 	NewVerifyAddressSubmitPayload,
+	NewVerifyAmlSubmitPayload,
+	NewVerifyBusinessAmlSubmitPayload,
 	NewVerifyDocumentSubmitPayload,
 	NewVerifyFaceSubmitPayload,
 	NewVerifyFeedbackSubmitPayload,
+	NewVerifyGovernmentRegistrySubmitPayload,
+	NewVerifyKybSubmitPayload,
 	NewVerifyPresignPayload,
 	NewVerifySession,
 } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
@@ -101,6 +105,50 @@ export const useSubmitNewVerifyFaceV2Mutation = () =>
 			token: string;
 			payload: NewVerifyFaceSubmitPayload;
 		}) => NEW_VERIFY_V2_API.FACE_VERIFICATION(token, payload),
+	});
+
+export const useSubmitNewVerifyAmlV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyAmlSubmitPayload;
+		}) => NEW_VERIFY_V2_API.AML_SCREENING(token, payload),
+	});
+
+export const useSubmitNewVerifyBusinessAmlV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyBusinessAmlSubmitPayload;
+		}) => NEW_VERIFY_V2_API.BUSINESS_AML_SCREENING(token, payload),
+	});
+
+export const useSubmitNewVerifyKybV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyKybSubmitPayload;
+		}) => NEW_VERIFY_V2_API.KYB_SCREENING(token, payload),
+	});
+
+export const useSubmitNewVerifyGovernmentRegistryV2Mutation = () =>
+	useMutation({
+		mutationFn: ({
+			token,
+			payload,
+		}: {
+			token: string;
+			payload: NewVerifyGovernmentRegistrySubmitPayload;
+		}) => NEW_VERIFY_V2_API.GOVERNMENT_REGISTRY(token, payload),
 	});
 
 export const useSubmitNewVerifyFeedbackV2Mutation = () =>

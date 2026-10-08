@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
@@ -16,12 +16,20 @@ export function EnabledCountriesTab({
 	isLoading,
 	onSave,
 	isSaving,
+	title = "Enabled Countries",
+	description = "Control which countries this tenant can use when submitting verifications.",
+	headerExtra,
+	idPrefix = "country",
 }: {
 	initialEnabledCountries: string[];
 	supportedCountries: SupportedCountry[];
 	isLoading?: boolean;
 	onSave: (enabledCountries: string[]) => void;
 	isSaving?: boolean;
+	title?: string;
+	description?: ReactNode;
+	headerExtra?: ReactNode;
+	idPrefix?: string;
 }) {
 	const [enabledCountries, setEnabledCountries] = useState(
 		initialEnabledCountries,
@@ -90,36 +98,34 @@ export function EnabledCountriesTab({
 	const enabledCount = enabledCountries.filter((code) =>
 		supportedCountryCodeSet.has(code),
 	).length;
+	const allEnabled =
+		supportedCountries.length > 0 && enabledCount === supportedCountries.length;
 
 	return (
 		<Card>
 			<CardHeader className="gap-4 border-b">
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 					<div className="space-y-1">
-						<CardTitle className="font-semibold">Enabled Countries</CardTitle>
-						<p className="text-sm text-muted-foreground">
-							Control which countries this tenant can use when submitting
-							verifications.
-						</p>
+						<CardTitle className="font-semibold">{title}</CardTitle>
+						<p className="text-sm text-muted-foreground">{description}</p>
 						<p className="text-sm text-muted-foreground">
 							{enabledCount} of {supportedCountries.length} countries enabled
 						</p>
 					</div>
-					<div className="flex flex-wrap gap-2">
-						<Button
-							variant="outline"
-							onClick={enableAll}
-							disabled={isLoading || isSaving}
-						>
-							Enable All
-						</Button>
-						<Button
-							variant="outline"
-							onClick={disableAll}
-							disabled={isLoading || isSaving}
-						>
-							Disable All
-						</Button>
+					<div className="flex flex-wrap items-center gap-2">
+						<div className="flex items-center gap-2 pr-2">
+							<Switch
+								id={`${idPrefix}-all-toggle`}
+								checked={allEnabled}
+								disabled={isLoading || isSaving}
+								onCheckedChange={(checked) =>
+									checked ? enableAll() : disableAll()
+								}
+							/>
+							<Label htmlFor={`${idPrefix}-all-toggle`}>
+								{allEnabled ? "Enabled" : "Disabled"}
+							</Label>
+						</div>
 						<Button
 							onClick={() => onSave(enabledCountries)}
 							disabled={!hasChanges || isLoading || isSaving}
@@ -128,6 +134,7 @@ export function EnabledCountriesTab({
 						</Button>
 					</div>
 				</div>
+				{headerExtra}
 			</CardHeader>
 			<CardContent className="space-y-4 pt-6">
 				{isLoading ? (
@@ -148,19 +155,19 @@ export function EnabledCountriesTab({
 								</div>
 								<div className="flex items-center gap-2">
 									<Switch
-										id={`region-toggle-${region}`}
+										id={`${idPrefix}-region-toggle-${region}`}
 										checked={isRegionFullySelected(countries)}
 										disabled={isSaving}
 										onCheckedChange={(checked) =>
 											toggleRegion(countries, checked)
 										}
 									/>
-									<Label htmlFor={`region-toggle-${region}`}>Select Region</Label>
+									<Label htmlFor={`${idPrefix}-region-toggle-${region}`}>Select Region</Label>
 								</div>
 							</CardHeader>
 							<CardContent className="grid gap-3 py-4 sm:grid-cols-2">
 								{countries.map((country) => {
-									const id = `country-${country.code}`;
+									const id = `${idPrefix}-${country.code}`;
 
 									return (
 										<div key={country.code} className="flex items-center gap-2">

@@ -229,12 +229,12 @@ export function groupCountriesByRegion(countries: SupportedCountry[]) {
 export function normalizeVerificationProvider(source: string): VerificationProviderTab | null {
 	const normalized = source.trim().toLowerCase();
 
-	if (normalized.startsWith("korapay")) {
-		return "korapay";
+	if (normalized === "kr" || normalized.startsWith("korapay")) {
+		return "kr";
 	}
 
-	if (normalized.startsWith("shufti")) {
-		return "shufti";
+	if (normalized === "sf" || normalized.startsWith("shufti")) {
+		return "sf";
 	}
 
 	return null;

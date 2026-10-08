@@ -22,6 +22,7 @@ import {
 	useTenantWebhookV2Query,
 	useUpdateTenantApiKeyV2Mutation,
 } from "#/api/http/v2/tenants/tenants.hooks";
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -464,9 +465,11 @@ function UsageInstructionsCard({
 							<p className="text-sm text-muted-foreground">
 								Include your API key in the Bearer header:
 							</p>
-							<pre className="min-w-full overflow-x-auto rounded-lg bg-zinc-900 px-4 py-3 text-sm text-emerald-400">
-								<code className="break-all whitespace-pre-wrap">{`Authorization: Bearer ${keyPreview}`}</code>
-							</pre>
+							<CodeBlock
+								code={`Authorization: Bearer ${keyPreview}`}
+								language="yaml"
+								wrap
+							/>
 						</div>
 					</div>
 				</div>
@@ -507,19 +510,27 @@ function UsageInstructionsCard({
 							<p className="text-sm text-muted-foreground">
 								When a verification reaches a terminal status, we POST a JSON
 								payload to your saved webhook URL with your webhook token in the
-								Authorization header. Successful checks use{" "}
-								<code>verification.completed</code>; failed checks use{" "}
-								<code>verification.failed</code>:
+								Authorization header. 								Successful checks use{" "}
+								<code>sf.verification.completed</code> or{" "}
+								<code>kr.verification.completed</code>; failed checks use{" "}
+								<code>sf.verification.failed</code> or{" "}
+								<code>kr.verification.failed</code>:
 							</p>
-							<pre className="min-w-full overflow-x-auto rounded-lg bg-zinc-900 px-4 py-3 text-sm text-emerald-400">
-								<code className="break-all whitespace-pre-wrap">{`Authorization: Bearer ${webhookTokenPreview}
-
-{
+							<CodeBlock
+								code={`Authorization: Bearer ${webhookTokenPreview}`}
+								language="yaml"
+								wrap
+							/>
+							<CodeBlock
+								code={`{
   "status": "success" | "failure",
-  "event": "verification.completed" | "verification.failed",
+  "event": "sf.verification.completed" | "kr.verification.completed" | "sf.verification.failed" | "kr.verification.failed",
   "data": { ... }
-}`}</code>
-							</pre>
+}`}
+								language="json"
+								showLineNumbers
+								wrap
+							/>
 						</div>
 					</div>
 				</div>

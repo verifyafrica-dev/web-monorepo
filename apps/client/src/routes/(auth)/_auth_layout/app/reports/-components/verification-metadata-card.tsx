@@ -17,6 +17,7 @@ import {
 	getVerificationTargetName,
 	mapVerificationRequestToReport,
 } from "../-data";
+import { resolveVerificationEvent } from "../-utils";
 import { ReportDetailField } from "./report-detail-field";
 import { VerificationStatusBadge } from "./verification-badges";
 
@@ -36,6 +37,7 @@ export function VerificationMetadataCard({
 	const showVerificationLink =
 		verification.status === VerificationStatusSchema.enum.PENDING &&
 		Boolean(verificationUrl);
+	const verificationEvent = resolveVerificationEvent(verification);
 
 	return (
 		<Card className="bg-muted/20">
@@ -88,10 +90,10 @@ export function VerificationMetadataCard({
 						mono
 					/>
 				) : null}
-				{verification.response_data?.event ? (
+				{verificationEvent ? (
 					<ReportDetailField
 						label="Event"
-						value={verification.response_data.event}
+						value={verificationEvent}
 						mono
 					/>
 				) : null}

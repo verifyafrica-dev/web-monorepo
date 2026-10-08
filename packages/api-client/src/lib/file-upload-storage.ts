@@ -18,7 +18,7 @@ export const IMAGE_UPLOAD_MIME_TYPES = [
 	"image/gif",
 ] as const;
 
-export const UPLOAD_MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const UPLOAD_MAX_FILE_SIZE = 16 * 1024 * 1024;
 
 export type VerificationStorageName =
 	keyof typeof VERIFICATION_TYPES_BY_PRODUCT;
@@ -38,7 +38,7 @@ export function validateUploadFile(
 	if (file.size > UPLOAD_MAX_FILE_SIZE) {
 		return {
 			valid: false as const,
-			error: "File size exceeds 10MB",
+			error: "File size exceeds 16MB",
 		};
 	}
 

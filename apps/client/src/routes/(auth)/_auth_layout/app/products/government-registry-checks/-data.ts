@@ -4,7 +4,15 @@ import type {
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 
-export const REGISTRY_COUNTRY_CODES = ["ng", "za", "gh", "ke"] as const;
+/** Sorted alphabetically by country name. */
+export const REGISTRY_COUNTRY_CODES = [
+	"ci",
+	"gh",
+	"ke",
+	"ng",
+	"za",
+	"us",
+] as const;
 
 export type RegistryCountryCode = (typeof REGISTRY_COUNTRY_CODES)[number];
 
@@ -88,7 +96,7 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghanaian passport",
 		requiredParameters: ["passport_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
 	},
 	{
 		value: VERIFICATION_TYPES.GH_VOTER_CARD_LOOKUP.value,
@@ -146,6 +154,36 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		requiredParameters: ["tax_pin"],
 		validationParameters: [],
 	},
+	{
+		value: VERIFICATION_TYPES.CI_NATIONAL_ID_LOOKUP.value,
+		label: "Côte d'Ivoire National ID",
+		countryCode: "ci",
+		description: "Verify Ivorian National ID",
+		requiredParameters: ["national_id"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+	},
+	{
+		value: VERIFICATION_TYPES.CI_RESIDENCE_CARD_LOOKUP.value,
+		label: "Côte d'Ivoire Residence Card",
+		countryCode: "ci",
+		description: "Verify Ivorian Residence Card",
+		requiredParameters: ["residence_card_id"],
+		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+	},
+	{
+		value: VERIFICATION_TYPES.US_SSN_VERIFICATION.value,
+		label: "United States SSN Verification",
+		countryCode: "us",
+		description: "Verify US Social Security Numbers",
+		requiredParameters: [
+			"ssn",
+			"first_name",
+			"last_name",
+			"phone_number",
+			"date_of_birth",
+		],
+		validationParameters: [],
+	},
 ];
 
 const REGISTRY_VERIFICATION_TYPES_BY_VALUE = Object.fromEntries(
@@ -164,10 +202,17 @@ const VERIFICATION_TYPES_ALLOWING_VALIDATION = new Set([
 	VERIFICATION_TYPES.GH_DRIVERS_LICENSE_LOOKUP.value,
 	VERIFICATION_TYPES.KE_PASSPORT_LOOKUP.value,
 	VERIFICATION_TYPES.KE_NATIONAL_ID_LOOKUP.value,
+	VERIFICATION_TYPES.CI_NATIONAL_ID_LOOKUP.value,
+	VERIFICATION_TYPES.CI_RESIDENCE_CARD_LOOKUP.value,
 ]);
 
 const VERIFICATION_TYPES_REQUIRING_LAST_NAME = new Set([
 	VERIFICATION_TYPES.NG_PASSPORT_VERIFICATION.value,
+]);
+
+/** Checks where first name, last name, date of birth, and phone are required inputs. */
+const VERIFICATION_TYPES_REQUIRING_IDENTITY_DETAILS = new Set([
+	VERIFICATION_TYPES.US_SSN_VERIFICATION.value,
 ]);
 
 const PARAMETER_LABELS: Record<string, string> = {
@@ -183,9 +228,18 @@ const PARAMETER_LABELS: Record<string, string> = {
 	ssnit_number: "SSNIT Number",
 	license_number: "License Number",
 	national_id: "National ID",
+	residence_card_id: "Residence Card ID",
 	tax_pin: "Tax PIN",
+	ssn: "SSN",
 	last_name: "Last Name",
 };
+
+const IDENTITY_DETAIL_PARAMETERS = new Set([
+	"first_name",
+	"last_name",
+	"phone_number",
+	"date_of_birth",
+]);
 
 export function getRegistryVerificationTypes(countryCode: string) {
 	return REGISTRY_VERIFICATION_TYPES.filter(
@@ -205,14 +259,22 @@ export function requiresLastNameField(verificationType: string) {
 	return VERIFICATION_TYPES_REQUIRING_LAST_NAME.has(verificationType);
 }
 
+export function requiresIdentityDetails(verificationType: string) {
+	return VERIFICATION_TYPES_REQUIRING_IDENTITY_DETAILS.has(verificationType);
+}
+
 export function getPrimaryInputParameter(verificationType: string) {
 	const type = getRegistryVerificationType(verificationType);
 	if (!type) {
 		return null;
 	}
 
+	const skipped = requiresIdentityDetails(verificationType)
+		? IDENTITY_DETAIL_PARAMETERS
+		: new Set(["last_name"]);
+
 	return (
-		type.requiredParameters.find((parameter) => parameter !== "last_name") ??
+		type.requiredParameters.find((parameter) => !skipped.has(parameter)) ??
 		type.requiredParameters[0] ??
 		null
 	);
@@ -225,6 +287,39 @@ export function getPrimaryInputLabel(verificationType: string) {
 	}
 
 	return PARAMETER_LABELS[parameter] ?? "Input Data";
+}
+
+const CI_ID_PARAMETER_KEYS = new Set(["national_id", "residence_card_id"]);
+
+/** Korapay CI IDs: 7–12 alphanumeric characters, uppercase. */
+export function normalizeCiIdentityId(value: string): string {
+	return value.trim().toUpperCase();
+}
+
+export function isValidCiIdentityId(value: string): boolean {
+	const normalized = normalizeCiIdentityId(value);
+	return (
+		normalized.length >= 7 &&
+		normalized.length <= 12 &&
+		/^[A-Z0-9]+$/.test(normalized)
+	);
+}
+
+export function isCiIdentityIdParameter(parameter: string | null | undefined) {
+	return Boolean(parameter && CI_ID_PARAMETER_KEYS.has(parameter));
+}
+
+/** Korapay US SSN: 9 digits; dashes and spaces are stripped. */
+export function isValidUsSsn(value: string): boolean {
+	return /^\d{9}$/.test(value.replace(/[\s-]/g, ""));
+}
+
+/** Korapay US phone: +1 followed by 10 digits; 10-digit local numbers are accepted. */
+export function isValidUsPhoneNumber(value: string): boolean {
+	const digits = value.replace(/\D/g, "");
+	return (
+		digits.length === 10 || (digits.length === 11 && digits.startsWith("1"))
+	);
 }
 
 export function normalizeCountryCode(value: string | undefined) {
@@ -267,9 +362,78 @@ type GovernmentRegistryFormValues = {
 	validationFirstName: string;
 	validationLastName: string;
 	validationDateOfBirth: string;
+	phoneNumber: string;
 };
 
-export function buildGovernmentRegistryPayload(
+function appendRegistryFieldValues(
+	inputData: Record<string, unknown>,
+	values: GovernmentRegistryFormValues,
+	options?: { selfieProofUrl?: string | null },
+) {
+	const inputField = getPrimaryInputParameter(values.verificationType);
+	if (!inputField) {
+		throw new Error("Unsupported verification type");
+	}
+
+	if (values.input.trim()) {
+		const trimmed = values.input.trim();
+		inputData[inputField] = isCiIdentityIdParameter(inputField)
+			? normalizeCiIdentityId(trimmed)
+			: trimmed;
+	}
+
+	if (requiresLastNameField(values.verificationType) && values.lastName.trim()) {
+		inputData.last_name = values.lastName.trim();
+	}
+
+	if (values.validationFirstName.trim()) {
+		inputData.first_name = values.validationFirstName.trim();
+	}
+	if (values.validationLastName.trim()) {
+		inputData.last_name = values.validationLastName.trim();
+	}
+	if (values.validationDateOfBirth.trim()) {
+		inputData.date_of_birth = values.validationDateOfBirth.trim();
+	}
+	if (
+		requiresIdentityDetails(values.verificationType) &&
+		values.phoneNumber.trim()
+	) {
+		inputData.phone_number = values.phoneNumber.trim();
+	}
+
+	if (
+		options?.selfieProofUrl &&
+		registryTypeSupportsSelfie(values.verificationType)
+	) {
+		inputData.selfie = options.selfieProofUrl;
+	}
+}
+
+export function buildGovernmentRegistryLinkPayload(
+	values: GovernmentRegistryFormValues & {
+		email: string;
+		urlLimit: string;
+		requireSelfie: boolean;
+	},
+): VerificationRequestCreatePayload {
+	const inputData: Record<string, unknown> = {
+		email: values.email.trim(),
+		language: "EN",
+		ttl: Number(values.urlLimit),
+		require_selfie: values.requireSelfie,
+	};
+
+	appendRegistryFieldValues(inputData, values);
+
+	return {
+		verification_type: values.verificationType as VerificationType,
+		method_type: "new_link",
+		input_data: inputData,
+	};
+}
+
+export function buildGovernmentRegistryDirectPayload(
 	values: GovernmentRegistryFormValues,
 	options?: { selfieProofUrl?: string | null },
 ): VerificationRequestCreatePayload {
@@ -278,22 +442,11 @@ export function buildGovernmentRegistryPayload(
 		throw new Error("Unsupported verification type");
 	}
 
-	const inputData: Record<string, unknown> = {
-		[inputField]: values.input.trim(),
-	};
+	const inputData: Record<string, unknown> = {};
+	appendRegistryFieldValues(inputData, values, options);
 
-	if (requiresLastNameField(values.verificationType) && values.lastName.trim()) {
-		inputData.last_name = values.lastName.trim();
-	}
-
-	if (values.includeValidation) {
-		inputData.first_name = values.validationFirstName.trim();
-		inputData.last_name = values.validationLastName.trim();
-		inputData.date_of_birth = values.validationDateOfBirth.trim();
-	}
-
-	if (options?.selfieProofUrl) {
-		inputData.selfie = options.selfieProofUrl;
+	if (!inputData[inputField]) {
+		throw new Error("Input data is required for direct mode");
 	}
 
 	return {
@@ -301,4 +454,17 @@ export function buildGovernmentRegistryPayload(
 		method_type: "offsite",
 		input_data: inputData,
 	};
+}
+
+/** @deprecated Use buildGovernmentRegistryDirectPayload */
+export function buildGovernmentRegistryPayload(
+	values: GovernmentRegistryFormValues,
+	options?: { selfieProofUrl?: string | null },
+): VerificationRequestCreatePayload {
+	return buildGovernmentRegistryDirectPayload(values, options);
+}
+
+export function registryTypeSupportsSelfie(verificationType: string) {
+	const type = getRegistryVerificationType(verificationType);
+	return Boolean(type?.validationParameters.includes("selfie"));
 }

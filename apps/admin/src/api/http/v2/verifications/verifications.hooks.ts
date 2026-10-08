@@ -8,6 +8,8 @@ import {
 import { VERIFICATIONS_V2_API } from "./verifications.api";
 import type {
 	BulkVerificationCreatePayload,
+	CountryAvailability,
+	CountryAvailabilityUpdatePayload,
 	MixedVerification,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
@@ -64,6 +66,7 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 	priceDetail: (id: number) =>
 		["verifications-v2", "prices", "detail", id] as const,
 	linkDetail: (link: string) => ["verifications-v2", "links", link] as const,
+	countryAvailability: ["verifications-v2", "country-availability"] as const,
 } as const;
 
 export const useVerificationTypesV2Query = (
@@ -446,6 +449,31 @@ export const useBulkCreateVerificationsV2Mutation = () => {
 			queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantRequests(tenantId),
 			});
+		},
+	});
+};
+
+export const useCountryAvailabilityV2Query = (
+	enabled = true,
+): UseQueryResult<CountryAvailability> =>
+	useQuery<CountryAvailability>({
+		queryKey: VERIFICATIONS_V2_QUERY_KEYS.countryAvailability,
+		queryFn: VERIFICATIONS_V2_API.COUNTRY_AVAILABILITY,
+		enabled,
+		staleTime: VERIFICATIONS_V2_STALE_TIME,
+	});
+
+export const useUpdateCountryAvailabilityV2Mutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: CountryAvailabilityUpdatePayload) =>
+			VERIFICATIONS_V2_API.UPDATE_COUNTRY_AVAILABILITY(payload),
+		onSuccess: (data: CountryAvailability) => {
+			queryClient.setQueryData(
+				VERIFICATIONS_V2_QUERY_KEYS.countryAvailability,
+				data,
+			);
 		},
 	});
 };

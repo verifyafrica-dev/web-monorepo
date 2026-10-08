@@ -52,6 +52,7 @@ import {
 	getInvoicePaymentStatusBadgeClassName,
 	INVOICES_PAGE_SIZE,
 	isBillingNotFoundError,
+	isTestWalletEnvironment,
 	mapWalletTransaction,
 	parseValidDate,
 	TRANSACTIONS_PAGE_SIZE,
@@ -74,7 +75,7 @@ export const Route = createFileRoute("/(auth)/_auth_layout/app/billing/")({
 
 function BillingPage() {
 	const queryClient = useQueryClient();
-	const { user, tenantId, isTenantAdmin } = useCurrentTenant();
+	const { user, tenant, tenantId, isTenantAdmin } = useCurrentTenant();
 	const accountCreatedAt = useMemo(
 		() => parseValidDate(user?.created_at),
 		[user?.created_at],
@@ -233,7 +234,7 @@ function BillingPage() {
 									type="button"
 									className="cursor-pointer"
 									onClick={() => {
-										if (!billingInfo) {
+										if (!isTestWalletEnvironment() && !billingInfo) {
 											if (isTenantAdmin) {
 												toast.warning("Please add billing information first");
 												setBillingOpen(true);
@@ -612,6 +613,8 @@ function BillingPage() {
 				onOpenChange={setTopUpOpen}
 				userEmail={user?.email}
 				tenantId={tenantId}
+				tenantName={tenant?.name}
+				balanceLabel={`$${formatMoney(balanceAmount)} ${currency}`}
 				onSuccess={() => {
 					void handleRefresh();
 				}}

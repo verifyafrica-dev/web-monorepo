@@ -14,6 +14,8 @@ export function AmlScreeningInfoPanel() {
 							<p className="text-sm leading-relaxed text-muted-foreground">
 								Screen a subject&apos;s full name and optional date of birth
 								against global sanctions lists, PEP databases, and adverse media.
+								You can also attach a biometric search image and RCA or alias
+								search options.
 							</p>
 						</div>
 
@@ -53,6 +55,22 @@ export function AmlScreeningInfoPanel() {
 							<p className="text-sm leading-relaxed text-muted-foreground">
 								An optional list of ISO country codes to narrow the scope. Leave
 								empty to run a global screen.
+							</p>
+						</div>
+
+						<div className="space-y-1">
+							<p className="text-sm font-medium">Biometric search image</p>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								An optional JPEG or PNG (up to 5MB) used to match facial records
+								in connected AML databases.
+							</p>
+						</div>
+
+						<div className="space-y-1">
+							<p className="text-sm font-medium">RCA and alias search</p>
+							<p className="text-sm leading-relaxed text-muted-foreground">
+								RCA includes relatives and close associates. Alias search matches
+								known alternative names.
 							</p>
 						</div>
 					</div>

@@ -343,10 +343,20 @@ export interface UserTenantMembership {
 	slug: string;
 	email: string;
 	enabled_countries?: string[];
+	/** Tenant countries that are also enabled platform-wide. */
+	available_countries?: string[];
+	/** Per-product country codes after global, product, and tenant switches. */
+	product_countries?: Record<string, string[]>;
 	role: UserRole;
 	date_added: string;
 	/** True when the user created this organization (not only invited into it). */
 	is_owner?: boolean;
+	/** True while a superuser has deactivated this tenant; switching into it is blocked. */
+	access_restricted?: boolean;
+	access_restriction_type?:
+		| "account_disabled"
+		| "account_activation_period"
+		| null;
 }
 
 export interface UserDetail {

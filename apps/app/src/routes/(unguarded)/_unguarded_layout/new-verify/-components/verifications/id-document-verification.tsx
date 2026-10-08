@@ -96,7 +96,13 @@ export function IdDocumentVerification({
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const submitDocumentMutation = useSubmitNewVerifyDocumentV2Mutation();
-	const collect = session.collect;
+	const collect = {
+		dob: Boolean(session.collect?.dob),
+		age: Boolean(session.collect?.age),
+		gender: Boolean(session.collect?.gender),
+		backside_proof_required: Boolean(session.collect?.backside_proof_required),
+		verification_instructions: session.collect?.verification_instructions ?? "",
+	};
 	const verificationInstructions = collect.verification_instructions.trim();
 	const needsPersonalDetails = collect.dob || collect.age || collect.gender;
 	const formSchema = useMemo(

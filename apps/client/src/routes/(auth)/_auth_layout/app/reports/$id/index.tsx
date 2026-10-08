@@ -37,7 +37,7 @@ import { CryptoWalletScreeningReport } from "../-components/crypto-wallet-screen
 import { DocumentVerificationReport } from "../-components/document-verification/document-verification-report";
 import { FacialScreeningReport } from "../-components/facial-screening-report";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
-import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks-report";
+import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks/government-registry-checks-report";
 import { KybReport } from "../-components/kyb-report";
 import { RiskAssessmentReport } from "../-components/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";

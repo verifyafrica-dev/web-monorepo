@@ -1,6 +1,7 @@
 import { CaretDownIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -31,14 +32,14 @@ function serializeVerification(verification: VerificationRequestDetail) {
 		id: verification.id,
 		verification_type: verification.verification_type,
 		status: verification.status,
+		reference: verification.reference,
 		input_data: verification.input_data,
-		response_data: verification.response_data,
+		response_data: verification.response_data ?? {},
 		cost_charged: verification.cost_charged,
 		currency: verification.currency,
 		created_at: verification.created_at,
 		submitted_at: verification.submitted_at,
 		batch_id: verification.batch_id,
-		reference: verification.reference,
 		source: verification.source,
 		link: verification.link,
 		email_sent_at: verification.email_sent_at,
@@ -51,17 +52,33 @@ function serializeVerification(verification: VerificationRequestDetail) {
 	try {
 		return JSON.stringify(payload, jsonReplacer, 2);
 	} catch (error) {
-		return JSON.stringify(
-			{
-				id: verification.id,
-				verification_type: verification.verification_type,
-				status: verification.status,
-				serialize_error:
-					error instanceof Error ? error.message : "Unable to serialize JSON",
-			},
-			null,
-			2,
-		);
+		try {
+			return JSON.stringify(
+				{
+					id: verification.id,
+					verification_type: verification.verification_type,
+					status: verification.status,
+					response_data: verification.response_data ?? {},
+					serialize_error:
+						error instanceof Error
+							? error.message
+							: "Unable to serialize JSON",
+				},
+				jsonReplacer,
+				2,
+			);
+		} catch {
+			return JSON.stringify(
+				{
+					id: verification.id,
+					verification_type: verification.verification_type,
+					status: verification.status,
+					serialize_error: "Unable to serialize JSON",
+				},
+				null,
+				2,
+			);
+		}
 	}
 }
 
@@ -75,10 +92,12 @@ export function FullJsonResponse({
 		successMessage: "JSON response copied.",
 		errorMessage: "Unable to copy JSON response.",
 	});
-	const json = useMemo(
-		() => serializeVerification(verification),
-		[verification],
-	);
+	const json = useMemo(() => {
+		if (!expanded) {
+			return "";
+		}
+		return serializeVerification(verification);
+	}, [expanded, verification]);
 
 	return (
 		<Card>
@@ -104,7 +123,10 @@ export function FullJsonResponse({
 					variant="outline"
 					size="sm"
 					className="shrink-0"
-					onClick={() => void copy(json)}
+					onClick={() => {
+						const payload = json || serializeVerification(verification);
+						void copy(payload);
+					}}
 					aria-label="Copy JSON response"
 				>
 					{copied ? (
@@ -117,9 +139,14 @@ export function FullJsonResponse({
 			</CardHeader>
 			{expanded ? (
 				<CardContent className="pt-0">
-					<pre className="max-h-96 overflow-auto rounded-md border bg-muted/30 p-3 font-mono text-xs whitespace-pre-wrap break-all">
-						{json}
-					</pre>
+					<CodeBlock
+						code={json}
+						language="json"
+						showLineNumbers
+						wrap
+						size="xs"
+						className="max-h-96"
+					/>
 				</CardContent>
 			) : null}
 		</Card>

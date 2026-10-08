@@ -37,8 +37,10 @@ import {
 	formatTopUpAmountLabel,
 	getTopUpMinAmount,
 	getTopUpSuggestedAmounts,
+	isTestWalletEnvironment,
 	TOP_UP_MAX_AMOUNT,
 } from "../-data";
+import { RequestTestCreditsDialog } from "./request-test-credits-dialog";
 import { StripeCheckoutDialog } from "./stripe-checkout-dialog";
 
 type TopUpFormValues = {
@@ -48,6 +50,8 @@ type TopUpFormValues = {
 type AddCreditsDialogProps = ComponentProps<typeof Dialog> & {
 	userEmail?: string;
 	tenantId?: string;
+	tenantName?: string;
+	balanceLabel?: string;
 	onSuccess?: () => void;
 };
 
@@ -70,6 +74,39 @@ function createTopUpFormSchema(minAmount: number) {
 }
 
 export function AddCreditsDialog({
+	open,
+	onOpenChange,
+	userEmail,
+	tenantId,
+	tenantName,
+	balanceLabel,
+	onSuccess,
+}: AddCreditsDialogProps) {
+	if (isTestWalletEnvironment()) {
+		return (
+			<RequestTestCreditsDialog
+				open={open}
+				onOpenChange={onOpenChange}
+				userEmail={userEmail}
+				tenantId={tenantId}
+				tenantName={tenantName}
+				balanceLabel={balanceLabel}
+			/>
+		);
+	}
+
+	return (
+		<LiveAddCreditsDialog
+			open={open}
+			onOpenChange={onOpenChange}
+			userEmail={userEmail}
+			tenantId={tenantId}
+			onSuccess={onSuccess}
+		/>
+	);
+}
+
+function LiveAddCreditsDialog({
 	open,
 	onOpenChange,
 	userEmail,

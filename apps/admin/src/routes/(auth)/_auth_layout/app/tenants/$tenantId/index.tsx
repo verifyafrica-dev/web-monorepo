@@ -312,7 +312,11 @@ function TenantDetailPage() {
 				</TabsContent>
 
 				<TabsContent value={TENANT_DETAIL_TABS.ADVANCED}>
-					<AdvancedTab onDeleteTenant={() => setDeleteOpen(true)} />
+					<AdvancedTab
+						tenantId={tenantId}
+						tenantName={tenant?.name ?? ""}
+						onDeleteTenant={() => setDeleteOpen(true)}
+					/>
 				</TabsContent>
 			</Tabs>
 

@@ -313,10 +313,14 @@ export const VERIFICATIONS_V2_API = {
 
 	SUPPORTED_COUNTRIES: async (
 		verificationType: string,
+		kybBase?: string,
 	): Promise<VerificationSupportedCountriesData> =>
 		await $http
 			.get(VERIFICATIONS_V2_ENDPOINTS.supportedCountries, {
-				params: { verification_type: verificationType },
+				params: {
+					verification_type: verificationType,
+					...(kybBase ? { kyb_base: kybBase } : {}),
+				},
 			})
 			.then((res) => unwrapV2Data<VerificationSupportedCountriesData>(res)),
 };

@@ -7,6 +7,7 @@ import {
 	CreditCardIcon,
 	HouseIcon,
 	type IconWeight,
+	LockKeyIcon,
 	PlusIcon,
 	ShieldCheckIcon,
 	SquaresFourIcon,
@@ -258,19 +259,30 @@ function OrganizationSwitcher() {
 					<div className="flex flex-col">
 						{tenants.map((membership) => {
 							const isSelected = membership.id === tenant.id;
+							const isRestricted = membership.access_restricted === true;
 
 							return (
 								<button
 									key={membership.id}
 									type="button"
+									aria-disabled={isRestricted || undefined}
 									className={cn(
 										"flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none",
 										"transition-[background-color,color,transform] active:scale-[0.96]",
 										"hover:bg-accent hover:text-accent-foreground",
 										"focus-visible:ring-2 focus-visible:ring-ring",
 										isSelected && "bg-accent/60",
+										isRestricted &&
+											"cursor-not-allowed opacity-60 hover:bg-transparent active:scale-100",
 									)}
 									onClick={() => {
+										if (isRestricted) {
+											toast.error(
+												`${membership.name} has been deactivated, kindly contact support@verifyafrica.io`,
+											);
+											return;
+										}
+
 										setSelectedTenantId(membership.id);
 										toast.success(`Switched to ${membership.name}`);
 										setOpen(false);
@@ -283,11 +295,23 @@ function OrganizationSwitcher() {
 										<span className="truncate font-medium">
 											{membership.name}
 										</span>
-										<span className="truncate text-xs text-muted-foreground">
-											{ROLE_LABELS[membership.role]}
+										<span
+											className={cn(
+												"truncate text-xs text-muted-foreground",
+												isRestricted && "text-destructive",
+											)}
+										>
+											{isRestricted
+												? "Account disabled"
+												: ROLE_LABELS[membership.role]}
 										</span>
 									</div>
-									{isSelected ? (
+									{isRestricted ? (
+										<LockKeyIcon
+											className="size-4 shrink-0 text-muted-foreground"
+											weight="bold"
+										/>
+									) : isSelected ? (
 										<CheckIcon
 											className="size-4 shrink-0 text-primary"
 											weight="bold"

@@ -3,11 +3,74 @@ import { z } from "zod";
 import type { V2SuccessResponse } from "../../../shared";
 
 export interface NewVerifyCollectConfig {
-	dob: boolean;
-	age: boolean;
-	gender: boolean;
-	backside_proof_required: boolean;
-	verification_instructions: string;
+	dob?: boolean;
+	age?: boolean;
+	gender?: boolean;
+	backside_proof_required?: boolean;
+	verification_instructions?: string;
+	country_locked?: boolean;
+	dob_locked?: boolean;
+	incorporation_date_locked?: boolean;
+	jurisdiction_locked?: boolean;
+	search_by_locked?: boolean;
+}
+
+export interface NewVerifySessionFilters {
+	filters?: string[];
+	match_score?: number;
+	rca_search?: boolean;
+	alias_search?: boolean;
+}
+
+export interface NewVerifySessionCountry {
+	code: string;
+	name: string;
+	iso?: string;
+	identifiers?: string[];
+	documents?: Array<
+		string | { payload_name?: string; name?: string; authority?: string }
+	>;
+}
+
+export interface NewVerifySessionPrefilled {
+	full_name?: string;
+	dob?: string;
+	country?: string;
+	countries?: string;
+	business_name?: string;
+	incorporation_date?: string;
+	company_name?: string;
+	company_registration_number?: string;
+	jurisdiction_code?: string;
+	search_by?: string;
+	search_word?: string;
+	search_type?: string;
+	bvn?: string;
+	nin?: string;
+	virtual_nin?: string;
+	phone_number?: string;
+	cac_number?: string;
+	passport_id?: string;
+	passport_number?: string;
+	voter_id?: string;
+	ssnit_number?: string;
+	license_number?: string;
+	national_id?: string;
+	residence_card_id?: string;
+	tax_pin?: string;
+	id_number?: string;
+	first_name?: string;
+	last_name?: string;
+	date_of_birth?: string;
+	registration_name?: string;
+	type?: string;
+}
+
+export interface NewVerifyRegistryFields {
+	required_fields: string[];
+	optional_fields: string[];
+	selfie_supported: boolean;
+	field_labels: Record<string, string>;
 }
 
 export const ShuftiDocumentSupportedTypeSchema = z.enum([
@@ -107,7 +170,20 @@ export interface NewVerifySession {
 	country?: string;
 	full_address?: string;
 	face_verification_mode?: "image_only" | "video_only" | "";
+	filters?: NewVerifySessionFilters;
+	prefilled?: NewVerifySessionPrefilled;
+	countries?: NewVerifySessionCountry[];
+	kyb_base?: "search" | "document" | "document_purchase";
+	identifiers?: string[];
+	documents?: Array<
+		string | { payload_name?: string; name?: string; authority?: string }
+	>;
+	registry_fields?: NewVerifyRegistryFields;
+	locked_fields?: string[];
+	require_selfie?: boolean;
 }
+
+export type NewVerifyGovernmentRegistrySubmitPayload = Record<string, string>;
 
 export interface NewVerifyPresignPayload {
 	file_name: string;
@@ -160,6 +236,36 @@ export interface NewVerifyFaceSubmitData {
 	status: string;
 }
 
+export interface NewVerifyAmlSubmitPayload {
+	full_name: string;
+	country?: string | null;
+	countries?: string[] | null;
+	dob?: string | null;
+}
+
+export interface NewVerifyBusinessAmlSubmitPayload {
+	business_name: string;
+	country?: string | null;
+	countries?: string[] | null;
+	incorporation_date?: string | null;
+}
+
+export interface NewVerifyKybSubmitPayload {
+	company_name?: string;
+	company_registration_number?: string;
+	country?: string | null;
+	search_by?: string;
+	search_word?: string;
+	document_proof?: string;
+	proofs?: Array<{ label: string; file: string }>;
+	additional_proof_labels?: string[];
+	required_documents?: string[];
+}
+
+export type NewVerifyAmlSubmitData = NewVerifyFaceSubmitData;
+export type NewVerifyBusinessAmlSubmitData = NewVerifyFaceSubmitData;
+export type NewVerifyKybSubmitData = NewVerifyFaceSubmitData;
+
 export interface NewVerifyFeedbackSubmitPayload {
 	email: string;
 	message: string;
@@ -177,5 +283,9 @@ export type NewVerifyAddressSubmitResponse =
 	V2SuccessResponse<NewVerifyAddressSubmitData>;
 export type NewVerifyFaceSubmitResponse =
 	V2SuccessResponse<NewVerifyFaceSubmitData>;
+export type NewVerifyAmlSubmitResponse = V2SuccessResponse<NewVerifyAmlSubmitData>;
+export type NewVerifyBusinessAmlSubmitResponse =
+	V2SuccessResponse<NewVerifyBusinessAmlSubmitData>;
+export type NewVerifyKybSubmitResponse = V2SuccessResponse<NewVerifyKybSubmitData>;
 export type NewVerifyFeedbackSubmitResponse =
 	V2SuccessResponse<NewVerifyFeedbackSubmitData>;

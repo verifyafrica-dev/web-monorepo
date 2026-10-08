@@ -70,6 +70,9 @@ export const VERIFICATION_TYPES_BY_PRODUCT = {
 		"ke_national_id_lookup",
 		"ke_phone_number_lookup",
 		"ke_tax_pin_verification",
+		"ci_national_id_lookup",
+		"ci_residence_card_lookup",
+		"us_ssn_verification",
 	],
 	"Document Verification": ["id_document"],
 	"Facial Screening": ["face_match"],
@@ -111,6 +114,9 @@ export const VerificationTypeSchema = z.enum([
 	"ke_national_id_lookup",
 	"ke_phone_number_lookup",
 	"ke_tax_pin_verification",
+	"ci_national_id_lookup",
+	"ci_residence_card_lookup",
+	"us_ssn_verification",
 	"id_document",
 	"face_match",
 	"address_verification",
@@ -291,7 +297,18 @@ export type VerificationSendEmailData = {
 
 export interface VerificationSupportedCountriesData {
 	verification_type: string;
-	countries: Array<{ name: string; code: string }>;
+	kyb_base?: string | null;
+	countries: Array<{
+		name: string;
+		code: string;
+		iso?: string;
+		identifiers?: string[];
+		country_names?: string[];
+		documents?: Array<
+			| string
+			| { payload_name?: string; name?: string; authority?: string }
+		>;
+	}>;
 }
 
 export type VerificationRequestResponse =
@@ -435,28 +452,41 @@ export interface AmlBackgroundChecksInput {
 	filters?: string[];
 	countries?: string[];
 	match_score?: number;
-	rca_search?: string;
-	alias_search?: string;
+	rca_search?: boolean | string;
+	alias_search?: boolean | string;
 	dob?: string;
 	legacy_version?: string;
-	ongoing?: string;
+	biometric_search_image?: string;
+	context?: string;
+}
+
+export interface AmlScreeningFiltersInput {
+	filters?: string[];
+	match_score?: number;
+	rca_search?: boolean | string;
+	alias_search?: boolean | string;
 }
 
 export interface AmlScreeningInputData extends VerificationInputDataBase {
+	filters?: AmlScreeningFiltersInput;
 	background_checks?: AmlBackgroundChecksInput;
 }
 
 export interface BusinessAmlScreeningInput {
 	filters?: string[];
 	match_score?: number;
-	alias_search?: string;
-	rca_search?: string;
+	alias_search?: boolean | string;
+	rca_search?: boolean | string;
 	business_name?: string;
 	business_incorporation_date?: string;
 	countries?: string[];
+	biometric_search_image?: string;
+	individual_face?: string;
+	context?: string;
 }
 
 export interface BusinessAmlScreeningInputData extends VerificationInputDataBase {
+	filters?: AmlScreeningFiltersInput;
 	aml_for_businesses?: BusinessAmlScreeningInput;
 }
 
@@ -466,10 +496,25 @@ export interface CryptoWalletScreeningInputData extends VerificationInputDataBas
 	background_checks?: AmlBackgroundChecksInput;
 }
 
+export type KybBase = "search" | "document" | "document_purchase";
+
 export interface KybScreeningInput {
+	base?: KybBase;
+	company_name?: string;
+	company_names?: string[];
 	company_registration_number?: string;
 	company_jurisdiction_code?: string;
-	search_type?: string;
+	search_type?: "fuzzy" | "contains" | "start_with";
+	search_by?: string;
+	search_word?: string;
+	advanced_search?: boolean | string;
+	ai_business_insights?: boolean | string;
+	country_names?: string[];
+	document_proof?: string;
+	proofs?: Array<{ label: string; file: string }>;
+	additional_proof_labels?: string[];
+	validate_document?: boolean | string | number;
+	required_documents?: string[];
 }
 
 export interface KybScreeningInputData extends VerificationInputDataBase {
@@ -509,6 +554,7 @@ export interface VerificationInputData extends VerificationInputDataBase {
 	face?: FaceVerificationInputFace;
 	collect?: VerificationCollectConfig;
 	background_checks?: AmlBackgroundChecksInput;
+	filters?: AmlScreeningFiltersInput;
 	aml_for_businesses?: BusinessAmlScreeningInput;
 	kyb?: KybScreeningInput;
 	risk_assessment?: RiskAssessmentInput;
@@ -784,6 +830,23 @@ const GOVERNMENT_REGISTRY_CHECKS_TYPES = [
 	"government_registry_checks",
 	"government-registry-checks",
 ] as const;
+
+export interface CountryAvailabilityProduct {
+	slug: string;
+	label: string;
+}
+
+export interface CountryAvailability {
+	global_disabled: string[];
+	product_disabled: Record<string, string[]>;
+	products: CountryAvailabilityProduct[];
+}
+
+export interface CountryAvailabilityUpdatePayload {
+	/** Empty string for the global switch, otherwise a product slug. */
+	product: string;
+	disabled_countries: string[];
+}
 
 export function isGovernmentRegistryChecksVerificationDetail(
 	verification: VerificationRequestDetail,

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { useSupportedCountriesV2Query } from "#/api/http/v2/tenants/tenants.hooks";
+import { useVerificationSupportedCountriesV2Query } from "#/api/http/v2/verifications/verifications.hooks";
 import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { useCurrentTenant } from "../team/-data";
 
@@ -25,6 +26,10 @@ export function filterCountriesByTenant(
 
 type UseTenantSupportedCountriesOptions = {
 	filter?: (countries: SupportedCountry[]) => SupportedCountry[];
+	verificationType?: string;
+	kybBase?: string;
+	/** Product slug; applies the platform's per-product country switches. */
+	product?: string;
 };
 
 export function useTenantSupportedCountries(
@@ -32,30 +37,93 @@ export function useTenantSupportedCountries(
 ) {
 	const { tenant } = useCurrentTenant();
 	const countriesQuery = useSupportedCountriesV2Query();
+	const shuftiCountriesQuery = useVerificationSupportedCountriesV2Query(
+		options?.verificationType ?? "",
+		Boolean(options?.verificationType),
+		options?.kybBase,
+	);
 
-	const enabledCountries =
-		tenant?.enabled_countries && tenant.enabled_countries.length > 0
+	const enabledCountries = useMemo(() => {
+		const productCountries = options?.product
+			? tenant?.product_countries?.[options.product]
+			: undefined;
+		if (productCountries) return productCountries;
+		if (tenant?.available_countries) return tenant.available_countries;
+		return tenant?.enabled_countries && tenant.enabled_countries.length > 0
 			? tenant.enabled_countries
 			: undefined;
+	}, [
+		options?.product,
+		tenant?.available_countries,
+		tenant?.enabled_countries,
+		tenant?.product_countries,
+	]);
 
 	const countries = useMemo(() => {
+		const enabledCodes = new Set(
+			(enabledCountries ?? []).map((code) => code.trim().toLowerCase()),
+		);
+		if (options?.kybBase) {
+			const coverageCountries = (shuftiCountriesQuery.data?.countries ?? [])
+				.filter((country) => {
+					if (enabledCountries === undefined) {
+						return true;
+					}
+					const code = country.code.trim().toLowerCase();
+					const iso = (country.iso ?? country.code.split("_")[0]).trim().toLowerCase();
+					return enabledCodes.has(code) || enabledCodes.has(iso);
+				})
+				.map((country) => ({
+					code: country.code,
+					name: country.name,
+					iso: country.iso,
+					identifiers: country.identifiers,
+					documents: country.documents,
+				}));
+			const filteredCountries = options?.filter
+				? options.filter(coverageCountries)
+				: coverageCountries;
+			return filteredCountries.sort((left, right) =>
+				left.name.localeCompare(right.name),
+			);
+		}
 		const supportedCountries = countriesQuery.data ?? [];
 		const tenantCountries = filterCountriesByTenant(
 			supportedCountries,
 			enabledCountries,
 		);
+		const shuftiCodes = new Set(
+			(shuftiCountriesQuery.data?.countries ?? []).map((country) =>
+				country.code.trim().toUpperCase(),
+			),
+		);
+		const coverageCountries =
+			options?.verificationType && shuftiCodes.size > 0
+				? tenantCountries.filter((country) =>
+						shuftiCodes.has(country.code.trim().toUpperCase()),
+					)
+				: tenantCountries;
 		const filteredCountries = options?.filter
-			? options.filter(tenantCountries)
-			: tenantCountries;
+			? options.filter(coverageCountries)
+			: coverageCountries;
 
 		return filteredCountries.sort((left, right) =>
 			left.name.localeCompare(right.name),
 		);
-	}, [countriesQuery.data, enabledCountries, options?.filter]);
+	}, [
+		countriesQuery.data,
+		enabledCountries,
+		options?.filter,
+		options?.kybBase,
+		options?.verificationType,
+		shuftiCountriesQuery.data,
+	]);
 
 	return {
 		countries,
-		isPending: countriesQuery.isPending,
-		isFetching: countriesQuery.isFetching,
+		isPending:
+			countriesQuery.isPending ||
+			(Boolean(options?.verificationType) && shuftiCountriesQuery.isPending),
+		isFetching: countriesQuery.isFetching || shuftiCountriesQuery.isFetching,
 	};
 }

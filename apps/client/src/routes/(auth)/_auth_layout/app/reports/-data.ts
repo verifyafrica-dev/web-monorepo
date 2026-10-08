@@ -29,10 +29,12 @@ export type BatchVerificationReport = {
 export const REPORTS_PAGE_SIZE = 10;
 
 export const COUNTRY_CODE_MAP: Record<string, string> = {
-	ng: "Nigeria",
+	ci: "Côte d'Ivoire",
 	gh: "Ghana",
 	ke: "Kenya",
+	ng: "Nigeria",
 	za: "South Africa",
+	us: "United States",
 };
 
 function capitalize(value: string) {

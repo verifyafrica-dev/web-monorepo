@@ -29,19 +29,33 @@ type PhoneInputProps = Omit<
 > &
 	Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
 		onChange?: (value: RPNInput.Value) => void;
+		/** Restricts input to this country and hides the country picker. */
+		lockedCountry?: RPNInput.Country;
 	};
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
 	React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
-		({ className, onChange, value, ...props }, ref) => {
+		({ className, onChange, value, lockedCountry, ...props }, ref) => {
+			const lockedProps = lockedCountry
+				? {
+						countries: [lockedCountry],
+						defaultCountry: lockedCountry,
+						international: true,
+						countryCallingCodeEditable: false,
+					}
+				: {};
+
 			return (
 				<RPNInput.default
 					ref={ref}
 					className={cn("flex", className)}
 					flagComponent={PhoneCountryFlag}
-					countrySelectComponent={CountrySelect}
+					countrySelectComponent={
+						lockedCountry ? LockedCountrySelect : CountrySelect
+					}
 					inputComponent={InputComponent}
 					smartCaret={false}
+					{...lockedProps}
 					value={value || undefined}
 					/**
 					 * Handles the onChange event.
@@ -165,6 +179,15 @@ const CountrySelect = ({
 		</Popover>
 	);
 };
+
+const LockedCountrySelect = ({ value: country }: CountrySelectProps) => (
+	<span className="flex h-9 shrink-0 items-center rounded-s-lg border border-r-0 border-border bg-muted/40 px-3 dark:border-input dark:bg-input/30">
+		<PhoneCountryFlag
+			country={country}
+			countryName={country}
+		/>
+	</span>
+);
 
 interface CountrySelectOptionProps extends RPNInput.FlagProps {
 	selectedCountry: RPNInput.Country;

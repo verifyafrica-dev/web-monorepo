@@ -1,7 +1,8 @@
+import type { AxiosError } from "axios";
 import { subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
-import type { AxiosError } from "axios";
 
+import { env } from "#/config/env";
 import type {
 	BillingInformation,
 	BillingInformationCreatePayload,
@@ -427,6 +428,46 @@ export function getInvoicePaymentStatusBadgeClassName(status?: string | null) {
 	}
 
 	return "border-transparent bg-muted text-muted-foreground";
+}
+
+export const BILLING_SUPPORT_EMAIL = "support@verifyafrica.io";
+
+export function isTestWalletEnvironment() {
+	const stripeKey = env.stripePublishableKey ?? "";
+	const apiBaseUrl = env.apiBaseUrl.toLowerCase();
+
+	return (
+		stripeKey.startsWith("pk_test_") ||
+		apiBaseUrl.includes("test.api.verifyafrica")
+	);
+}
+
+export function getTestCreditRequestMailto({
+	userEmail,
+	tenantName,
+	tenantId,
+	balanceLabel,
+}: {
+	userEmail?: string;
+	tenantName?: string;
+	tenantId?: string;
+	balanceLabel?: string;
+}) {
+	const subject = "Test environment credit request";
+	const lines = [
+		"Hello VerifyAfrica support,",
+		"",
+		"Please add more credits to our test wallet.",
+		"",
+		tenantName ? `Organization: ${tenantName}` : null,
+		tenantId ? `Tenant ID: ${tenantId}` : null,
+		userEmail ? `Account: ${userEmail}` : null,
+		balanceLabel ? `Current balance: ${balanceLabel}` : null,
+		"",
+		"Thank you.",
+	].filter((line): line is string => line !== null);
+
+	return `mailto:${BILLING_SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
 }
 
 export const TOP_UP_DEFAULT_MIN_AMOUNT = 1;

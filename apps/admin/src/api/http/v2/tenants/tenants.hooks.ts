@@ -15,6 +15,8 @@ import type {
 	PaginatedTenantUserListResult,
 	TenantAPIKeyPutUpdatePayload,
 	TenantAPIKeyUpdatePayload,
+	TenantAccessRestriction,
+	TenantAccessRestrictionUpdatePayload,
 	TenantComplianceDocumentRegisterPayload,
 	TenantComplianceDocumentDeletePayload,
 	TenantCreatePayload,
@@ -48,6 +50,8 @@ export const TENANTS_V2_QUERY_KEYS = {
 		["tenants-v2", "list", params ?? {}] as const,
 	countries: ["tenants-v2", "countries"] as const,
 	apiKey: (tenantId: string) => ["tenants-v2", "api-key", tenantId] as const,
+	accessRestriction: (tenantId: string) =>
+		["tenants-v2", "access-restriction", tenantId] as const,
 	webhook: (tenantId: string) => ["tenants-v2", "webhook", tenantId] as const,
 	invitations: (tenantId: string, params?: TenantListQuery) =>
 		["tenants-v2", "invitations", tenantId, params ?? {}] as const,
@@ -118,6 +122,23 @@ export const useTenantApiKeyV2Query = (
 			}
 
 			return TENANTS_V2_API.API_KEY(tenantId);
+		},
+		enabled: enabled && Boolean(tenantId),
+		staleTime: TENANTS_V2_STALE_TIME,
+	});
+
+export const useTenantAccessRestrictionV2Query = (
+	tenantId: string | undefined,
+	enabled = true,
+): UseQueryResult<TenantAccessRestriction> =>
+	useQuery<TenantAccessRestriction>({
+		queryKey: TENANTS_V2_QUERY_KEYS.accessRestriction(tenantId ?? ""),
+		queryFn: () => {
+			if (!tenantId) {
+				throw new Error("Tenant ID is required");
+			}
+
+			return TENANTS_V2_API.ACCESS_RESTRICTION(tenantId);
 		},
 		enabled: enabled && Boolean(tenantId),
 		staleTime: TENANTS_V2_STALE_TIME,
@@ -225,6 +246,21 @@ export const useDeleteTenantV2Mutation = () => {
 		mutationFn: (tenantId: string) => TENANTS_V2_API.DELETE(tenantId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: TENANTS_V2_QUERY_KEYS.all });
+		},
+	});
+};
+
+export const useUpdateTenantAccessRestrictionV2Mutation = (tenantId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: TenantAccessRestrictionUpdatePayload) =>
+			TENANTS_V2_API.UPDATE_ACCESS_RESTRICTION(tenantId, payload),
+		onSuccess: (data) => {
+			queryClient.setQueryData(
+				TENANTS_V2_QUERY_KEYS.accessRestriction(tenantId),
+				data,
+			);
 		},
 	});
 };

@@ -2,15 +2,37 @@ import {
 	BankIcon,
 	GlobeHemisphereWestIcon,
 	IdentificationCardIcon,
+	LinkIcon,
+	MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
 
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
+import { ProductFileUploadSettingSection } from "../../-components/product-file-upload-setting-section";
+import { registryTypeSupportsSelfie } from "../-data";
 
-export function GovernmentRegistryChecksInfoPanel() {
+type GovernmentRegistryChecksInfoPanelProps = {
+	verificationType?: string;
+};
+
+export function GovernmentRegistryChecksInfoPanel({
+	verificationType = "",
+}: GovernmentRegistryChecksInfoPanelProps) {
+	const showFileUploadSetting =
+		Boolean(verificationType) && registryTypeSupportsSelfie(verificationType);
+
 	return (
 		<Card className="h-fit bg-muted/30">
 			<CardContent className="flex flex-col gap-6 pt-0">
+				{showFileUploadSetting ? (
+					<>
+						<ProductFileUploadSettingSection
+							verificationType={verificationType}
+						/>
+						<Separator />
+					</>
+				) : null}
+
 				<section className="space-y-4">
 					<h2 className="text-sm font-semibold text-secondary">How It Works</h2>
 
@@ -20,10 +42,43 @@ export function GovernmentRegistryChecksInfoPanel() {
 							Government Registry Lookup
 						</div>
 						<p className="text-sm leading-relaxed text-muted-foreground">
-							Submit registry identifiers for Nigeria, South Africa, Ghana, or
-							Kenya. VerifyAfrica queries the relevant government registry and
-							returns structured identity or business records.
+							Submit registry identifiers for Côte d'Ivoire, Ghana, Kenya,
+							Nigeria, South Africa, or the United States. VerifyAfrica queries
+							the relevant government registry and returns structured identity
+							or business records.
 						</p>
+					</div>
+				</section>
+
+				<Separator />
+
+				<section className="space-y-4">
+					<h2 className="text-sm font-semibold">Verification modes</h2>
+
+					<div className="space-y-3">
+						<div className="flex items-start gap-2 text-sm">
+							<LinkIcon className="mt-0.5 size-4 shrink-0 text-secondary" />
+							<div className="space-y-1">
+								<p className="font-medium">Link mode</p>
+								<p className="leading-relaxed text-muted-foreground">
+									Available only for checks that support selfie matching.
+									The customer captures a selfie on the hosted page. Billing
+									runs when the check is submitted to the registry provider.
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-start gap-2 text-sm">
+							<MagnifyingGlassIcon className="mt-0.5 size-4 shrink-0 text-secondary" />
+							<div className="space-y-1">
+								<p className="font-medium">Direct mode</p>
+								<p className="leading-relaxed text-muted-foreground">
+									Run the check immediately with the details you enter here.
+									Results return asynchronously while provider work runs in the
+									background.
+								</p>
+							</div>
+						</div>
 					</div>
 				</section>
 
@@ -44,42 +99,19 @@ export function GovernmentRegistryChecksInfoPanel() {
 						<div className="space-y-1">
 							<p className="text-sm font-medium">Registry Identifier</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								The primary document or registry number required for the selected
-								check, such as BVN, NIN, SA ID, passport number, or CAC number.
+								The primary document or registry number required for the
+								selected check, such as BVN, NIN, SA ID, SSN, passport number,
+								or CAC number.
 							</p>
 						</div>
 
 						<div className="space-y-1">
 							<p className="text-sm font-medium">Optional Validation</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								For supported checks, you can validate customer-provided names and
-								date of birth against registry data, or include a selfie for
-								facial matching.
-							</p>
-						</div>
-					</div>
-				</section>
-
-				<Separator />
-
-				<section className="space-y-4">
-					<h2 className="text-sm font-semibold">Supported Countries</h2>
-
-					<div className="space-y-3">
-						<div className="flex items-start gap-2 text-sm">
-							<GlobeHemisphereWestIcon className="mt-0.5 size-4 text-secondary" />
-							<p className="leading-relaxed text-muted-foreground">
-								Nigeria, South Africa, Ghana, and Kenya. Available checks depend
-								on your tenant&apos;s enabled countries.
-							</p>
-						</div>
-
-						<div className="flex items-start gap-2 text-sm">
-							<IdentificationCardIcon className="mt-0.5 size-4 text-secondary" />
-							<p className="leading-relaxed text-muted-foreground">
-								Verification types include BVN, NIN, passport, national ID, phone
-								lookup, CAC, SSNIT, voter card, driver&apos;s license, and tax
-								PIN checks.
+								For supported checks, you can validate customer-provided names
+								and date of birth against registry data, or include a selfie for
+								facial matching. Required fields are marked with * on the hosted
+								link.
 							</p>
 						</div>
 					</div>

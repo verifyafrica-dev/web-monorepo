@@ -1,10 +1,11 @@
-import { LinkIcon, MagnifyingGlassIcon, PaperPlaneTiltIcon } from "@phosphor-icons/react";
+import { LinkIcon, MagnifyingGlassIcon, PaperPlaneTiltIcon, SlidersHorizontalIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { format, isValid, parse } from "date-fns";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@verifyafrica/ui/components/ui/accordion";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
@@ -18,6 +19,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { Slider } from "@verifyafrica/ui/components/ui/slider";
+import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
@@ -30,8 +32,11 @@ import {
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NO_COUNTRIES_MESSAGE } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import { ProductProofUpload } from "../../-components/product-proof-upload";
+import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
+import { ScreeningCountriesMultiSelect } from "@verifyafrica/ui/components/ui-extended/screening-countries-multi-select";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
 	VERIFICATION_MODES,
@@ -50,18 +55,22 @@ import {
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	screeningCountry: z.string(),
+	screeningCountries: z.array(z.string()),
+	dateOfBirth: z.string(),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	consent: verificationConsentSchema,
 });
 
 const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	screeningCountry: z.string(),
+	screeningCountries: z.array(z.string()),
 	fullName: z.string().trim().min(1, "Full name is required"),
 	dateOfBirth: z.string(),
 	consent: verificationConsentSchema,
 });
+
+const AML_BIOMETRIC_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"] as const;
+const AML_BIOMETRIC_MAX_BYTES = 5 * 1024 * 1024;
 
 function parseDateOfBirth(value: string) {
 	if (!value) {
@@ -76,6 +85,11 @@ export function AmlScreeningForm() {
 	const [mode, setMode] = useState<VerificationMode>("link");
 	const [filters, setFilters] = useState(DEFAULT_AML_SCREENING_FILTERS);
 	const [matchScore, setMatchScore] = useState(DEFAULT_MATCH_SCORE);
+	const [rcaSearch, setRcaSearch] = useState(true);
+	const [aliasSearch, setAliasSearch] = useState(true);
+	const [context, setContext] = useState("");
+	const [biometricUrl, setBiometricUrl] = useState<string | null>(null);
+	const [isBiometricUploading, setIsBiometricUploading] = useState(false);
 	const {
 		submitVerification,
 		linkResult,
@@ -88,17 +102,30 @@ export function AmlScreeningForm() {
 		errorMessage: "Failed to submit AML screening verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({
+			verificationType: "aml_screening",
+			product: "aml_screening",
+		});
 
 	const hasSelectedFilters = useMemo(
 		() => Object.values(filters).some(Boolean),
 		[filters],
 	);
 
+	const screeningOptions = {
+		filters,
+		matchScore,
+		rcaSearch,
+		aliasSearch,
+		context,
+		biometricSearchImage: biometricUrl,
+	};
+
 	const linkForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [],
+			dateOfBirth: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
 			consent: false,
 		},
@@ -113,7 +140,7 @@ export function AmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildAmlScreeningLinkPayload(value, { filters, matchScore }),
+				buildAmlScreeningLinkPayload(value, screeningOptions),
 				{
 					mode: "link",
 					email: value.email,
@@ -130,7 +157,7 @@ export function AmlScreeningForm() {
 	const directForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [],
 			fullName: "",
 			dateOfBirth: "",
 			consent: false,
@@ -146,7 +173,7 @@ export function AmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildAmlScreeningDirectPayload(value, { filters, matchScore }),
+				buildAmlScreeningDirectPayload(value, screeningOptions),
 				{ mode: "direct" },
 			);
 
@@ -161,6 +188,10 @@ export function AmlScreeningForm() {
 		directForm.reset();
 		setFilters(DEFAULT_AML_SCREENING_FILTERS);
 		setMatchScore(DEFAULT_MATCH_SCORE);
+		setRcaSearch(true);
+		setAliasSearch(true);
+		setContext("");
+		setBiometricUrl(null);
 	}
 
 	const activeForm = mode === "link" ? linkForm : directForm;
@@ -237,46 +268,56 @@ export function AmlScreeningForm() {
 								)}
 							</linkForm.Field>
 
-							<linkForm.Field name="screeningCountry">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="aml-screening-link-country">
-											Screening Countries
-										</FieldLabel>
-										<Select
-											value={field.state.value || undefined}
-											onValueChange={field.handleChange}
-											disabled={isCountriesPending}
-										>
-											<SelectTrigger
-												id="aml-screening-link-country"
-												className="w-full"
-											>
-												<SelectValue
-													placeholder={
-														isCountriesPending
-															? "Loading countries..."
-															: "Select a country"
-													}
-												/>
-											</SelectTrigger>
-											<SelectContent className="max-h-60">
-												{countries.map((country) => (
-													<SelectItem key={country.code} value={country.code}>
-														<CountryOptionLabel
-															name={country.name}
-															countryCode={country.code}
-														/>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+							<Accordion
+								type="single"
+								collapsible
+								className="rounded-lg border bg-muted/60 px-4"
+							>
+								<AccordionItem
+									value="optional-aml-fields"
+									className="border-0"
+								>
+									<AccordionTrigger className="py-3 hover:no-underline">
+										Optional country and date of birth
+									</AccordionTrigger>
+									<AccordionContent className="flex flex-col gap-4">
 										<FieldDescription>
-											Choose the country to screen against
+											Leave these blank so the customer can enter them. If you
+											set them here, the customer cannot change them.
 										</FieldDescription>
-									</Field>
-								)}
-							</linkForm.Field>
+										<linkForm.Field name="screeningCountries">
+											{(field) => (
+												<ScreeningCountriesMultiSelect
+													id="aml-screening-link-country"
+													value={field.state.value}
+													onValueChange={field.handleChange}
+													countries={countries}
+													unavailableMessage={NO_COUNTRIES_MESSAGE}
+													isLoading={isCountriesPending}
+												/>
+											)}
+										</linkForm.Field>
+										<linkForm.Field name="dateOfBirth">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="aml-screening-link-dob">
+														Date of birth
+													</FieldLabel>
+													<KycDatePicker
+														id="aml-screening-link-dob"
+														value={parseDateOfBirth(field.state.value)}
+														onChange={(date) =>
+															field.handleChange(
+																date ? format(date, "yyyy-MM-dd") : "",
+															)
+														}
+													/>
+												</Field>
+											)}
+										</linkForm.Field>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 
 							<linkForm.Field name="urlLimit">
 								{(field) => (
@@ -332,44 +373,16 @@ export function AmlScreeningForm() {
 								)}
 							</directForm.Field>
 
-							<directForm.Field name="screeningCountry">
+							<directForm.Field name="screeningCountries">
 								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="aml-screening-direct-country">
-											Screening Countries
-										</FieldLabel>
-										<Select
-											value={field.state.value || undefined}
-											onValueChange={field.handleChange}
-											disabled={isCountriesPending}
-										>
-											<SelectTrigger
-												id="aml-screening-direct-country"
-												className="w-full"
-											>
-												<SelectValue
-													placeholder={
-														isCountriesPending
-															? "Loading countries..."
-															: "Select a country"
-													}
-												/>
-											</SelectTrigger>
-											<SelectContent className="max-h-60">
-												{countries.map((country) => (
-													<SelectItem key={country.code} value={country.code}>
-														<CountryOptionLabel
-															name={country.name}
-															countryCode={country.code}
-														/>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-										<FieldDescription>
-											Choose the country to screen against
-										</FieldDescription>
-									</Field>
+									<ScreeningCountriesMultiSelect
+										id="aml-screening-direct-country"
+										value={field.state.value}
+										onValueChange={field.handleChange}
+										countries={countries}
+										unavailableMessage={NO_COUNTRIES_MESSAGE}
+										isLoading={isCountriesPending}
+									/>
 								)}
 							</directForm.Field>
 
@@ -412,6 +425,22 @@ export function AmlScreeningForm() {
 							</directForm.Field>
 						</FieldGroup>
 					)}
+
+					<ProductProofUpload
+						label="Biometric search image (optional)"
+						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.amlScreening}
+						proofUrl={biometricUrl}
+						onProofUrlChange={setBiometricUrl}
+						onUploadingChange={setIsBiometricUploading}
+						accept="image/jpeg,image/jpg,image/png"
+						allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
+						maxSize={AML_BIOMETRIC_MAX_BYTES}
+						emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
+						disabled={isSubmitting}
+					/>
+					<FieldDescription>
+						A facial image used to match records in connected AML databases.
+					</FieldDescription>
 
 					<Field className="gap-3">
 						<FieldLabel>Filters</FieldLabel>
@@ -459,6 +488,75 @@ export function AmlScreeningForm() {
 						</FieldDescription>
 					</Field>
 
+					<Accordion
+						type="single"
+						collapsible
+						className="rounded-lg border px-4"
+					>
+						<AccordionItem value="advanced-aml-search" className="border-none">
+							<AccordionTrigger className="py-4 hover:no-underline">
+								<div className="flex items-center gap-3 text-left">
+									<SlidersHorizontalIcon className="size-5 shrink-0 text-secondary" />
+									<div>
+										<p className="text-sm font-medium">Search options</p>
+										<p className="text-xs font-normal text-muted-foreground">
+											RCA, aliases, and context
+										</p>
+									</div>
+								</div>
+							</AccordionTrigger>
+							<AccordionContent className="flex flex-col gap-4 pb-4">
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id="aml-screening-rca-search"
+										checked={rcaSearch}
+										onCheckedChange={(checked) =>
+											setRcaSearch(checked === true)
+										}
+									/>
+									<Label
+										htmlFor="aml-screening-rca-search"
+										className="text-sm font-normal"
+									>
+										RCA search
+									</Label>
+								</div>
+								<FieldDescription>
+									Include relatives and close associates in the screening.
+								</FieldDescription>
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id="aml-screening-alias-search"
+										checked={aliasSearch}
+										onCheckedChange={(checked) =>
+											setAliasSearch(checked === true)
+										}
+									/>
+									<Label
+										htmlFor="aml-screening-alias-search"
+										className="text-sm font-normal"
+									>
+										Alias search
+									</Label>
+								</div>
+								<FieldDescription>
+									Match known aliases and alternative names.
+								</FieldDescription>
+								<Field className="gap-1.5">
+									<FieldLabel htmlFor="aml-screening-context">
+										Context (optional)
+									</FieldLabel>
+									<Textarea
+										id="aml-screening-context"
+										placeholder="Extra context for match assessment"
+										value={context}
+										onChange={(event) => setContext(event.target.value)}
+									/>
+								</Field>
+							</AccordionContent>
+						</AccordionItem>
+					</Accordion>
+
 					{mode === "link" ? (
 						<linkForm.Field name="consent">
 							{(field) => (
@@ -488,7 +586,10 @@ export function AmlScreeningForm() {
 									type="submit"
 									className="w-full cursor-pointer"
 									disabled={
-										!canSubmit || !hasSelectedFilters || isSubmitting
+										!canSubmit ||
+										!hasSelectedFilters ||
+										isSubmitting ||
+										isBiometricUploading
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
@@ -503,7 +604,10 @@ export function AmlScreeningForm() {
 									type="submit"
 									className="w-full cursor-pointer"
 									disabled={
-										!canSubmit || !hasSelectedFilters || isSubmitting
+										!canSubmit ||
+										!hasSelectedFilters ||
+										isSubmitting ||
+										isBiometricUploading
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />

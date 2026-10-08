@@ -7,6 +7,15 @@ export function asRecord(value: unknown): UnknownRecord | null {
 	return isPlainObject(value) ? (value as UnknownRecord) : null;
 }
 
+export function asUnknownArray(value: unknown): unknown[] {
+	return Array.isArray(value) ? value : [];
+}
+
+export function getResponsePayload(responseData: unknown): UnknownRecord {
+	const record = asRecord(responseData) ?? {};
+	return asRecord(record.data) ?? record;
+}
+
 export function asNonEmptyString(value: unknown): string | undefined {
 	if (typeof value !== "string") {
 		return undefined;
@@ -28,7 +37,67 @@ export function displayValue(value: unknown): string {
 	return String(value);
 }
 
- 
+/**
+ * Prefer `response_data.event` (Shufti/Korapay prefixed). For Korapay identity
+ * results that predate event synthesis, derive from terminal status.
+ */
+export function resolveVerificationEvent(verification: {
+	source?: string | null;
+	status?: string | null;
+	response_data?: { event?: unknown } | null;
+}): string | undefined {
+	const stored = asNonEmptyString(verification.response_data?.event);
+	if (stored) {
+		return stored;
+	}
+
+	const source = (verification.source ?? "").toLowerCase();
+	if (source !== "kr" && source !== "korapay") {
+		return undefined;
+	}
+
+	switch (verification.status) {
+		case "SUCCESS":
+			return "kr.verification.completed";
+		case "FAILED":
+		case "ERROR":
+			return "kr.verification.failed";
+		case "PENDING":
+			return "kr.verification.pending";
+		default:
+			return undefined;
+	}
+}
+
+export function formatHumanLabel(value: string) {
+	return value
+		.replaceAll("_", " ")
+		.replaceAll("-", " ")
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ");
+}
+
+export function formatYesNo(value: unknown): string | undefined {
+	if (value === true || value === "1" || value === "true") {
+		return "Yes";
+	}
+
+	if (value === false || value === "0" || value === "false") {
+		return "No";
+	}
+
+	return undefined;
+}
+
+export function formatStringList(values?: string[]) {
+	if (!values?.length) {
+		return undefined;
+	}
+
+	return values.map(formatHumanLabel).join(", ");
+}
 
 export const PROOF_LABELS = {
 	address: "Address Proof",

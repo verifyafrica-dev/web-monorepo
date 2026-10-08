@@ -19,7 +19,13 @@ export function GenericVerificationDetailReport({
 	const responsePayload = (asRecord(responseData.data) ??
 		responseData) as Record<string, unknown>;
 
-	const { proofs: _proofs, info: _info, ...resultData } = responsePayload;
+	const {
+		proofs: _proofs,
+		info: _info,
+		verification_data: _verificationData,
+		additional_data: _additionalData,
+		...resultData
+	} = responsePayload;
 
 	const country =
 		typeof responsePayload.country === "string"

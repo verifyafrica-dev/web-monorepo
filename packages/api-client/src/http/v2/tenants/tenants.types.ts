@@ -195,6 +195,27 @@ export interface TenantListItem {
 	role: TenantRole;
 	membership_active: boolean;
 	joined_at: string;
+	/** True while a superuser has deactivated this tenant. */
+	access_restricted?: boolean;
+}
+
+export const TenantAccessRestrictionTypeSchema = z.enum([
+	"none",
+	"account_disabled",
+	"account_activation_period",
+]);
+export type TenantAccessRestrictionType = z.infer<
+	typeof TenantAccessRestrictionTypeSchema
+>;
+
+export interface TenantAccessRestriction {
+	restriction_type: TenantAccessRestrictionType;
+	/** First active day (yyyy-MM-dd, inclusive). */
+	start_date: string | null;
+	/** Last active day (yyyy-MM-dd, inclusive until 23:59). */
+	end_date: string | null;
+	/** Whether the restriction is in effect today. */
+	is_active: boolean;
 }
 
 export interface TenantAllListBilling {
@@ -320,10 +341,11 @@ export interface TenantVerificationConfigListData {
 export type HostedCaptureVerificationType =
 	| "id_document"
 	| "face_match"
-	| "address_verification";
+	| "address_verification"
+	| (string & {});
 
 export interface TenantProductSettingRow {
-	verification_type: HostedCaptureVerificationType | string;
+	verification_type: HostedCaptureVerificationType;
 	allow_file_upload: boolean;
 }
 
@@ -332,11 +354,7 @@ export interface TenantProductSettingListData {
 }
 
 export const TenantProductSettingUpdateSchema = z.object({
-	verification_type: z.enum([
-		"id_document",
-		"face_match",
-		"address_verification",
-	]),
+	verification_type: z.string().min(1),
 	allow_file_upload: z.boolean(),
 });
 
@@ -404,6 +422,28 @@ export const TenantUpdateSchema = z.object({
 });
 
 export type TenantUpdatePayload = z.infer<typeof TenantUpdateSchema>;
+
+export const TenantAccessRestrictionUpdateSchema = z.discriminatedUnion(
+	"restriction_type",
+	[
+		z.object({ restriction_type: z.literal("none") }),
+		z.object({ restriction_type: z.literal("account_disabled") }),
+		z
+			.object({
+				restriction_type: z.literal("account_activation_period"),
+				start_date: z.iso.date({ message: "Start date is required" }),
+				end_date: z.iso.date({ message: "End date is required" }),
+			})
+			.refine((value) => value.end_date >= value.start_date, {
+				message: "End date must be on or after the start date",
+				path: ["end_date"],
+			}),
+	],
+);
+
+export type TenantAccessRestrictionUpdatePayload = z.infer<
+	typeof TenantAccessRestrictionUpdateSchema
+>;
 
 export const TenantAPIKeyUpdateSchema = z.object({
 	key: z.string().optional(),
@@ -569,6 +609,8 @@ export type SupportedCountryListResponse = V2SuccessResponse<
 	SupportedCountry[]
 >;
 export type TenantAPIKeyResponse = V2SuccessResponse<TenantAPIKey>;
+export type TenantAccessRestrictionResponse =
+	V2SuccessResponse<TenantAccessRestriction>;
 export type TenantWebhookResponse = V2SuccessResponse<TenantWebhook>;
 export type TenantWebhookEventListResponse =
 	V2PaginatedSuccessResponse<TenantWebhookEvent>;

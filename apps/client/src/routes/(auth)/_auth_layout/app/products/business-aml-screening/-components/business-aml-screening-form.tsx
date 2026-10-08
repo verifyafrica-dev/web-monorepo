@@ -29,6 +29,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { Slider } from "@verifyafrica/ui/components/ui/slider";
+import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
@@ -41,9 +42,11 @@ import {
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NO_COUNTRIES_MESSAGE } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import { ProductProofUpload } from "../../-components/product-proof-upload";
+import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
+import { ScreeningCountriesMultiSelect } from "@verifyafrica/ui/components/ui-extended/screening-countries-multi-select";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
 	VERIFICATION_MODES,
@@ -63,14 +66,16 @@ import {
 } from "../-data";
 
 const businessFieldsSchema = {
-	screeningCountry: z.string(),
+	screeningCountries: z.array(z.string()),
 	businessName: z.string().trim().min(1, "Business name is required"),
 	incorporationDate: z.string(),
 };
 
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
-	...businessFieldsSchema,
+	screeningCountries: z.array(z.string()),
+	businessName: z.string(),
+	incorporationDate: z.string(),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
 	consent: verificationConsentSchema,
 });
@@ -90,10 +95,27 @@ function parseIncorporationDate(value: string) {
 	return isValid(parsed) ? parsed : undefined;
 }
 
+const AML_BIOMETRIC_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"] as const;
+const AML_BIOMETRIC_MAX_BYTES = 5 * 1024 * 1024;
+const AML_INDIVIDUAL_FACE_MIME_TYPES = [
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"application/pdf",
+] as const;
+const AML_INDIVIDUAL_FACE_MAX_BYTES = 16 * 1024 * 1024;
+
 export function BusinessAmlScreeningForm() {
 	const [mode, setMode] = useState<VerificationMode>("link");
 	const [filters, setFilters] = useState(DEFAULT_AML_SCREENING_FILTERS);
 	const [matchScore, setMatchScore] = useState(DEFAULT_MATCH_SCORE);
+	const [rcaSearch, setRcaSearch] = useState(true);
+	const [aliasSearch, setAliasSearch] = useState(true);
+	const [context, setContext] = useState("");
+	const [biometricUrl, setBiometricUrl] = useState<string | null>(null);
+	const [individualFaceUrl, setIndividualFaceUrl] = useState<string | null>(null);
+	const [isBiometricUploading, setIsBiometricUploading] = useState(false);
+	const [isFaceUploading, setIsFaceUploading] = useState(false);
 	const {
 		submitVerification,
 		linkResult,
@@ -106,17 +128,30 @@ export function BusinessAmlScreeningForm() {
 		errorMessage: "Failed to submit business AML screening verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries();
+		useTenantSupportedCountries({
+			verificationType: "business_aml_screening",
+			product: "business_aml_screening",
+		});
 
 	const hasSelectedFilters = useMemo(
 		() => Object.values(filters).some(Boolean),
 		[filters],
 	);
 
+	const screeningOptions = {
+		filters,
+		matchScore,
+		rcaSearch,
+		aliasSearch,
+		context,
+		biometricSearchImage: biometricUrl,
+		individualFace: individualFaceUrl,
+	};
+
 	const linkForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [] as string[],
 			businessName: "",
 			incorporationDate: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
@@ -133,7 +168,7 @@ export function BusinessAmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildBusinessAmlScreeningLinkPayload(value, { filters, matchScore }),
+				buildBusinessAmlScreeningLinkPayload(value, screeningOptions),
 				{
 					mode: "link",
 					email: value.email,
@@ -150,7 +185,7 @@ export function BusinessAmlScreeningForm() {
 	const directForm = useForm({
 		defaultValues: {
 			email: "",
-			screeningCountry: "",
+			screeningCountries: [] as string[],
 			businessName: "",
 			incorporationDate: "",
 			consent: false,
@@ -166,7 +201,7 @@ export function BusinessAmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildBusinessAmlScreeningDirectPayload(value, { filters, matchScore }),
+				buildBusinessAmlScreeningDirectPayload(value, screeningOptions),
 				{ mode: "direct" },
 			);
 
@@ -181,6 +216,11 @@ export function BusinessAmlScreeningForm() {
 		directForm.reset();
 		setFilters(DEFAULT_AML_SCREENING_FILTERS);
 		setMatchScore(DEFAULT_MATCH_SCORE);
+		setRcaSearch(true);
+		setAliasSearch(true);
+		setContext("");
+		setBiometricUrl(null);
+		setIndividualFaceUrl(null);
 	}
 
 	const activeForm = mode === "link" ? linkForm : directForm;
@@ -280,112 +320,132 @@ export function BusinessAmlScreeningForm() {
 						)}
 
 						{mode === "link" ? (
-							<linkForm.Field name="screeningCountry">
-								{(field) => (
-									<ScreeningCountryField
-										id="business-aml-link-country"
-										value={field.state.value}
-										onValueChange={field.handleChange}
-										countries={countries}
-										isLoading={isCountriesPending}
-									/>
-								)}
-							</linkForm.Field>
+							<Accordion
+								type="single"
+								collapsible
+								className="rounded-lg border bg-muted/60 px-4"
+							>
+								<AccordionItem
+									value="optional-business-aml-fields"
+									className="border-0"
+								>
+									<AccordionTrigger className="py-3 hover:no-underline">
+										Optional country, business name, and incorporation date
+									</AccordionTrigger>
+									<AccordionContent className="flex flex-col gap-4">
+										<FieldDescription>
+											Leave these blank so the customer can enter them. A
+											country or incorporation date you set here cannot be
+											changed by the customer. A business name is shown to the
+											customer and can still be edited.
+										</FieldDescription>
+										<linkForm.Field name="screeningCountries">
+											{(field) => (
+												<ScreeningCountriesMultiSelect
+													id="business-aml-link-country"
+													value={field.state.value}
+													onValueChange={field.handleChange}
+													countries={countries}
+													unavailableMessage={NO_COUNTRIES_MESSAGE}
+													isLoading={isCountriesPending}
+												/>
+											)}
+										</linkForm.Field>
+										<div className="grid gap-4 sm:grid-cols-2">
+											<linkForm.Field name="businessName">
+												{(field) => (
+													<Field className="gap-1.5">
+														<FieldLabel htmlFor="business-aml-link-name">
+															Business Name
+														</FieldLabel>
+														<Input
+															id="business-aml-link-name"
+															placeholder="Business Name"
+															value={field.state.value}
+															onBlur={field.handleBlur}
+															onChange={(event) =>
+																field.handleChange(event.target.value)
+															}
+														/>
+													</Field>
+												)}
+											</linkForm.Field>
+											<linkForm.Field name="incorporationDate">
+												{(field) => (
+													<Field className="gap-1.5">
+														<FieldLabel htmlFor="business-aml-link-incorporation-date">
+															Business Incorporation Date
+														</FieldLabel>
+														<KycDatePicker
+															id="business-aml-link-incorporation-date"
+															value={parseIncorporationDate(field.state.value)}
+															onChange={(date) =>
+																field.handleChange(
+																	date ? format(date, "yyyy-MM-dd") : "",
+																)
+															}
+														/>
+													</Field>
+												)}
+											</linkForm.Field>
+										</div>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						) : (
-							<directForm.Field name="screeningCountry">
-								{(field) => (
-									<ScreeningCountryField
-										id="business-aml-direct-country"
-										value={field.state.value}
-										onValueChange={field.handleChange}
-										countries={countries}
-										isLoading={isCountriesPending}
-									/>
-								)}
-							</directForm.Field>
+							<>
+								<directForm.Field name="screeningCountries">
+									{(field) => (
+										<ScreeningCountriesMultiSelect
+											id="business-aml-direct-country"
+											value={field.state.value}
+											onValueChange={field.handleChange}
+											countries={countries}
+											unavailableMessage={NO_COUNTRIES_MESSAGE}
+											isLoading={isCountriesPending}
+										/>
+									)}
+								</directForm.Field>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<directForm.Field name="businessName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="business-aml-direct-name">
+													Business Name
+												</FieldLabel>
+												<Input
+													id="business-aml-direct-name"
+													placeholder="Business Name"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+												/>
+											</Field>
+										)}
+									</directForm.Field>
+									<directForm.Field name="incorporationDate">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="business-aml-direct-incorporation-date">
+													Business Incorporation Date (Optional)
+												</FieldLabel>
+												<KycDatePicker
+													id="business-aml-direct-incorporation-date"
+													value={parseIncorporationDate(field.state.value)}
+													onChange={(date) =>
+														field.handleChange(
+															date ? format(date, "yyyy-MM-dd") : "",
+														)
+													}
+												/>
+											</Field>
+										)}
+									</directForm.Field>
+								</div>
+							</>
 						)}
-
-						<div className="grid gap-4 sm:grid-cols-2">
-							{mode === "link" ? (
-								<linkForm.Field name="businessName">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-link-name">
-												Business Name
-											</FieldLabel>
-											<Input
-												id="business-aml-link-name"
-												placeholder="Business Name"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(event) =>
-													field.handleChange(event.target.value)
-												}
-											/>
-										</Field>
-									)}
-								</linkForm.Field>
-							) : (
-								<directForm.Field name="businessName">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-direct-name">
-												Business Name
-											</FieldLabel>
-											<Input
-												id="business-aml-direct-name"
-												placeholder="Business Name"
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(event) =>
-													field.handleChange(event.target.value)
-												}
-											/>
-										</Field>
-									)}
-								</directForm.Field>
-							)}
-
-							{mode === "link" ? (
-								<linkForm.Field name="incorporationDate">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-link-incorporation-date">
-												Business Incorporation Date (Optional)
-											</FieldLabel>
-											<KycDatePicker
-												id="business-aml-link-incorporation-date"
-												value={parseIncorporationDate(field.state.value)}
-												onChange={(date) =>
-													field.handleChange(
-														date ? format(date, "yyyy-MM-dd") : "",
-													)
-												}
-											/>
-										</Field>
-									)}
-								</linkForm.Field>
-							) : (
-								<directForm.Field name="incorporationDate">
-									{(field) => (
-										<Field className="gap-1.5">
-											<FieldLabel htmlFor="business-aml-direct-incorporation-date">
-												Business Incorporation Date (Optional)
-											</FieldLabel>
-											<KycDatePicker
-												id="business-aml-direct-incorporation-date"
-												value={parseIncorporationDate(field.state.value)}
-												onChange={(date) =>
-													field.handleChange(
-														date ? format(date, "yyyy-MM-dd") : "",
-													)
-												}
-											/>
-										</Field>
-									)}
-								</directForm.Field>
-							)}
-						</div>
 
 						{mode === "link" && (
 							<linkForm.Field name="urlLimit">
@@ -421,6 +481,31 @@ export function BusinessAmlScreeningForm() {
 						)}
 					</FieldGroup>
 
+					<ProductProofUpload
+						label="Biometric search image (optional)"
+						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
+						proofUrl={biometricUrl}
+						onProofUrlChange={setBiometricUrl}
+						onUploadingChange={setIsBiometricUploading}
+						accept="image/jpeg,image/jpg,image/png"
+						allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
+						maxSize={AML_BIOMETRIC_MAX_BYTES}
+						emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
+						disabled={isSubmitting}
+					/>
+					<ProductProofUpload
+						label="Individual face (optional)"
+						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
+						proofUrl={individualFaceUrl}
+						onProofUrlChange={setIndividualFaceUrl}
+						onUploadingChange={setIsFaceUploading}
+						accept="image/jpeg,image/jpg,image/png,application/pdf"
+						allowedMimeTypes={AML_INDIVIDUAL_FACE_MIME_TYPES}
+						maxSize={AML_INDIVIDUAL_FACE_MAX_BYTES}
+						emptyStateText="Upload a JPEG, PNG, or PDF up to 16MB"
+						disabled={isSubmitting}
+					/>
+
 					<Accordion type="single" collapsible className="rounded-lg border px-4">
 						<AccordionItem value="advanced" className="border-none">
 							<AccordionTrigger className="py-4 hover:no-underline">
@@ -429,7 +514,7 @@ export function BusinessAmlScreeningForm() {
 									<div>
 										<p className="text-sm font-medium">Advanced Settings</p>
 										<p className="text-xs font-normal text-muted-foreground">
-											Filters and match score
+											Filters, match score, RCA, aliases, and context
 										</p>
 									</div>
 								</div>
@@ -482,6 +567,47 @@ export function BusinessAmlScreeningForm() {
 										applies the strictest accuracy.
 									</FieldDescription>
 								</Field>
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id="business-aml-rca-search"
+										checked={rcaSearch}
+										onCheckedChange={(checked) =>
+											setRcaSearch(checked === true)
+										}
+									/>
+									<Label
+										htmlFor="business-aml-rca-search"
+										className="text-sm font-normal"
+									>
+										RCA search
+									</Label>
+								</div>
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id="business-aml-alias-search"
+										checked={aliasSearch}
+										onCheckedChange={(checked) =>
+											setAliasSearch(checked === true)
+										}
+									/>
+									<Label
+										htmlFor="business-aml-alias-search"
+										className="text-sm font-normal"
+									>
+										Alias search
+									</Label>
+								</div>
+								<Field className="gap-1.5">
+									<FieldLabel htmlFor="business-aml-context">
+										Context (optional)
+									</FieldLabel>
+									<Textarea
+										id="business-aml-context"
+										placeholder="Extra context for match assessment"
+										value={context}
+										onChange={(event) => setContext(event.target.value)}
+									/>
+								</Field>
 							</AccordionContent>
 						</AccordionItem>
 					</Accordion>
@@ -515,7 +641,11 @@ export function BusinessAmlScreeningForm() {
 									type="submit"
 									className="w-full cursor-pointer"
 									disabled={
-										!canSubmit || !hasSelectedFilters || isSubmitting
+										!canSubmit ||
+										!hasSelectedFilters ||
+										isSubmitting ||
+										isBiometricUploading ||
+										isFaceUploading
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
@@ -530,7 +660,11 @@ export function BusinessAmlScreeningForm() {
 									type="submit"
 									className="w-full cursor-pointer"
 									disabled={
-										!canSubmit || !hasSelectedFilters || isSubmitting
+										!canSubmit ||
+										!hasSelectedFilters ||
+										isSubmitting ||
+										isBiometricUploading ||
+										isFaceUploading
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
@@ -551,49 +685,5 @@ export function BusinessAmlScreeningForm() {
 				description="Your business AML screening verification request was created successfully."
 			/>
 		</Card>
-	);
-}
-
-function ScreeningCountryField({
-	id,
-	value,
-	onValueChange,
-	countries,
-	isLoading,
-}: {
-	id: string;
-	value: string;
-	onValueChange: (value: string) => void;
-	countries: SupportedCountry[];
-	isLoading: boolean;
-}) {
-	return (
-		<Field className="gap-1.5">
-			<FieldLabel htmlFor={id}>Screening Countries</FieldLabel>
-			<Select
-				value={value || undefined}
-				onValueChange={onValueChange}
-				disabled={isLoading}
-			>
-				<SelectTrigger id={id} className="w-full">
-					<SelectValue
-						placeholder={
-							isLoading ? "Loading countries..." : "Select a country"
-						}
-					/>
-				</SelectTrigger>
-				<SelectContent className="max-h-60">
-					{countries.map((country) => (
-						<SelectItem key={country.code} value={country.code}>
-							<CountryOptionLabel
-								name={country.name}
-								countryCode={country.code}
-							/>
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-			<FieldDescription>Choose the country to screen against</FieldDescription>
-		</Field>
 	);
 }

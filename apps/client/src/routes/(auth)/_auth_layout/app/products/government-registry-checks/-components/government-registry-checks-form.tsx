@@ -1,10 +1,13 @@
 import {
 	GlobeHemisphereWestIcon,
+	LinkIcon,
+	MagnifyingGlassIcon,
 	PaperPlaneTiltIcon,
+	UserCircleCheckIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -21,14 +24,32 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@verifyafrica/ui/components/ui/accordion";
+import {
 	Field,
 	FieldDescription,
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import {
+	ToggleGroup,
+	ToggleGroupItem,
+} from "@verifyafrica/ui/components/ui/toggle-group";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
-import { verificationConsentSchema } from "../../../-components/VerificationConsentCheckbox/data";
+import {
+	DEFAULT_VERIFICATION_URL_LIMIT,
+	VERIFICATION_MODES,
+	VERIFICATION_URL_LIMITS,
+	type VerificationMode,
+	verificationConsentSchema,
+} from "../../../-components/VerificationConsentCheckbox/data";
 import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
@@ -39,33 +60,76 @@ import {
 import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import {
 	allowsCustomerDataValidation,
-	buildGovernmentRegistryPayload,
+	buildGovernmentRegistryDirectPayload,
+	buildGovernmentRegistryLinkPayload,
 	filterToRegistryCountries,
 	getPrimaryInputLabel,
+	getPrimaryInputParameter,
 	getRegistryVerificationTypes,
+	isCiIdentityIdParameter,
+	isValidCiIdentityId,
+	isValidUsPhoneNumber,
+	isValidUsSsn,
+	normalizeCiIdentityId,
+	registryTypeSupportsSelfie,
+	requiresIdentityDetails,
 	requiresLastNameField,
 } from "../-data";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 
 const baseFormSchema = z.object({
 	country: z.string().min(1, "Country is required"),
 	verificationType: z.string().min(1, "Verification type is required"),
+	email: z.string(),
+	urlLimit: z.string(),
+	requireSelfie: z.boolean(),
 	input: z.string(),
 	lastName: z.string(),
 	includeValidation: z.boolean(),
 	validationFirstName: z.string(),
 	validationLastName: z.string(),
 	validationDateOfBirth: z.string(),
+	phoneNumber: z.string(),
 	includeSelfie: z.boolean(),
 	consent: z.boolean(),
 });
 
-const governmentRegistryChecksFormSchema = baseFormSchema.superRefine(
-	(values, context) => {
+function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
+	return baseFormSchema.superRefine((values, context) => {
 		const showFullForm = Boolean(values.country && values.verificationType);
 
 		if (!showFullForm) {
 			return;
+		}
+
+		if (mode === "link") {
+			const emailResult = z.email().safeParse(values.email.trim());
+			if (!emailResult.success) {
+				context.addIssue({
+					code: "custom",
+					path: ["email"],
+					message: "Enter a valid email address",
+				});
+			}
+			if (!values.urlLimit.trim()) {
+				context.addIssue({
+					code: "custom",
+					path: ["urlLimit"],
+					message: "Select a verification URL limit",
+				});
+			}
+			if (
+				values.verificationType &&
+				!registryTypeSupportsSelfie(values.verificationType)
+			) {
+				context.addIssue({
+					code: "custom",
+					path: ["verificationType"],
+					message:
+						"Link mode is only available for checks that support selfie matching",
+				});
+			}
 		}
 
 		if (!values.input.trim()) {
@@ -74,6 +138,51 @@ const governmentRegistryChecksFormSchema = baseFormSchema.superRefine(
 				path: ["input"],
 				message: "Input data is required",
 			});
+		}
+
+		if (values.input.trim()) {
+			const inputField = getPrimaryInputParameter(values.verificationType);
+			if (
+				isCiIdentityIdParameter(inputField) &&
+				!isValidCiIdentityId(values.input)
+			) {
+				context.addIssue({
+					code: "custom",
+					path: ["input"],
+					message: "Must be 7 to 12 alphanumeric characters",
+				});
+			}
+			if (inputField === "ssn" && !isValidUsSsn(values.input)) {
+				context.addIssue({
+					code: "custom",
+					path: ["input"],
+					message: "SSN must be 9 digits",
+				});
+			}
+		}
+
+		if (requiresIdentityDetails(values.verificationType)) {
+			const requiredDetails = [
+				["validationFirstName", "First name is required"],
+				["validationLastName", "Last name is required"],
+				["validationDateOfBirth", "Date of birth is required"],
+				["phoneNumber", "Phone number is required"],
+			] as const;
+			for (const [path, message] of requiredDetails) {
+				if (!values[path].trim()) {
+					context.addIssue({ code: "custom", path: [path], message });
+				}
+			}
+			if (
+				values.phoneNumber.trim() &&
+				!isValidUsPhoneNumber(values.phoneNumber)
+			) {
+				context.addIssue({
+					code: "custom",
+					path: ["phoneNumber"],
+					message: "Enter a US phone number, e.g. +12109041086",
+				});
+			}
 		}
 
 		if (
@@ -87,62 +196,48 @@ const governmentRegistryChecksFormSchema = baseFormSchema.superRefine(
 			});
 		}
 
-		if (values.includeValidation) {
-			if (!values.validationFirstName.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationFirstName"],
-					message: "First name is required for validation",
-				});
-			}
-
-			if (!values.validationLastName.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationLastName"],
-					message: "Last name is required for validation",
-				});
-			}
-
-			if (!values.validationDateOfBirth.trim()) {
-				context.addIssue({
-					code: "custom",
-					path: ["validationDateOfBirth"],
-					message: "Date of birth is required for validation",
-				});
-			}
-		}
-
 		const consentResult = verificationConsentSchema.safeParse(values.consent);
 		if (!consentResult.success) {
 			context.addIssue({
 				code: "custom",
 				path: ["consent"],
-				message: consentResult.error.issues[0]?.message ?? "Consent is required",
+				message:
+					consentResult.error.issues[0]?.message ?? "Consent is required",
 			});
 		}
-	},
-);
+	});
+}
 
 const defaultValues = {
 	country: "",
 	verificationType: "",
+	email: "",
+	urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
+	requireSelfie: false,
 	input: "",
 	lastName: "",
 	includeValidation: false,
 	validationFirstName: "",
 	validationLastName: "",
 	validationDateOfBirth: "",
+	phoneNumber: "",
 	includeSelfie: false,
 	consent: false,
 };
 
-export function GovernmentRegistryChecksForm() {
+type GovernmentRegistryChecksFormProps = {
+	verificationType: string;
+	onVerificationTypeChange: (verificationType: string) => void;
+};
+
+export function GovernmentRegistryChecksForm({
+	verificationType,
+	onVerificationTypeChange,
+}: GovernmentRegistryChecksFormProps) {
+	const [mode, setMode] = useState<VerificationMode>("direct");
 	const [selfieProofUrl, setSelfieProofUrl] = useState<string | null>(null);
 	const [isProofUploading, setIsProofUploading] = useState(false);
 	const [country, setCountry] = useState("");
-	const [verificationType, setVerificationType] = useState("");
-	const [includeValidation, setIncludeValidation] = useState(false);
 	const [includeSelfie, setIncludeSelfie] = useState(false);
 	const {
 		submitVerification,
@@ -156,35 +251,58 @@ export function GovernmentRegistryChecksForm() {
 		errorMessage: "Failed to submit government registry verification.",
 	});
 	const { countries, isPending: isCountriesPending } =
-		useTenantSupportedCountries({ filter: filterToRegistryCountries });
-
+		useTenantSupportedCountries({
+			filter: filterToRegistryCountries,
+			product: "government_registry_checks",
+		});
 	const verificationTypes = useMemo(
 		() => (country ? getRegistryVerificationTypes(country) : []),
 		[country],
 	);
 
 	const showFullForm = Boolean(country && verificationType);
+	const isLinkMode = mode === "link";
 	const showLastName = requiresLastNameField(verificationType);
+	const showIdentityDetails = requiresIdentityDetails(verificationType);
 	const allowValidation = allowsCustomerDataValidation(verificationType);
+	const supportsSelfie = registryTypeSupportsSelfie(verificationType);
 	const inputLabel = verificationType
 		? getPrimaryInputLabel(verificationType)
 		: "Input Data";
+	const formSchema = useMemo(
+		() => buildGovernmentRegistryFormSchema(mode),
+		[mode],
+	);
 
 	const form = useForm({
 		defaultValues,
 		validators: {
-			onChange: governmentRegistryChecksFormSchema,
-			onSubmit: governmentRegistryChecksFormSchema,
+			onChange: formSchema,
+			onSubmit: formSchema,
 		},
 		onSubmit: async ({ value }) => {
-			if (includeSelfie && !selfieProofUrl) {
+			if (mode === "direct" && includeSelfie && !selfieProofUrl) {
 				toast.error("Selfie image is required for facial matching");
 				return;
 			}
 
+			const payload =
+				mode === "link"
+					? buildGovernmentRegistryLinkPayload({
+							...value,
+							requireSelfie: true,
+						})
+					: buildGovernmentRegistryDirectPayload(value, { selfieProofUrl });
+
 			const submitted = await submitVerification(
-				buildGovernmentRegistryPayload(value, { selfieProofUrl }),
-				{ mode: "direct" },
+				payload,
+				mode === "link"
+					? {
+							mode: "link",
+							email: value.email,
+							urlLimit: value.urlLimit,
+						}
+					: { mode: "direct" },
 			);
 
 			if (submitted) {
@@ -193,6 +311,18 @@ export function GovernmentRegistryChecksForm() {
 		},
 	});
 
+	useEffect(() => {
+		if (!supportsSelfie && mode === "link") {
+			setMode("direct");
+		}
+	}, [supportsSelfie, mode]);
+
+	useEffect(() => {
+		if (mode === "link") {
+			form.setFieldValue("requireSelfie", true);
+		}
+	}, [form, mode]);
+
 	const resetDependentFields = () => {
 		form.setFieldValue("input", "");
 		form.setFieldValue("lastName", "");
@@ -200,9 +330,9 @@ export function GovernmentRegistryChecksForm() {
 		form.setFieldValue("validationFirstName", "");
 		form.setFieldValue("validationLastName", "");
 		form.setFieldValue("validationDateOfBirth", "");
+		form.setFieldValue("phoneNumber", "");
 		form.setFieldValue("includeSelfie", false);
 		form.setFieldValue("consent", false);
-		setIncludeValidation(false);
 		setIncludeSelfie(false);
 		setSelfieProofUrl(null);
 	};
@@ -210,8 +340,7 @@ export function GovernmentRegistryChecksForm() {
 	function resetForms() {
 		form.reset();
 		setCountry("");
-		setVerificationType("");
-		setIncludeValidation(false);
+		onVerificationTypeChange("");
 		setIncludeSelfie(false);
 		setSelfieProofUrl(null);
 		setIsProofUploading(false);
@@ -232,20 +361,64 @@ export function GovernmentRegistryChecksForm() {
 						void form.handleSubmit();
 					}}
 				>
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-sm font-medium text-muted-foreground">
+							Verification Mode
+						</p>
+						<ToggleGroup
+							type="single"
+							value={mode}
+							onValueChange={(value) => {
+								if (value === "link" || value === "direct") {
+									setMode(value);
+								}
+							}}
+							variant="outline"
+							spacing={0}
+							className="w-full sm:w-auto"
+						>
+							{VERIFICATION_MODES.map((option) => {
+								const Icon =
+									option.value === "link" ? LinkIcon : MagnifyingGlassIcon;
+								const linkUnavailable =
+									option.value === "link" &&
+									Boolean(verificationType) &&
+									!supportsSelfie;
+
+								return (
+									<ToggleGroupItem
+										key={option.value}
+										value={option.value}
+										disabled={linkUnavailable}
+										className={cn("flex-1 sm:flex-none")}
+									>
+										<Icon className="size-4" />
+										{option.label}
+									</ToggleGroupItem>
+								);
+							})}
+						</ToggleGroup>
+					</div>
+					{verificationType && !supportsSelfie ? (
+						<p className="text-xs text-muted-foreground">
+							This check does not support selfie matching, so only direct mode is
+							available.
+						</p>
+					) : null}
+
 					<FieldGroup className="gap-4">
 						<form.Field name="country">
 							{(field) => (
 								<Field className="gap-1.5">
 									<FieldLabel htmlFor="government-registry-checks-country">
-										Select Country{" "}
-										<span className="text-destructive">*</span>
+										Select Country <span className="text-destructive">*</span>
 									</FieldLabel>
 									<Select
 										value={field.state.value || undefined}
 										onValueChange={(value) => {
 											field.handleChange(value);
 											setCountry(value);
-											setVerificationType("");
+											onVerificationTypeChange("");
 											form.setFieldValue("verificationType", "");
 											resetDependentFields();
 										}}
@@ -280,6 +453,9 @@ export function GovernmentRegistryChecksForm() {
 											))}
 										</SelectContent>
 									</Select>
+									{!isCountriesPending && countries.length === 0 && (
+										<NoCountriesNotice />
+									)}
 								</Field>
 							)}
 						</form.Field>
@@ -296,12 +472,10 @@ export function GovernmentRegistryChecksForm() {
 											value={field.state.value || undefined}
 											onValueChange={(value) => {
 												field.handleChange(value);
-												setVerificationType(value);
+												onVerificationTypeChange(value);
 												resetDependentFields();
 											}}
-											disabled={
-												isSubmitting || verificationTypes.length === 0
-											}
+											disabled={isSubmitting || verificationTypes.length === 0}
 										>
 											<SelectTrigger
 												id="government-registry-checks-type"
@@ -311,7 +485,10 @@ export function GovernmentRegistryChecksForm() {
 											</SelectTrigger>
 											<SelectContent>
 												{verificationTypes.map((type) => (
-													<SelectItem key={type.value} value={type.value}>
+													<SelectItem
+														key={type.value}
+														value={type.value}
+													>
 														{type.label}
 													</SelectItem>
 												))}
@@ -330,8 +507,7 @@ export function GovernmentRegistryChecksForm() {
 								{(field) => (
 									<Field className="gap-1.5">
 										<FieldLabel htmlFor="government-registry-checks-last-name">
-											Last Name{" "}
-											<span className="text-destructive">*</span>
+											Last Name <span className="text-destructive">*</span>
 										</FieldLabel>
 										<Input
 											id="government-registry-checks-last-name"
@@ -348,6 +524,61 @@ export function GovernmentRegistryChecksForm() {
 							</form.Field>
 						) : null}
 
+						{showFullForm && isLinkMode ? (
+							<>
+								<form.Field name="email">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="government-registry-checks-link-email">
+												Customer email{" "}
+												<span className="text-destructive">*</span>
+											</FieldLabel>
+											<Input
+												id="government-registry-checks-link-email"
+												type="email"
+												placeholder="customer@example.com"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+												disabled={isSubmitting}
+											/>
+										</Field>
+									)}
+								</form.Field>
+								<form.Field name="urlLimit">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="government-registry-checks-url-limit">
+												Verification URL limit{" "}
+												<span className="text-destructive">*</span>
+											</FieldLabel>
+											<Select
+												value={field.state.value || undefined}
+												onValueChange={field.handleChange}
+												disabled={isSubmitting}
+											>
+												<SelectTrigger id="government-registry-checks-url-limit">
+													<SelectValue placeholder="Select link expiry" />
+												</SelectTrigger>
+												<SelectContent>
+													{VERIFICATION_URL_LIMITS.map((limit) => (
+														<SelectItem
+															key={limit.value}
+															value={limit.value}
+														>
+															{limit.label}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</Field>
+									)}
+								</form.Field>
+							</>
+						) : null}
+
 						{showFullForm ? (
 							<form.Field name="input">
 								{(field) => (
@@ -361,47 +592,251 @@ export function GovernmentRegistryChecksForm() {
 											placeholder="Enter document number"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
+											onChange={(event) => {
+												const next = event.target.value;
+												const inputField =
+													getPrimaryInputParameter(verificationType);
+
+												field.handleChange(
+													isCiIdentityIdParameter(inputField)
+														? normalizeCiIdentityId(next)
+														: next,
+												);
+											}}
 											disabled={isSubmitting}
+											autoCapitalize={
+												isCiIdentityIdParameter(
+													getPrimaryInputParameter(verificationType),
+												)
+													? "characters"
+													: undefined
+											}
 										/>
 									</Field>
 								)}
 							</form.Field>
 						) : null}
+
+						{showFullForm && showIdentityDetails ? (
+							<div className="flex flex-col gap-4 rounded-lg border p-4">
+								<div className="flex items-start gap-3">
+									<UserCircleCheckIcon className="size-5 shrink-0 text-secondary" />
+									<div>
+										<p className="text-sm font-medium">Identity details</p>
+										<p className="text-xs text-muted-foreground text-pretty">
+											Required for this check. Must match the SSN holder's
+											records.
+										</p>
+									</div>
+								</div>
+								<div className="grid gap-4 md:grid-cols-2">
+									<form.Field name="validationFirstName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-first-name">
+													First Name{" "}
+													<span className="text-destructive">*</span>
+												</FieldLabel>
+												<Input
+													id="government-registry-checks-identity-first-name"
+													placeholder="Enter first name"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="validationLastName">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-last-name">
+													Last Name{" "}
+													<span className="text-destructive">*</span>
+												</FieldLabel>
+												<Input
+													id="government-registry-checks-identity-last-name"
+													placeholder="Enter last name"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
+													}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="validationDateOfBirth">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-dob">
+													Date of Birth{" "}
+													<span className="text-destructive">*</span>
+												</FieldLabel>
+												<KycDatePicker
+													id="government-registry-checks-identity-dob"
+													value={field.state.value || undefined}
+													disableFutureDates
+													onChange={(date) => {
+														field.handleChange(
+															date ? format(date, "yyyy-MM-dd") : "",
+														);
+													}}
+													disabled={isSubmitting}
+												/>
+											</Field>
+										)}
+									</form.Field>
+
+									<form.Field name="phoneNumber">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="government-registry-checks-identity-phone">
+													Phone Number{" "}
+													<span className="text-destructive">*</span>
+												</FieldLabel>
+												<PhoneInput
+													id="government-registry-checks-identity-phone"
+													lockedCountry="US"
+													placeholder="+1 210 904 1086"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={field.handleChange}
+													disabled={isSubmitting}
+												/>
+												<FieldDescription>
+													US phone number
+												</FieldDescription>
+											</Field>
+										)}
+									</form.Field>
+								</div>
+							</div>
+						) : null}
 					</FieldGroup>
 
 					{showFullForm && allowValidation ? (
-						<form.Field name="includeValidation">
-							{(field) => (
+						<Accordion
+							type="single"
+							collapsible
+							className="rounded-lg border px-4"
+						>
+							<AccordionItem
+								value="customer-data-validation"
+								className="border-none"
+							>
+								<AccordionTrigger className="py-4 hover:no-underline">
+									<div className="flex items-center gap-3 text-left">
+										<UserCircleCheckIcon className="size-5 shrink-0 text-secondary" />
+										<div>
+											<p className="text-sm font-medium">
+												Customer data validation
+											</p>
+											<p className="text-xs font-normal text-muted-foreground">
+												Optional first name, last name, and date of birth
+											</p>
+										</div>
+									</div>
+								</AccordionTrigger>
+								<AccordionContent className="space-y-4 pb-4">
+									<p className="text-sm text-muted-foreground text-pretty">
+										{isLinkMode
+											? "Prefill any of these fields to lock them on the hosted link. Leave them blank so the customer enters their own details. Values you send are compared against the registry response when present."
+											: "Optionally include name and date of birth to compare against the registry response. Leave blank to run the check with the primary identifier only."}
+									</p>
+									<div className="grid gap-4 md:grid-cols-3">
+										<form.Field name="validationFirstName">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-first-name">
+														First Name
+													</FieldLabel>
+													<Input
+														id="government-registry-checks-validation-first-name"
+														placeholder="Optional"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
+
+										<form.Field name="validationLastName">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-last-name">
+														Last Name
+													</FieldLabel>
+													<Input
+														id="government-registry-checks-validation-last-name"
+														placeholder="Optional"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
+
+										<form.Field name="validationDateOfBirth">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-validation-dob">
+														Date of Birth
+													</FieldLabel>
+													<KycDatePicker
+														id="government-registry-checks-validation-dob"
+														value={field.state.value || undefined}
+														disableFutureDates
+														onChange={(date) => {
+															field.handleChange(
+																date ? format(date, "yyyy-MM-dd") : "",
+															);
+														}}
+														disabled={isSubmitting}
+													/>
+												</Field>
+											)}
+										</form.Field>
+									</div>
+								</AccordionContent>
+							</AccordionItem>
+						</Accordion>
+					) : null}
+
+					{showFullForm && isLinkMode && supportsSelfie && verificationType ? (
+						<form.Field name="requireSelfie">
+							{() => (
 								<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
 									<Checkbox
-										id="government-registry-checks-include-validation"
-										checked={field.state.value}
-										onCheckedChange={(checked) => {
-											const isChecked = checked === true;
-											field.handleChange(isChecked);
-											setIncludeValidation(isChecked);
-
-											if (!isChecked) {
-												form.setFieldValue("validationFirstName", "");
-												form.setFieldValue("validationLastName", "");
-												form.setFieldValue("validationDateOfBirth", "");
-											}
-										}}
-										disabled={isSubmitting}
+										id="government-registry-checks-require-selfie"
+										checked
+										disabled
 									/>
 									<div className="space-y-1">
 										<Label
-											htmlFor="government-registry-checks-include-validation"
+											htmlFor="government-registry-checks-require-selfie"
 											className="font-medium"
 										>
-											Validate Customer Data
+											Customer selfie required
 										</Label>
 										<p className="text-sm text-muted-foreground">
-											Verify identity document details and compare with data
-											submitted.
+											Link mode is only available when this check captures a
+											selfie. The customer must capture or upload one on the
+											hosted page.
 										</p>
 									</div>
 								</div>
@@ -409,74 +844,7 @@ export function GovernmentRegistryChecksForm() {
 						</form.Field>
 					) : null}
 
-					{showFullForm && includeValidation ? (
-						<div className="grid gap-4 md:grid-cols-3">
-							<form.Field name="validationFirstName">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-first-name">
-											First Name{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<Input
-											id="government-registry-checks-validation-first-name"
-											placeholder="Enter first name"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
-
-							<form.Field name="validationLastName">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-last-name">
-											Last Name{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<Input
-											id="government-registry-checks-validation-last-name"
-											placeholder="Enter last name"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
-
-							<form.Field name="validationDateOfBirth">
-								{(field) => (
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor="government-registry-checks-validation-dob">
-											Date of Birth{" "}
-											<span className="text-destructive">*</span>
-										</FieldLabel>
-										<KycDatePicker
-											id="government-registry-checks-validation-dob"
-											value={field.state.value || undefined}
-											onChange={(date) => {
-												field.handleChange(
-													date ? format(date, "yyyy-MM-dd") : "",
-												);
-											}}
-											disabled={isSubmitting}
-										/>
-									</Field>
-								)}
-							</form.Field>
-						</div>
-					) : null}
-
-					{showFullForm ? (
+					{showFullForm && !isLinkMode && supportsSelfie ? (
 						<form.Field name="includeSelfie">
 							{(field) => (
 								<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
@@ -511,7 +879,7 @@ export function GovernmentRegistryChecksForm() {
 						</form.Field>
 					) : null}
 
-					{showFullForm && includeSelfie ? (
+					{showFullForm && !isLinkMode && supportsSelfie && includeSelfie ? (
 						<ProductProofUpload
 							label="Selfie Image"
 							verificationName={
@@ -563,7 +931,11 @@ export function GovernmentRegistryChecksForm() {
 										}
 									>
 										<PaperPlaneTiltIcon className="size-4" />
-										{isSubmitting ? "Submitting..." : "Submit Verification"}
+										{isSubmitting
+											? "Submitting..."
+											: isLinkMode
+												? "Create Verification Link"
+												: "Submit Verification"}
 									</Button>
 								)}
 							</form.Subscribe>
