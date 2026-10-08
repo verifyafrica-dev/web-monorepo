@@ -7,7 +7,8 @@
   ],
   "overrides": {
     "@tanstack/react-query": "5.102.0",
-    "@tanstack/query-core": "5.102.0"
+    "@tanstack/query-core": "5.102.0",
+    "@tanstack/router-core": "1.171.34"
   },
   "scripts": {
     "check:v1-types": "bun scripts/check-v1-types.ts",
