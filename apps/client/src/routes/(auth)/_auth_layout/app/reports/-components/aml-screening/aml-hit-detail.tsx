@@ -356,9 +356,8 @@ function HitImage({ src, alt }: { src: string; alt: string }) {
 
 	return (
 		<img
-			src={src}
+			src={`/api/image-proxy?url=${encodeURIComponent(src)}`}
 			alt={alt}
-			referrerPolicy="no-referrer"
 			onError={() => setFailed(true)}
 			className="size-24 shrink-0 rounded-md border object-cover"
 		/>
