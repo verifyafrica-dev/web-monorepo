@@ -7,12 +7,9 @@ import {
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
 	type AddressVerificationRequestDetail,
-	type AmlScreeningVerificationRequestDetail,
 	type DocumentVerificationRequestDetail,
 	type FacialScreeningVerificationRequestDetail,
 	type GovernmentRegistryChecksVerificationRequestDetail,
-	isAmlScreeningVerificationDetail,
-	isDocumentVerificationDetail,
 	VERIFICATION_TYPES_BY_PRODUCT,
 	type VerificationRequestDetail,
 	VerificationStatusSchema,
@@ -23,7 +20,8 @@ import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { useBrandedPdfDownload } from "@verifyafrica/ui/hooks/use-branded-pdf-download";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { cn } from "@verifyafrica/ui/lib/utils";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "sonner";
 
 import {
@@ -31,19 +29,18 @@ import {
 	useVerificationRequestDetailV2Query,
 } from "#/api/http/v2/verifications/verifications.hooks";
 import { getProductSlugForVerificationType } from "../../products/-data";
-import { AddressVerificationReport } from "../-components/address-verification-report";
+import { AddressVerificationReport } from "../-components/address-verification/address-verification-report";
 import { AmlScreeningReport } from "../-components/aml-screening/aml-screening-report";
-import { BusinessAmlScreeningReport } from "../-components/business-aml-screening-report";
 import { CryptoWalletScreeningReport } from "../-components/crypto-wallet-screening-report";
 import { DocumentVerificationReport } from "../-components/document-verification/document-verification-report";
-import { getSubmittedDocumentProofs } from "../-components/document-verification/document-verification-sections";
-import { FacialScreeningReport } from "../-components/facial-screening-report";
+import { FacialScreeningReport } from "../-components/facial-screening/facial-screening-report";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
 import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks/government-registry-checks-report";
 import { KybReport } from "../-components/kyb-screening/kyb-report";
 import { RiskAssessmentReport } from "../-components/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";
 import { MoreInfo } from "../-components/more-info";
+import { getVerificationSubmittedProofs } from "../-components/report-proofs";
 import { FullJsonResponse } from "../-components/full-json-response";
 import { VerificationProofsSection } from "../-components/verification-proofs/verification-proofs-section";
 
@@ -64,6 +61,7 @@ function VerificationReportDetailPage() {
 	const { id } = Route.useParams();
 	const reportRef = useRef<HTMLDivElement>(null);
 	const amlDownloadRef = useRef<HTMLDivElement>(null);
+	const [isPreparingAmlPdf, setIsPreparingAmlPdf] = useState(false);
 	const standardDownload = useBrandedPdfDownload(reportRef);
 	const amlDownload = useBrandedPdfDownload(amlDownloadRef);
 
@@ -73,11 +71,14 @@ function VerificationReportDetailPage() {
 	);
 	const refreshMutation = useRefreshVerificationStatusV2Mutation();
 	const verification = verificationQuery.data;
-	const amlVerification =
-		verification && isAmlScreeningVerificationDetail(verification)
-			? verification
-			: null;
-	const isAmlScreening = Boolean(amlVerification);
+	const isAmlScreening =
+		verification !== undefined &&
+		(
+			[
+				...VERIFICATION_TYPES_BY_PRODUCT["AML Screening"],
+				...VERIFICATION_TYPES_BY_PRODUCT["Business AML Screening"],
+			] as string[]
+		).includes(verification.verification_type);
 	const productSlug = verification
 		? getProductSlugForVerificationType(verification.verification_type)
 		: null;
@@ -85,11 +86,10 @@ function VerificationReportDetailPage() {
 		? amlDownload.isDownloading
 		: standardDownload.isDownloading;
 
-	const hasSubmittedDocumentProofs = useMemo(
+	const hasSubmittedProofs = useMemo(
 		() =>
 			verification !== undefined &&
-			isDocumentVerificationDetail(verification) &&
-			getSubmittedDocumentProofs(verification.input_data).length > 0,
+			getVerificationSubmittedProofs(verification).length > 0,
 		[verification],
 	);
 
@@ -113,10 +113,9 @@ function VerificationReportDetailPage() {
 			): {
 				return (
 					<AmlScreeningReport
-						verification={
-							verificationData as AmlScreeningVerificationRequestDetail
-						}
-						downloadRef={amlDownloadRef}
+						verification={verificationData}
+						subject="individual"
+						downloadRef={isPreparingAmlPdf ? amlDownloadRef : undefined}
 					/>
 				);
 			}
@@ -124,7 +123,13 @@ function VerificationReportDetailPage() {
 				VERIFICATION_TYPES_BY_PRODUCT["Business AML Screening"],
 				verificationType,
 			): {
-				return <BusinessAmlScreeningReport verification={verificationData} />;
+				return (
+					<AmlScreeningReport
+						verification={verificationData}
+						subject="business"
+						downloadRef={isPreparingAmlPdf ? amlDownloadRef : undefined}
+					/>
+				);
 			}
 			case isInProductGroup(
 				VERIFICATION_TYPES_BY_PRODUCT["Crypto Wallet Screening"],
@@ -213,10 +218,19 @@ function VerificationReportDetailPage() {
 			return;
 		}
 
-		const downloader = isAmlScreening
-			? amlDownload.downloadPdf
-			: standardDownload.downloadPdf;
-		await downloader({ filename: `verification-${verification.id}.pdf` });
+		const filename = `verification-${verification.id}.pdf`;
+		if (!isAmlScreening) {
+			await standardDownload.downloadPdf({ filename });
+			return;
+		}
+
+		// The AML print copy is large, so it is only mounted while downloading.
+		flushSync(() => setIsPreparingAmlPdf(true));
+		try {
+			await amlDownload.downloadPdf({ filename });
+		} finally {
+			setIsPreparingAmlPdf(false);
+		}
 	}
 
 	return (
@@ -347,7 +361,7 @@ function VerificationReportDetailPage() {
 				>
 					<VerificationMetadataCard verification={verification} />
 					{renderVerificationDetail(verification)}
-					{verification.proofs_available && !hasSubmittedDocumentProofs ? (
+					{verification.proofs_available && !hasSubmittedProofs ? (
 						<VerificationProofsSection proofs={verification.proofs} />
 					) : null}
 					<MoreInfo verification={verification} />

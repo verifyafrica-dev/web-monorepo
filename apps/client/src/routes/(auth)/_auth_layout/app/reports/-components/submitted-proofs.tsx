@@ -1,12 +1,12 @@
 import { FileIcon, FilePdfIcon } from "@phosphor-icons/react";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 
-import { ReportDetailField } from "../report-detail-field";
-import { ReportSectionCard } from "../report-sections";
-import { ProofImagePreviewDialog } from "../verification-proofs/proof-image-preview-dialog";
-import type { DocumentProof } from "./document-verification-sections";
+import type { SubmittedProof } from "./report-builders";
+import { ReportDetailField } from "./report-detail-field";
+import { ReportSectionCard } from "./report-sections";
+import { ProofImagePreviewDialog } from "./verification-proofs/proof-image-preview-dialog";
 
-function ProofPreview({ proof }: { proof: DocumentProof }) {
+function ProofPreview({ proof }: { proof: SubmittedProof }) {
 	switch (proof.kind) {
 		case "image":
 			return (
@@ -39,15 +39,17 @@ function ProofPreview({ proof }: { proof: DocumentProof }) {
 	}
 }
 
-export function DocumentVerificationProofs({
+export function SubmittedProofs({
 	proofs,
+	title = "Proofs",
 }: {
-	proofs: DocumentProof[];
+	proofs: SubmittedProof[];
+	title?: string;
 }) {
 	if (proofs.length === 0) return null;
 
 	return (
-		<ReportSectionCard title="Proofs">
+		<ReportSectionCard title={title}>
 			<div className="grid gap-4 sm:grid-cols-2">
 				{proofs.map((proof) => (
 					<ReportDetailField

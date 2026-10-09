@@ -113,6 +113,10 @@ const PDF_SPACING_PX = 16;
 const PDF_RESOLUTION = 2;
 /** Browsers fail to render canvases taller than ~32k px, leaving the PDF blank. */
 const MAX_CANVAS_DIMENSION_PX = 32_000;
+/** Kept below the PDF spec's 14,400pt (19,200px) page limit and sharp at 2x scale. */
+const MAX_PAGE_HEIGHT_PX = 14_000;
+/** Page breaks snap to an element edge only within the bottom part of a page. */
+const MIN_PAGE_FILL_RATIO = 0.6;
 const MM_TO_PX = 96 / 25.4;
 
 const pxToMm = (px: number) => (px / 96) * 25.4;
@@ -197,6 +201,41 @@ const collectPdfLinkAreas = (clone: HTMLElement): PdfLinkArea[] => {
 	});
 };
 
+/**
+ * Splits tall content into page slices that start at an element's top edge, so
+ * breaks fall between lines and blocks rather than through text.
+ */
+const getPageSlices = (clone: HTMLElement, contentHeight: number) => {
+	if (contentHeight <= MAX_PAGE_HEIGHT_PX) {
+		return [{ offset: 0, height: contentHeight }];
+	}
+
+	const cloneTop = clone.getBoundingClientRect().top;
+	const breakpoints = Array.from(
+		new Set(
+			Array.from(clone.querySelectorAll("*"), (element) =>
+				Math.floor(element.getBoundingClientRect().top - cloneTop),
+			),
+		),
+	).sort((a, b) => a - b);
+
+	const slices: Array<{ offset: number; height: number }> = [];
+	let offset = 0;
+	while (offset < contentHeight) {
+		const limit = offset + MAX_PAGE_HEIGHT_PX;
+		if (limit >= contentHeight) {
+			slices.push({ offset, height: contentHeight - offset });
+			break;
+		}
+		const minimum = offset + MAX_PAGE_HEIGHT_PX * MIN_PAGE_FILL_RATIO;
+		const end =
+			breakpoints.filter((top) => top > minimum && top <= limit).pop() ?? limit;
+		slices.push({ offset, height: end - offset });
+		offset = end;
+	}
+	return slices;
+};
+
 const createPdfClone = (source: HTMLElement) => {
 	const clone = source.cloneNode(true) as HTMLElement;
 	const width = source.offsetWidth;
@@ -274,49 +313,82 @@ export const generatePDFWithColorSupport = async (
 	try {
 		originalStyles = convertModernColorsToRGB(clone);
 		const linkAreas = collectPdfLinkAreas(clone);
-
-		const canvas = await html2canvas(clone, {
-			scale: Math.min(
-				PDF_RESOLUTION,
-				MAX_CANVAS_DIMENSION_PX / Math.max(contentWidth, contentHeight),
-			),
-			width: contentWidth,
-			height: contentHeight,
-			useCORS: true,
-			logging: false,
-		});
+		const slices = getPageSlices(clone, contentHeight);
+		const firstChild = clone.firstElementChild as HTMLElement | null;
+		const firstChildMarginTop = firstChild?.style.marginTop ?? "";
 
 		const marginMm = pxToMm(PDF_SPACING_PX);
 		const imageWidthMm = cssPxToMm(contentWidth);
-		const imageHeightMm = cssPxToMm(contentHeight);
 		const pageWidthMm = imageWidthMm + marginMm * 2;
-		const pageHeightMm = imageHeightMm + marginMm * 2;
+		let pdf: jsPDF | undefined;
 
-		const pdf = new jsPDF({
-			unit: "mm",
-			format: [pageWidthMm, pageHeightMm],
-			compress: true,
-		});
+		for (const slice of slices) {
+			if (slices.length > 1) {
+				// Shift the content up and crop the canvas to the slice. The clone
+				// keeps its full height so flex children don't shrink and reflow;
+				// the page margin replaces the clone padding on continuation pages.
+				clone.style.paddingTop =
+					slice.offset === 0 ? `${PDF_SPACING_PX}px` : "0";
+				if (firstChild) {
+					firstChild.style.marginTop =
+						slice.offset === 0
+							? firstChildMarginTop
+							: `calc(${firstChildMarginTop || "0px"} - ${slice.offset - PDF_SPACING_PX}px)`;
+				}
+			}
 
-		pdf.addImage(
-			canvas.toDataURL("image/jpeg", 0.75),
-			"JPEG",
-			marginMm,
-			marginMm,
-			imageWidthMm,
-			imageHeightMm,
-		);
+			const canvas = await html2canvas(clone, {
+				scale: Math.min(
+					PDF_RESOLUTION,
+					MAX_CANVAS_DIMENSION_PX / Math.max(contentWidth, slice.height),
+				),
+				width: contentWidth,
+				height: slice.height,
+				useCORS: true,
+				logging: false,
+			});
 
-		for (const area of linkAreas) {
-			pdf.link(
-				marginMm + cssPxToMm(area.x),
-				marginMm + cssPxToMm(area.y),
-				cssPxToMm(area.width),
-				cssPxToMm(area.height),
-				{ url: area.url },
+			const imageHeightMm = cssPxToMm(slice.height);
+			const pageHeightMm = imageHeightMm + marginMm * 2;
+			const pageFormat = [pageWidthMm, pageHeightMm];
+			// jsPDF swaps the dimensions when they disagree with the orientation.
+			const orientation = pageWidthMm > pageHeightMm ? "l" : "p";
+			if (pdf) {
+				pdf.addPage(pageFormat, orientation);
+			} else {
+				pdf = new jsPDF({
+					unit: "mm",
+					format: pageFormat,
+					orientation,
+					compress: true,
+				});
+			}
+
+			pdf.addImage(
+				canvas.toDataURL("image/jpeg", 0.75),
+				"JPEG",
+				marginMm,
+				marginMm,
+				imageWidthMm,
+				imageHeightMm,
 			);
+			canvas.width = 0;
+			canvas.height = 0;
+
+			for (const area of linkAreas) {
+				const top = area.y - slice.offset;
+				if (top < 0 || top + area.height > slice.height) continue;
+				pdf.link(
+					marginMm + cssPxToMm(area.x),
+					marginMm + cssPxToMm(top),
+					cssPxToMm(area.width),
+					cssPxToMm(area.height),
+					{ url: area.url },
+				);
+			}
 		}
 
+		if (!pdf) return;
 		await pdf.save(options?.filename ?? "document.pdf", {
 			returnPromise: true,
 		});

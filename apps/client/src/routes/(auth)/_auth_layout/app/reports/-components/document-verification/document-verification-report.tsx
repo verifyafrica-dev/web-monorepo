@@ -6,9 +6,9 @@ import {
 	ReportFieldGrid,
 	ReportSectionCard,
 } from "../report-sections";
+import { SubmittedProofs } from "../submitted-proofs";
 import { DocumentVerificationInput } from "./document-verification-input";
 import { DocumentVerificationOutcome } from "./document-verification-outcome";
-import { DocumentVerificationProofs } from "./document-verification-proofs";
 import { buildDocumentVerificationSections } from "./document-verification-sections";
 
 export function DocumentVerificationReport({
@@ -49,7 +49,7 @@ export function DocumentVerificationReport({
 				</ReportSectionCard>
 			) : null}
 
-			<DocumentVerificationProofs proofs={sections.proofs} />
+			<SubmittedProofs proofs={sections.proofs} />
 
 			{sections.additional.length > 0 ? (
 				<ReportSectionCard title="Additional Details">

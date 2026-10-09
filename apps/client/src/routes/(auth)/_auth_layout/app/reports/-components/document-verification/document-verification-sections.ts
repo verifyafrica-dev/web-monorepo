@@ -1,34 +1,33 @@
-import { getCountryName } from "@verifyafrica/ui/lib/country-state-city";
-
 import {
 	asNonEmptyString,
 	asRecord,
-	asUnknownArray,
 	formatHumanLabel,
 	formatLanguageName,
 	type UnknownRecord,
 } from "../../-utils";
 import {
+	asProofSource,
+	asStringArray,
+	computed,
+	formatCountry,
+	formatDocumentType,
+	formatVerificationMode,
+	leftoverFields,
+	type ReportCheck,
+	type SubmittedProof,
+	submittedProof,
+	toCheckResult,
+	withoutEmpty,
+} from "../report-builders";
+import {
 	formatReportValue,
-	isEmptyReportValue,
 	type ReportField,
 	type ReportMatch,
 } from "../report-sections";
 
-export type DocumentProofKind = "image" | "pdf" | "video" | "file";
-
-export type DocumentProof = {
-	key: string;
-	label: string;
-	src: string;
-	kind: DocumentProofKind;
-};
-
-export type DocumentCheck = {
-	key: string;
-	label: string;
-	value: unknown;
-};
+export { formatDocumentType };
+export type DocumentProof = SubmittedProof;
+export type DocumentCheck = ReportCheck;
 
 export type DocumentVerificationSections = {
 	submitted: ReportField[];
@@ -41,19 +40,6 @@ export type DocumentVerificationSections = {
 	supportedTypes: string[];
 	proofs: DocumentProof[];
 	additional: ReportField[];
-};
-
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-	passport: "Passport",
-	id_card: "ID Card",
-	driving_license: "Driving License",
-	credit_or_debit_card: "Credit or Debit Card",
-};
-
-const VERIFICATION_MODE_LABELS: Record<string, string> = {
-	any: "Image or Video",
-	image_only: "Image Only",
-	video_only: "Video Only",
 };
 
 const GENDER_LABELS: Record<string, string> = {
@@ -97,19 +83,6 @@ const MATCH_LABELS: Array<[string, string]> = [
 	["gender", "Gender Match"],
 	["age", "Age Match"],
 ];
-
-const PROOF_EXTENSION_KINDS: Record<string, DocumentProofKind> = {
-	jpg: "image",
-	jpeg: "image",
-	png: "image",
-	webp: "image",
-	gif: "image",
-	heic: "image",
-	pdf: "pdf",
-	mp4: "video",
-	mov: "video",
-	webm: "video",
-};
 
 const KNOWN_INPUT_KEYS = new Set([
 	"email",
@@ -216,25 +189,6 @@ const KNOWN_RESPONSE_KEYS = new Set([
 	"services_declined_codes",
 ]);
 
-function computed(
-	key: string,
-	label: string,
-	value: unknown,
-	options: Omit<ReportField, "key" | "label" | "value"> = {},
-): ReportField {
-	return { key, label, value, ...options };
-}
-
-function withoutEmpty(fields: ReportField[]) {
-	return fields.filter((entry) => !isEmptyReportValue(entry.value));
-}
-
-function asStringArray(value: unknown): string[] {
-	return asUnknownArray(value)
-		.map((item) => String(item ?? "").trim())
-		.filter((item) => item.length > 0);
-}
-
 function joinName(...parts: unknown[]) {
 	const name = parts
 		.map((part) => asNonEmptyString(part))
@@ -243,64 +197,10 @@ function joinName(...parts: unknown[]) {
 	return name || undefined;
 }
 
-export function formatDocumentType(value: unknown): string | undefined {
-	const raw = asNonEmptyString(value);
-	if (!raw) return undefined;
-	return DOCUMENT_TYPE_LABELS[raw.toLowerCase()] ?? formatHumanLabel(raw);
-}
-
 function formatGender(value: unknown) {
 	const raw = asNonEmptyString(value);
 	if (!raw) return undefined;
 	return GENDER_LABELS[raw.toLowerCase()] ?? formatHumanLabel(raw);
-}
-
-function formatCountry(value: unknown) {
-	const raw = asNonEmptyString(value);
-	if (!raw) return undefined;
-	return getCountryName(raw) || formatHumanLabel(raw);
-}
-
-function formatVerificationMode(value: unknown) {
-	const raw = asNonEmptyString(value);
-	if (!raw) return undefined;
-	return VERIFICATION_MODE_LABELS[raw.toLowerCase()] ?? formatHumanLabel(raw);
-}
-
-/** Shufti check results are 1 / 0 / null; anything else is not a decided check. */
-function toCheckResult(value: unknown): boolean | undefined {
-	if (value === 1 || value === "1" || value === true) return true;
-	if (value === 0 || value === "0" || value === false) return false;
-	return undefined;
-}
-
-function proofKind(src: string): DocumentProofKind {
-	const lower = src.toLowerCase();
-	if (lower.startsWith("data:")) {
-		const mime = lower.slice(5, lower.search(/[;,]/));
-		if (mime.startsWith("image/")) return "image";
-		if (mime.startsWith("video/")) return "video";
-		if (mime === "application/pdf") return "pdf";
-		return "file";
-	}
-
-	try {
-		const extension = new URL(src).pathname.split(".").pop() ?? "";
-		return PROOF_EXTENSION_KINDS[extension.toLowerCase()] ?? "file";
-	} catch {
-		return "file";
-	}
-}
-
-function asProofSource(value: unknown) {
-	const raw = asNonEmptyString(value);
-	if (!raw) return undefined;
-	const lower = raw.toLowerCase();
-	return lower.startsWith("https://") ||
-		lower.startsWith("http://") ||
-		lower.startsWith("data:")
-		? raw
-		: undefined;
 }
 
 /** Proofs exactly as submitted to VerifyAfrica — never the provider-hosted copies. */
@@ -308,84 +208,17 @@ export function getSubmittedDocumentProofs(
 	inputData: unknown,
 ): DocumentProof[] {
 	const document = asRecord(asRecord(inputData)?.document) ?? {};
-	const front = asProofSource(document.proof);
 	const back =
 		asProofSource(document.additional_proof) ??
 		asProofSource(document.backside_proof);
-
-	const proofs: DocumentProof[] = [];
-	if (front) {
-		proofs.push({
-			key: "document_front",
-			label: back ? "Document (Front)" : "Document",
-			src: front,
-			kind: proofKind(front),
-		});
-	}
-	if (back) {
-		proofs.push({
-			key: "document_back",
-			label: "Document (Back)",
-			src: back,
-			kind: proofKind(back),
-		});
-	}
-	return proofs;
-}
-
-function isPrimitive(value: unknown) {
-	return (
-		typeof value === "string" ||
-		typeof value === "number" ||
-		typeof value === "boolean"
-	);
-}
-
-/** Surface fields we have no explicit mapping for, flattening one level of nesting. */
-function leftoverFields(
-	source: UnknownRecord,
-	knownKeys: Set<string>,
-	keyPrefix: string,
-	{
-		labels = {},
-		labelPrefix,
-	}: { labels?: Record<string, string>; labelPrefix?: string } = {},
-): ReportField[] {
-	return Object.entries(source).flatMap(([key, value]): ReportField[] => {
-		if (knownKeys.has(key) || isEmptyReportValue(value)) return [];
-		const baseLabel = labels[key] ?? formatHumanLabel(key);
-		const label = labelPrefix ? `${labelPrefix} · ${baseLabel}` : baseLabel;
-
-		if (isPrimitive(value)) {
-			return [
-				computed(`${keyPrefix}.${key}`, label, value, {
-					format: typeof value === "boolean" ? "yesNo" : "text",
-				}),
-			];
-		}
-
-		if (Array.isArray(value)) {
-			const items = value.filter(isPrimitive);
-			return items.length > 0
-				? [computed(`${keyPrefix}.${key}`, label, items)]
-				: [];
-		}
-
-		const nested = asRecord(value);
-		if (!nested) return [];
-		return Object.entries(nested).flatMap(([childKey, childValue]) =>
-			isPrimitive(childValue) && !isEmptyReportValue(childValue)
-				? [
-						computed(
-							`${keyPrefix}.${key}.${childKey}`,
-							`${label} · ${formatHumanLabel(childKey)}`,
-							childValue,
-							{ format: typeof childValue === "boolean" ? "yesNo" : "text" },
-						),
-					]
-				: [],
-		);
-	});
+	return [
+		...submittedProof(
+			"document_front",
+			back ? "Document (Front)" : "Document",
+			document.proof,
+		),
+		...submittedProof("document_back", "Document (Back)", back),
+	];
 }
 
 function collectedFromCustomer(collect: UnknownRecord) {
