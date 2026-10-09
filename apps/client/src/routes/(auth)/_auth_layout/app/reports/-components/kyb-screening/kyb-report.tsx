@@ -1,7 +1,8 @@
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { useEffect, useMemo, useState } from "react";
 
-import { KybCompanyAccordion } from "./kyb-company-accordion";
+import { useScrollToElement } from "../report-card-selector";
+import { KYB_COMPANIES_SECTION_ID, KybCompanyList } from "./kyb-company-list";
 import { KybScreeningInput } from "./kyb-screening-input";
 import { KybScreeningOutcome } from "./kyb-screening-outcome";
 import {
@@ -41,32 +42,33 @@ export function KybReport({
 		[verification.response_data, companies],
 	);
 
-	const [openKeys, setOpenKeys] = useState<string[]>(() =>
-		companies[0] ? [companies[0].key] : [],
-	);
+	const [selectedKey, setSelectedKey] = useState<string>();
+	const scrollTo = useScrollToElement();
 
 	// The hash is only readable on the client, so apply it after hydration.
 	useEffect(() => {
 		const hashKey = getHashCompanyKey();
 		const linked = companies.find((company) => company.key === hashKey);
 		if (!linked) return;
-		setOpenKeys([linked.key]);
-		const frame = requestAnimationFrame(() => {
-			document
-				.getElementById(linked.key)
-				?.scrollIntoView({ behavior: "smooth", block: "start" });
-		});
-		return () => cancelAnimationFrame(frame);
-	}, [companies]);
+		setSelectedKey(linked.key);
+		scrollTo(KYB_COMPANIES_SECTION_ID);
+	}, [companies, scrollTo]);
 
 	return (
 		<div className="flex flex-col gap-6">
 			<KybScreeningInput fields={inputFields} />
 			<KybScreeningOutcome outcome={outcome} />
-			<KybCompanyAccordion
+			<KybCompanyList
 				companies={companies}
-				openKeys={openKeys}
-				onOpenKeysChange={setOpenKeys}
+				selectedKey={selectedKey}
+				onSelect={(company) => {
+					setSelectedKey(company.key);
+					scrollTo(KYB_COMPANIES_SECTION_ID);
+				}}
+				onBack={(company) => {
+					setSelectedKey(undefined);
+					scrollTo(company.key);
+				}}
 				getCompanyHref={getCompanyHref}
 			/>
 		</div>

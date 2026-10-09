@@ -109,6 +109,54 @@ const restoreOriginalStyles = (
 	});
 };
 
+const splitTopLevelCommas = (value: string) => {
+	const parts: string[] = [];
+	let depth = 0;
+	let start = 0;
+	for (let index = 0; index < value.length; index++) {
+		const char = value[index];
+		if (char === "(") depth++;
+		else if (char === ")") depth--;
+		else if (char === "," && depth === 0) {
+			parts.push(value.slice(start, index).trim());
+			start = index + 1;
+		}
+	}
+	parts.push(value.slice(start).trim());
+	return parts;
+};
+
+const RING_SHADOW_PATTERN =
+	/^(?<color>.+?)\s+0px\s+0px\s+0px\s+(?<spread>[\d.]+)px$/;
+
+/**
+ * Tailwind rings are `0 0 0 Npx` box-shadows, which html2canvas does not draw,
+ * so cards lose their outline. Swap them for an equivalent solid border.
+ */
+const convertRingsToBorders = (element: HTMLElement) => {
+	for (const el of [element, ...Array.from(element.querySelectorAll("*"))]) {
+		if (!(el instanceof HTMLElement)) continue;
+		const style = window.getComputedStyle(el);
+		if (style.boxShadow === "none" || Number.parseFloat(style.borderTopWidth))
+			continue;
+
+		const ring = splitTopLevelCommas(style.boxShadow)
+			.map((shadow) => shadow.match(RING_SHADOW_PATTERN)?.groups)
+			.find((groups) => groups && Number.parseFloat(groups.spread) > 0);
+		if (!ring) continue;
+
+		const color = cssColorToRgb(ring.color);
+		if (!color || color === "transparent") continue;
+
+		el.style.setProperty("box-shadow", "none", "important");
+		el.style.setProperty(
+			"border",
+			`${ring.spread}px solid ${color}`,
+			"important",
+		);
+	}
+};
+
 const PDF_SPACING_PX = 16;
 const PDF_RESOLUTION = 2;
 /** Browsers fail to render canvases taller than ~32k px, leaving the PDF blank. */
@@ -153,13 +201,20 @@ const compactCloneForPdf = (clone: HTMLElement) => {
 	}
 };
 
-type PdfLinkArea = {
-	url: string;
+type PdfArea = {
 	x: number;
 	y: number;
 	width: number;
 	height: number;
 };
+
+type PdfLinkArea = PdfArea & { url: string };
+
+/** `targetY` is the CSS px offset of the destination element in the clone. */
+type PdfInternalLinkArea = PdfArea & { targetY: number };
+
+/** Space left above an internal link destination when the reader jumps to it. */
+const INTERNAL_LINK_OFFSET_PX = 12;
 
 const LINKABLE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 
@@ -192,6 +247,35 @@ const collectPdfLinkAreas = (clone: HTMLElement): PdfLinkArea[] => {
 		return [
 			{
 				url,
+				x: rect.left - cloneRect.left,
+				y: rect.top - cloneRect.top,
+				width: rect.width,
+				height: rect.height,
+			},
+		];
+	});
+};
+
+/**
+ * Collects `data-pdf-target` elements, which jump to the element with that id
+ * inside the same PDF.
+ */
+const collectPdfInternalLinkAreas = (
+	clone: HTMLElement,
+): PdfInternalLinkArea[] => {
+	const cloneRect = clone.getBoundingClientRect();
+	const elements = clone.querySelectorAll<HTMLElement>("[data-pdf-target]");
+
+	return Array.from(elements).flatMap((element) => {
+		const targetId = element.dataset.pdfTarget;
+		const target = targetId
+			? clone.querySelector(`[id="${CSS.escape(targetId)}"]`)
+			: null;
+		const rect = element.getBoundingClientRect();
+		if (!target || rect.width === 0 || rect.height === 0) return [];
+		return [
+			{
+				targetY: target.getBoundingClientRect().top - cloneRect.top,
 				x: rect.left - cloneRect.left,
 				y: rect.top - cloneRect.top,
 				width: rect.width,
@@ -299,6 +383,7 @@ export const generatePDFWithColorSupport = async (
 	const clone = createPdfClone(targetRef.current);
 	options?.onClone?.(clone);
 	document.body.appendChild(clone);
+	convertRingsToBorders(clone);
 
 	const contentWidth = clone.offsetWidth;
 	const contentHeight = clone.scrollHeight;
@@ -313,6 +398,7 @@ export const generatePDFWithColorSupport = async (
 	try {
 		originalStyles = convertModernColorsToRGB(clone);
 		const linkAreas = collectPdfLinkAreas(clone);
+		const internalLinkAreas = collectPdfInternalLinkAreas(clone);
 		const slices = getPageSlices(clone, contentHeight);
 		const firstChild = clone.firstElementChild as HTMLElement | null;
 		const firstChildMarginTop = firstChild?.style.marginTop ?? "";
@@ -389,6 +475,50 @@ export const generatePDFWithColorSupport = async (
 		}
 
 		if (!pdf) return;
+
+		if (internalLinkAreas.length > 0) {
+			const pageHeightsMm = slices.map(
+				(slice) => cssPxToMm(slice.height) + marginMm * 2,
+			);
+			const findSliceIndex = (y: number) =>
+				slices.findIndex(
+					(slice) => y >= slice.offset && y < slice.offset + slice.height,
+				);
+			const lastPage = slices.length;
+			// jsPDF converts a destination's `top` using the height of the page
+			// that is current when the file is written, so offset it for the
+			// destination page's own height.
+			const lastPageHeightMm = pageHeightsMm[lastPage - 1] ?? 0;
+
+			for (const area of internalLinkAreas) {
+				const sourceIndex = findSliceIndex(area.y);
+				const source = slices[sourceIndex];
+				const targetY = Math.max(0, area.targetY - INTERNAL_LINK_OFFSET_PX);
+				const targetIndex = findSliceIndex(targetY);
+				const target = slices[targetIndex];
+				if (!source || !target) continue;
+				const top = area.y - source.offset;
+				if (top + area.height > source.height) continue;
+
+				pdf.setPage(sourceIndex + 1);
+				pdf.link(
+					marginMm + cssPxToMm(area.x),
+					marginMm + cssPxToMm(top),
+					cssPxToMm(area.width),
+					cssPxToMm(area.height),
+					{
+						pageNumber: targetIndex + 1,
+						top:
+							marginMm +
+							cssPxToMm(targetY - target.offset) +
+							lastPageHeightMm -
+							(pageHeightsMm[targetIndex] ?? 0),
+					},
+				);
+			}
+			pdf.setPage(lastPage);
+		}
+
 		await pdf.save(options?.filename ?? "document.pdf", {
 			returnPromise: true,
 		});

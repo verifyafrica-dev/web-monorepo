@@ -84,14 +84,16 @@ export function formatReportValue(
 }
 
 export function ReportSectionCard({
+	id,
 	title,
 	children,
 }: {
+	id?: string;
 	title: string;
 	children: ReactNode;
 }) {
 	return (
-		<Card>
+		<Card id={id} className={cn(id && "scroll-mt-6")}>
 			<CardHeader className="pb-3">
 				<CardTitle className="text-base font-semibold">{title}</CardTitle>
 			</CardHeader>

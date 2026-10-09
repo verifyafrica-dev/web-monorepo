@@ -1,10 +1,4 @@
 import { BuildingsIcon, UserIcon } from "@phosphor-icons/react";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@verifyafrica/ui/components/ui/accordion";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Table,
@@ -18,6 +12,14 @@ import { cn } from "@verifyafrica/ui/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 
 import { formatHumanLabel } from "../../-utils";
+import {
+	ReportCardDetailPanel,
+	ReportCardDetailView,
+	ReportCardGrid,
+	ReportPdfCard,
+	ReportSelectableCard,
+	useScrollToElement,
+} from "../report-card-selector";
 import { ReportSectionCard } from "../report-sections";
 import { AmlCategoryBadge, AmlScoreBadge } from "./aml-hit-badges";
 import { AmlHitDetail } from "./aml-hit-detail";
@@ -31,6 +33,7 @@ import {
 
 const PAGE_SIZE = 20;
 const PDF_DETAILED_COUNT = 25;
+const SECTION_ID = "aml-potential-matches";
 
 function getHashHitKey() {
 	if (typeof window === "undefined") return undefined;
@@ -41,6 +44,10 @@ function getHashHitKey() {
 /** Resolved against the report URL when the PDF link annotations are created. */
 function getHitHref(hit: AmlHit) {
 	return `#${hit.key}`;
+}
+
+function getPdfDetailId(hit: AmlHit) {
+	return `pdf-${hit.key}`;
 }
 
 function pluralize(count: number, noun: string) {
@@ -142,9 +149,8 @@ function InteractiveHitList({
 }) {
 	const [category, setCategory] = useState<AmlRiskCategory>();
 	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-	const [openKeys, setOpenKeys] = useState<string[]>(() =>
-		hits[0] ? [hits[0].key] : [],
-	);
+	const [selectedKey, setSelectedKey] = useState<string>();
+	const scrollTo = useScrollToElement();
 
 	const filtered = useMemo(
 		() =>
@@ -152,8 +158,8 @@ function InteractiveHitList({
 		[hits, category],
 	);
 	const visible = filtered.slice(0, visibleCount);
-
-	const [scrollTarget, setScrollTarget] = useState<string>();
+	const selectedIndex = hits.findIndex((hit) => hit.key === selectedKey);
+	const selected = hits[selectedIndex];
 
 	// The hash is only readable on the client, so apply it after hydration.
 	useEffect(() => {
@@ -162,21 +168,26 @@ function InteractiveHitList({
 		if (index === -1 || !hashKey) return;
 		setCategory(undefined);
 		setVisibleCount((count) => Math.max(count, index + 1));
-		setOpenKeys((keys) => [...new Set([...keys, hashKey])]);
-		setScrollTarget(hashKey);
-	}, [hits]);
+		setSelectedKey(hashKey);
+		scrollTo(SECTION_ID);
+	}, [hits, scrollTo]);
 
-	// Scroll once the linked match has been rendered.
-	useEffect(() => {
-		if (!scrollTarget) return;
-		const frame = requestAnimationFrame(() => {
-			document
-				.getElementById(scrollTarget)
-				?.scrollIntoView({ behavior: "smooth", block: "start" });
-			setScrollTarget(undefined);
-		});
-		return () => cancelAnimationFrame(frame);
-	}, [scrollTarget]);
+	if (selected) {
+		return (
+			<ReportCardDetailView
+				backLabel="All matches"
+				position={`Match ${selectedIndex + 1} of ${hits.length}`}
+				onBack={() => {
+					setSelectedKey(undefined);
+					scrollTo(selected.key);
+				}}
+			>
+				<ReportCardDetailPanel summary={<HitSummary hit={selected} />}>
+					<AmlHitDetail hit={selected} />
+				</ReportCardDetailPanel>
+			</ReportCardDetailView>
+		);
+	}
 
 	return (
 		<div className="space-y-4">
@@ -189,28 +200,20 @@ function InteractiveHitList({
 					setVisibleCount(PAGE_SIZE);
 				}}
 			/>
-			<Accordion
-				type="multiple"
-				value={openKeys}
-				onValueChange={setOpenKeys}
-				className="gap-3"
-			>
+			<ReportCardGrid>
 				{visible.map((hit) => (
-					<AccordionItem
+					<ReportSelectableCard
 						key={hit.key}
-						value={hit.key}
 						id={hit.key}
-						className="scroll-mt-6 rounded-lg border bg-card not-last:border-b data-open:border-primary/60"
+						onSelect={() => {
+							setSelectedKey(hit.key);
+							scrollTo(SECTION_ID);
+						}}
 					>
-						<AccordionTrigger className="cursor-pointer gap-3 px-4 py-4 hover:bg-muted/40 hover:no-underline">
-							<HitSummary hit={hit} />
-						</AccordionTrigger>
-						<AccordionContent className="border-t px-4 pt-4 [&_a]:no-underline [&_p:not(:last-child)]:mb-0">
-							<AmlHitDetail hit={hit} />
-						</AccordionContent>
-					</AccordionItem>
+						<HitSummary hit={hit} />
+					</ReportSelectableCard>
 				))}
-			</Accordion>
+			</ReportCardGrid>
 			{filtered.length > visible.length ? (
 				<div className="flex flex-col items-center gap-2">
 					<p className="text-xs text-muted-foreground">
@@ -235,19 +238,21 @@ function PdfHitList({ hits }: { hits: AmlHit[] }) {
 	const remaining = hits.slice(PDF_DETAILED_COUNT);
 
 	return (
-		<div className="space-y-3">
-			{detailed.map((hit) => (
-				<div key={hit.key} className="rounded-lg border bg-card">
-					<div data-pdf-href={getHitHref(hit)} className="px-4 py-4">
-						<HitSummary hit={hit} />
-					</div>
-					<div className="border-t px-4 py-4">
-						<AmlHitDetail hit={hit} expanded />
-					</div>
-				</div>
-			))}
+		<div className="space-y-6">
+			<div className="space-y-3">
+				<p className="text-xs text-muted-foreground">
+					Select a match to jump to its details.
+				</p>
+				<ReportCardGrid>
+					{detailed.map((hit) => (
+						<ReportPdfCard key={hit.key} targetId={getPdfDetailId(hit)}>
+							<HitSummary hit={hit} />
+						</ReportPdfCard>
+					))}
+				</ReportCardGrid>
+			</div>
 			{remaining.length > 0 ? (
-				<div className="space-y-3 pt-2">
+				<div className="space-y-3">
 					<p className="text-sm font-medium">
 						Other Matches{" "}
 						<span className="text-muted-foreground">({remaining.length})</span>
@@ -303,6 +308,19 @@ function PdfHitList({ hits }: { hits: AmlHit[] }) {
 					</div>
 				</div>
 			) : null}
+			<div className="space-y-3">
+				<p className="text-sm font-medium">Match Details</p>
+				{detailed.map((hit) => (
+					<ReportCardDetailPanel
+						key={hit.key}
+						id={getPdfDetailId(hit)}
+						href={getHitHref(hit)}
+						summary={<HitSummary hit={hit} />}
+					>
+						<AmlHitDetail hit={hit} expanded />
+					</ReportCardDetailPanel>
+				))}
+			</div>
 		</div>
 	);
 }
@@ -319,7 +337,10 @@ export function AmlHitList({
 	if (hits.length === 0) return null;
 
 	return (
-		<ReportSectionCard title={`Potential Matches (${hits.length})`}>
+		<ReportSectionCard
+			id={variant === "pdf" ? undefined : SECTION_ID}
+			title={`Potential Matches (${hits.length})`}
+		>
 			<div className={cn(variant === "pdf" && "[&_a]:no-underline")}>
 				{variant === "pdf" ? (
 					<PdfHitList hits={hits} />

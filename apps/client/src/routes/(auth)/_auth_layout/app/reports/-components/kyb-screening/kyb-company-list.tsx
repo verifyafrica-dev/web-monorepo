@@ -1,18 +1,25 @@
 import { BuildingsIcon } from "@phosphor-icons/react";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@verifyafrica/ui/components/ui/accordion";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { cn } from "@verifyafrica/ui/lib/utils";
 
 import { asUnknownArray } from "../../-utils";
+import {
+	ReportCardDetailPanel,
+	ReportCardDetailView,
+	ReportCardGrid,
+	ReportPdfCard,
+	ReportSelectableCard,
+} from "../report-card-selector";
 import { ReportSectionCard } from "../report-sections";
 import { KybCompanyDetail } from "./kyb-company-detail";
 import { KybRegistryBadge } from "./kyb-registry-badge";
 import type { KybCompanySummary } from "./kyb-screening-sections";
+
+export const KYB_COMPANIES_SECTION_ID = "kyb-matched-companies";
+
+function getPdfDetailId(company: KybCompanySummary) {
+	return `pdf-${company.key}`;
+}
 
 function pluralize(count: number, noun: string) {
 	return `${count} ${noun}${count === 1 ? "" : "s"}`;
@@ -87,52 +94,88 @@ function CompanySummary({ company }: { company: KybCompanySummary }) {
 	);
 }
 
-export function KybCompanyAccordion({
+export function KybCompanyList({
 	companies,
-	openKeys,
-	onOpenKeysChange,
+	selectedKey,
+	onSelect,
+	onBack,
 	getCompanyHref,
 }: {
 	companies: KybCompanySummary[];
-	openKeys: string[];
-	onOpenKeysChange: (keys: string[]) => void;
+	selectedKey?: string;
+	onSelect: (company: KybCompanySummary) => void;
+	onBack: (company: KybCompanySummary) => void;
 	getCompanyHref: (company: KybCompanySummary) => string;
 }) {
 	if (companies.length === 0) return null;
 
+	const selectedIndex = companies.findIndex(
+		(company) => company.key === selectedKey,
+	);
+	const selected = companies[selectedIndex];
+
 	return (
-		<ReportSectionCard title={`Matched Companies (${companies.length})`}>
-			<Accordion
-				type="multiple"
-				value={openKeys}
-				onValueChange={onOpenKeysChange}
-				className="gap-3"
-			>
-				{companies.map((company) => (
-					<AccordionItem
-						key={company.key}
-						value={company.key}
-						id={company.key}
-						className="scroll-mt-6 rounded-lg border bg-card not-last:border-b data-open:border-primary/60"
+		<ReportSectionCard
+			id={KYB_COMPANIES_SECTION_ID}
+			title={`Matched Companies (${companies.length})`}
+		>
+			<div data-pdf-exclude>
+				{selected ? (
+					<ReportCardDetailView
+						backLabel="All companies"
+						position={`Company ${selectedIndex + 1} of ${companies.length}`}
+						onBack={() => onBack(selected)}
 					>
-						<AccordionTrigger
-							data-pdf-href={getCompanyHref(company)}
-							className="cursor-pointer gap-3 px-4 py-4 hover:bg-muted/40 hover:no-underline"
+						<ReportCardDetailPanel
+							summary={<CompanySummary company={selected} />}
 						>
-							<CompanySummary company={company} />
-						</AccordionTrigger>
-						<AccordionContent
-							data-pdf-exclude
-							className="border-t px-4 pt-4 [&_a]:no-underline [&_p:not(:last-child)]:mb-0"
+							<KybCompanyDetail company={selected} />
+						</ReportCardDetailPanel>
+					</ReportCardDetailView>
+				) : (
+					<ReportCardGrid>
+						{companies.map((company) => (
+							<ReportSelectableCard
+								key={company.key}
+								id={company.key}
+								onSelect={() => onSelect(company)}
+							>
+								<CompanySummary company={company} />
+							</ReportSelectableCard>
+						))}
+					</ReportCardGrid>
+				)}
+			</div>
+			<div data-pdf-only hidden className="space-y-6">
+				<div className="space-y-3">
+					<p className="text-xs text-muted-foreground">
+						Select a company to jump to its details.
+					</p>
+					<ReportCardGrid>
+						{companies.map((company) => (
+							<ReportPdfCard
+								key={company.key}
+								targetId={getPdfDetailId(company)}
+							>
+								<CompanySummary company={company} />
+							</ReportPdfCard>
+						))}
+					</ReportCardGrid>
+				</div>
+				<div className="space-y-3">
+					<p className="text-sm font-medium">Company Details</p>
+					{companies.map((company) => (
+						<ReportCardDetailPanel
+							key={company.key}
+							id={getPdfDetailId(company)}
+							href={getCompanyHref(company)}
+							summary={<CompanySummary company={company} />}
 						>
-							<KybCompanyDetail company={company} />
-						</AccordionContent>
-						<div data-pdf-only hidden className="border-t px-4 py-4">
 							<KybCompanyDetail company={company} expanded />
-						</div>
-					</AccordionItem>
-				))}
-			</Accordion>
+						</ReportCardDetailPanel>
+					))}
+				</div>
+			</div>
 		</ReportSectionCard>
 	);
 }
