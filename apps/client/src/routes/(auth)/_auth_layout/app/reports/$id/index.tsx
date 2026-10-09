@@ -12,6 +12,7 @@ import {
 	type FacialScreeningVerificationRequestDetail,
 	type GovernmentRegistryChecksVerificationRequestDetail,
 	isAmlScreeningVerificationDetail,
+	isDocumentVerificationDetail,
 	VERIFICATION_TYPES_BY_PRODUCT,
 	type VerificationRequestDetail,
 	VerificationStatusSchema,
@@ -35,6 +36,7 @@ import { AmlScreeningReport } from "../-components/aml-screening/aml-screening-r
 import { BusinessAmlScreeningReport } from "../-components/business-aml-screening-report";
 import { CryptoWalletScreeningReport } from "../-components/crypto-wallet-screening-report";
 import { DocumentVerificationReport } from "../-components/document-verification/document-verification-report";
+import { getSubmittedDocumentProofs } from "../-components/document-verification/document-verification-sections";
 import { FacialScreeningReport } from "../-components/facial-screening-report";
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
 import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks/government-registry-checks-report";
@@ -82,6 +84,14 @@ function VerificationReportDetailPage() {
 	const isDownloading = isAmlScreening
 		? amlDownload.isDownloading
 		: standardDownload.isDownloading;
+
+	const hasSubmittedDocumentProofs = useMemo(
+		() =>
+			verification !== undefined &&
+			isDocumentVerificationDetail(verification) &&
+			getSubmittedDocumentProofs(verification.input_data).length > 0,
+		[verification],
+	);
 
 	const isRefreshEligible = useMemo(() => {
 		return verification?.status === VerificationStatusSchema.enum.PENDING;
@@ -337,7 +347,7 @@ function VerificationReportDetailPage() {
 				>
 					<VerificationMetadataCard verification={verification} />
 					{renderVerificationDetail(verification)}
-					{verification.proofs_available ? (
+					{verification.proofs_available && !hasSubmittedDocumentProofs ? (
 						<VerificationProofsSection proofs={verification.proofs} />
 					) : null}
 					<MoreInfo verification={verification} />
