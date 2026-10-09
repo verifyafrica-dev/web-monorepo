@@ -76,7 +76,7 @@ function AuthLayout() {
 		useAuthStore.getState().clearAuth();
 		return (
 			<Navigate
-				to={buildLoginRedirectUrl(location.pathname)}
+				to={buildLoginRedirectUrl(location.href)}
 				replace
 			/>
 		);

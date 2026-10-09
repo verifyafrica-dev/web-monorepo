@@ -5,6 +5,7 @@ import {
 	asRecord,
 	asUnknownArray,
 	formatHumanLabel,
+	formatLanguageName,
 	type UnknownRecord,
 } from "../../-utils";
 import {
@@ -260,20 +261,6 @@ function formatCountry(value: unknown) {
 	return getCountryName(raw) || formatHumanLabel(raw);
 }
 
-function formatLanguage(value: unknown) {
-	const raw = asNonEmptyString(value);
-	if (!raw) return undefined;
-	try {
-		return (
-			new Intl.DisplayNames(["en"], { type: "language" }).of(
-				raw.toLowerCase(),
-			) ?? raw
-		);
-	} catch {
-		return raw;
-	}
-}
-
 function formatVerificationMode(value: unknown) {
 	const raw = asNonEmptyString(value);
 	if (!raw) return undefined;
@@ -448,7 +435,7 @@ export function buildDocumentVerificationSections({
 		computed("gender", "Gender", formatGender(inputDocument.gender)),
 		computed("email", "Email", input.email),
 		computed("country", "Country", formatCountry(input.country)),
-		computed("language", "Language", formatLanguage(input.language)),
+		computed("language", "Language", formatLanguageName(input.language)),
 		computed(
 			"requested_types",
 			"Requested Document Type",

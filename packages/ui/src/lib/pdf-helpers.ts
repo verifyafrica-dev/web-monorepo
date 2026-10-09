@@ -111,6 +111,8 @@ const restoreOriginalStyles = (
 
 const PDF_SPACING_PX = 16;
 const PDF_RESOLUTION = 2;
+/** Browsers fail to render canvases taller than ~32k px, leaving the PDF blank. */
+const MAX_CANVAS_DIMENSION_PX = 32_000;
 const MM_TO_PX = 96 / 25.4;
 
 const pxToMm = (px: number) => (px / 96) * 25.4;
@@ -147,6 +149,54 @@ const compactCloneForPdf = (clone: HTMLElement) => {
 	}
 };
 
+type PdfLinkArea = {
+	url: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+};
+
+const LINKABLE_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+const toLinkableUrl = (href: string | null) => {
+	if (!href) return null;
+	try {
+		const url = new URL(href, window.location.href);
+		return LINKABLE_PROTOCOLS.has(url.protocol) ? url.toString() : null;
+	} catch {
+		return null;
+	}
+};
+
+/**
+ * Collects anchors and `data-pdf-href` elements so their areas can be made
+ * clickable on top of the rasterised page. Positions are CSS px relative to the clone.
+ */
+const collectPdfLinkAreas = (clone: HTMLElement): PdfLinkArea[] => {
+	const cloneRect = clone.getBoundingClientRect();
+	const elements = clone.querySelectorAll<HTMLElement>(
+		"a[href], [data-pdf-href]",
+	);
+
+	return Array.from(elements).flatMap((element) => {
+		const url = toLinkableUrl(
+			element.dataset.pdfHref ?? element.getAttribute("href"),
+		);
+		const rect = element.getBoundingClientRect();
+		if (!url || rect.width === 0 || rect.height === 0) return [];
+		return [
+			{
+				url,
+				x: rect.left - cloneRect.left,
+				y: rect.top - cloneRect.top,
+				width: rect.width,
+				height: rect.height,
+			},
+		];
+	});
+};
+
 const createPdfClone = (source: HTMLElement) => {
 	const clone = source.cloneNode(true) as HTMLElement;
 	const width = source.offsetWidth;
@@ -163,6 +213,15 @@ const createPdfClone = (source: HTMLElement) => {
 	clone.style.display = "flex";
 	clone.style.flexDirection = "column";
 	clone.style.zIndex = "-1";
+
+	for (const element of clone.querySelectorAll("[data-pdf-exclude]")) {
+		element.remove();
+	}
+	for (const element of clone.querySelectorAll<HTMLElement>(
+		"[data-pdf-only]",
+	)) {
+		element.hidden = false;
+	}
 
 	compactCloneForPdf(clone);
 
@@ -214,9 +273,13 @@ export const generatePDFWithColorSupport = async (
 
 	try {
 		originalStyles = convertModernColorsToRGB(clone);
+		const linkAreas = collectPdfLinkAreas(clone);
 
 		const canvas = await html2canvas(clone, {
-			scale: PDF_RESOLUTION,
+			scale: Math.min(
+				PDF_RESOLUTION,
+				MAX_CANVAS_DIMENSION_PX / Math.max(contentWidth, contentHeight),
+			),
 			width: contentWidth,
 			height: contentHeight,
 			useCORS: true,
@@ -243,6 +306,16 @@ export const generatePDFWithColorSupport = async (
 			imageWidthMm,
 			imageHeightMm,
 		);
+
+		for (const area of linkAreas) {
+			pdf.link(
+				marginMm + cssPxToMm(area.x),
+				marginMm + cssPxToMm(area.y),
+				cssPxToMm(area.width),
+				cssPxToMm(area.height),
+				{ url: area.url },
+			);
+		}
 
 		await pdf.save(options?.filename ?? "document.pdf", {
 			returnPromise: true,
