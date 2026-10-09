@@ -29,6 +29,7 @@ import {
 	type ReportsFiltersFormValues,
 	type ReportsSearchParams,
 } from "../-filter-utils";
+import { ClickableTableRow } from "./clickable-table-row";
 import { ReportsFiltersForm } from "./reports-filters-form";
 import { ReportsTableShell } from "./reports-table-shell";
 import {
@@ -227,7 +228,7 @@ function BatchVerificationRow({ batch }: { batch: BatchVerificationReport }) {
 			: "0";
 
 	return (
-		<TableRow className="cursor-pointer">
+		<ClickableTableRow href={`/app/reports/batch/${batch.id}`}>
 			<TableCell className="pl-4 font-mono text-xs sm:pl-6">
 				<Link
 					to="/app/reports/batch/$batchId"
@@ -295,6 +296,6 @@ function BatchVerificationRow({ batch }: { batch: BatchVerificationReport }) {
 					</Link>
 				</Button>
 			</TableCell>
-		</TableRow>
+		</ClickableTableRow>
 	);
 }

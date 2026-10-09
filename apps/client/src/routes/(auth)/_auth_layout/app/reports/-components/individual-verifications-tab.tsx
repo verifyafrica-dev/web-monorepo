@@ -31,6 +31,7 @@ import {
 	type ReportsFiltersFormValues,
 	type ReportsSearchParams,
 } from "../-filter-utils";
+import { ClickableTableRow } from "./clickable-table-row";
 import { ReportsFiltersForm } from "./reports-filters-form";
 import { ReportsTableShell } from "./reports-table-shell";
 import {
@@ -226,7 +227,7 @@ function IndividualVerificationRow({
 	verification: VerificationReport;
 }) {
 	return (
-		<TableRow className="cursor-pointer">
+		<ClickableTableRow href={`/app/reports/${verification.id}`}>
 			<TableCell className="pl-4 font-mono text-xs sm:pl-6">
 				<Link
 					to="/app/reports/$id"
@@ -271,6 +272,6 @@ function IndividualVerificationRow({
 					</Link>
 				</Button>
 			</TableCell>
-		</TableRow>
+		</ClickableTableRow>
 	);
 }
