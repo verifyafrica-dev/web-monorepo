@@ -25,7 +25,16 @@ export type DirectSubmitOptions = {
 	mode: "direct" | "result";
 };
 
-type SubmitOptions = LinkSubmitOptions | DirectSubmitOptions;
+/** Provider-hosted journey (e.g. Shufti onsite): the payload's own method_type is kept. */
+export type ProviderLinkSubmitOptions = {
+	mode: "provider_link";
+	email: string;
+};
+
+type SubmitOptions =
+	| LinkSubmitOptions
+	| DirectSubmitOptions
+	| ProviderLinkSubmitOptions;
 
 type UseProductVerificationSubmitOptions = {
 	errorMessage?: string;
@@ -66,6 +75,11 @@ export function useProductVerificationSubmit(
 							payload,
 						});
 
+			const providerLink =
+				submitOptions.mode === "provider_link"
+					? buildLinkResult(verification, submitOptions.email)
+					: null;
+
 			if (submitOptions.mode === "link") {
 				setLinkResult(
 					buildLinkResult(
@@ -74,6 +88,9 @@ export function useProductVerificationSubmit(
 						Number(submitOptions.urlLimit),
 					),
 				);
+				setVerificationResult(null);
+			} else if (providerLink?.verificationUrl) {
+				setLinkResult(providerLink);
 				setVerificationResult(null);
 			} else {
 				setVerificationResult(verification);

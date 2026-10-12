@@ -3,18 +3,14 @@ import type {
 	VerificationType,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
-const RISK_ASSESSMENT_TYPE = "risk_assessment" satisfies VerificationType;
-
+import { isTestWalletEnvironment } from "../../billing/-data";
 import riskAssessmentChecksJson from "./risk_assessment.json";
+
+const RISK_ASSESSMENT_TYPE = "risk_assessment" satisfies VerificationType;
 
 export type RiskLevelKey = "low" | "medium" | "high" | "prohibited";
 
-export type RiskRange = {
-	min: number;
-	max: number;
-	enabled: boolean;
-};
-
+/** Risk ranges Shufti reports in `risk_score.range_name`; thresholds live on the Shufti profile. */
 export const RISK_LEVELS = [
 	{
 		key: "low" as const,
@@ -34,7 +30,7 @@ export const RISK_LEVELS = [
 	{
 		key: "prohibited" as const,
 		label: "Prohibited",
-		badgeClassName: "bg-muted text-muted-foreground border-border",
+		badgeClassName: "bg-red-100 text-red-800 border-red-200",
 	},
 ] satisfies Array<{
 	key: RiskLevelKey;
@@ -42,16 +38,21 @@ export const RISK_LEVELS = [
 	badgeClassName: string;
 }>;
 
-export const DEFAULT_RISK_RANGES: Record<RiskLevelKey, RiskRange> = {
-	low: { min: 0, max: 40, enabled: true },
-	medium: { min: 41, max: 70, enabled: true },
-	high: { min: 71, max: 100, enabled: true },
-	prohibited: { min: 100, max: 100, enabled: true },
-};
+const ALL_RISK_ASSESSMENT_CHECKS =
+	riskAssessmentChecksJson as RiskAssessmentCheck[];
 
-export const RISK_ASSESSMENT_CHECKS = (
-	riskAssessmentChecksJson as RiskAssessmentCheck[]
-).filter((check) => check.mode === "live");
+/** Shufti test credentials only accept test profiles, and live credentials only live ones. */
+export const RISK_ASSESSMENT_CHECKS = ALL_RISK_ASSESSMENT_CHECKS.filter(
+	(check) => check.mode === (isTestWalletEnvironment() ? "test" : "live"),
+);
+
+export function findRiskAssessmentCheck(riskReference: string | undefined) {
+	return riskReference
+		? ALL_RISK_ASSESSMENT_CHECKS.find(
+				(check) => check.risk_reference === riskReference,
+			)
+		: undefined;
+}
 
 export type RiskAssessmentCheck = {
 	id: string;

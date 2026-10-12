@@ -12,7 +12,11 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Crypto Wallet Screening | VerifyAfrica" },
-			{ name: "description", content: "Assess crypto wallet risk using blockchain intelligence signals." },
+			{
+				name: "description",
+				content:
+					"Assess crypto wallet risk using blockchain intelligence signals.",
+			},
 		],
 	}),
 	component: CryptoWalletScreeningPage,

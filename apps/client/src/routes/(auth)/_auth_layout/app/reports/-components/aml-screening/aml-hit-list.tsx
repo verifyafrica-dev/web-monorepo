@@ -1,4 +1,4 @@
-import { BuildingsIcon, UserIcon } from "@phosphor-icons/react";
+import { BuildingsIcon, UserIcon, WalletIcon } from "@phosphor-icons/react";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Table,
@@ -55,7 +55,12 @@ function pluralize(count: number, noun: string) {
 }
 
 function HitSummary({ hit }: { hit: AmlHit }) {
-	const Icon = hit.entityType === "person" ? UserIcon : BuildingsIcon;
+	const Icon =
+		hit.entityType === "person"
+			? UserIcon
+			: hit.entityType === "crypto_wallet"
+				? WalletIcon
+				: BuildingsIcon;
 	const meta = [
 		hit.entityType ? formatHumanLabel(hit.entityType) : null,
 		hit.countries.join(", ") || null,

@@ -13,6 +13,19 @@ import {
 	buildAmlScreeningSections,
 } from "./aml-sections";
 
+const PRODUCT_NAMES: Record<AmlSubject, string> = {
+	individual: "AML Screening",
+	business: "Business AML Screening",
+	crypto: "Crypto Wallet Screening",
+};
+
+const CLEAR_MESSAGES: Record<AmlSubject, string> = {
+	individual: "No matches were found on the screened lists.",
+	business: "No matches were found on the screened lists.",
+	crypto:
+		"The wallet address was not linked to any sanctioned, flagged or high-risk entity on the screened lists.",
+};
+
 function AmlReportBody({
 	sections,
 	variant,
@@ -20,10 +33,7 @@ function AmlReportBody({
 	sections: AmlScreeningSections;
 	variant: "interactive" | "pdf";
 }) {
-	const productName =
-		sections.subject === "business"
-			? "Business AML Screening"
-			: "AML Screening";
+	const productName = PRODUCT_NAMES[sections.subject];
 	const isClear =
 		sections.hits.length === 0 &&
 		!sections.outcome.errorMessage &&
@@ -57,7 +67,7 @@ function AmlReportBody({
 				) : null}
 				{isClear ? (
 					<p className="border-t pt-4 text-sm text-muted-foreground">
-						No matches were found on the screened lists.
+						{CLEAR_MESSAGES[sections.subject]}
 					</p>
 				) : null}
 			</ReportOutcomeCard>

@@ -37,7 +37,7 @@ import { FacialScreeningReport } from "../-components/facial-screening/facial-sc
 import { GenericVerificationDetailReport } from "../-components/generic-verification-detail-report";
 import { GovernmentRegistryChecksReport } from "../-components/government-registry-checks/government-registry-checks-report";
 import { KybReport } from "../-components/kyb-screening/kyb-report";
-import { RiskAssessmentReport } from "../-components/risk-assessment-report";
+import { RiskAssessmentReport } from "../-components/risk-assessment/risk-assessment-report";
 import { VerificationMetadataCard } from "../-components/verification-metadata-card";
 import { MoreInfo } from "../-components/more-info";
 import { getVerificationSubmittedProofs } from "../-components/report-proofs";
@@ -77,6 +77,7 @@ function VerificationReportDetailPage() {
 			[
 				...VERIFICATION_TYPES_BY_PRODUCT["AML Screening"],
 				...VERIFICATION_TYPES_BY_PRODUCT["Business AML Screening"],
+				...VERIFICATION_TYPES_BY_PRODUCT["Crypto Wallet Screening"],
 			] as string[]
 		).includes(verification.verification_type);
 	const productSlug = verification
@@ -135,7 +136,12 @@ function VerificationReportDetailPage() {
 				VERIFICATION_TYPES_BY_PRODUCT["Crypto Wallet Screening"],
 				verificationType,
 			): {
-				return <CryptoWalletScreeningReport verification={verificationData} />;
+				return (
+					<CryptoWalletScreeningReport
+						verification={verificationData}
+						downloadRef={isPreparingAmlPdf ? amlDownloadRef : undefined}
+					/>
+				);
 			}
 			case isInProductGroup(
 				VERIFICATION_TYPES_BY_PRODUCT["Document Verification"],

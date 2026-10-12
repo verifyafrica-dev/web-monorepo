@@ -91,7 +91,7 @@ export type AmlCategoryCount = {
 	count: number;
 };
 
-export type AmlSubject = "individual" | "business";
+export type AmlSubject = "individual" | "business" | "crypto";
 
 export type AmlScreeningSections = {
 	subject: AmlSubject;
@@ -113,6 +113,18 @@ export const AML_CATEGORY_LABELS: Record<AmlRiskCategory, string> = {
 	fitness_probity: "Fitness & Probity",
 	special_interest: "Special Interest",
 	other: "Other",
+};
+
+const SCREENED_NAME_LABELS: Record<AmlSubject, string> = {
+	individual: "Full Name",
+	business: "Business Name",
+	crypto: "Wallet Address",
+};
+
+const CHECK_LABELS: Record<AmlSubject, string> = {
+	individual: "Background Check",
+	business: "Business Screening",
+	crypto: "Wallet Screening",
 };
 
 const CATEGORY_ORDER: AmlRiskCategory[] = [
@@ -159,6 +171,7 @@ const MATCH_TYPE_LABELS: Record<string, string> = {
 	birth_incorporation_date: "Date of Birth / Incorporation",
 	year_of_birth: "Year of Birth",
 	category: "Category",
+	crypto_wallet_address: "Wallet Address",
 	entity_type: "Entity Type",
 	country: "Country",
 };
@@ -577,6 +590,8 @@ const KNOWN_INPUT_KEYS = new Set([
 	"reference",
 	"callback_url",
 	"redirect_url",
+	"is_crypto_request",
+	"verification_mode",
 ]);
 
 const KNOWN_SECTION_KEYS = new Set([
@@ -659,15 +674,15 @@ export function buildAmlScreeningSections({
 		subject === "business"
 			? (inputSection.business_incorporation_date ??
 				checked.business_incorporation_date)
-			: (inputSection.dob ?? input.dob ?? checked.dob);
+			: subject === "crypto"
+				? undefined
+				: (inputSection.dob ?? input.dob ?? checked.dob);
 
 	const submitted = [
-		computed(
-			"name",
-			subject === "business" ? "Business Name" : "Full Name",
-			screenedName,
-			{ wide: true },
-		),
+		computed("name", SCREENED_NAME_LABELS[subject], screenedName, {
+			wide: true,
+			mono: subject === "crypto",
+		}),
 		computed(
 			"dob",
 			subject === "business" ? "Incorporation Date" : "Date of Birth",
@@ -773,8 +788,7 @@ export function buildAmlScreeningSections({
 		checks: [
 			{
 				key: sectionKey,
-				label:
-					subject === "business" ? "Business Screening" : "Background Check",
+				label: CHECK_LABELS[subject],
 				value: results[sectionKey],
 			},
 		],
