@@ -428,7 +428,7 @@ export function buildGovernmentRegistryLinkPayload(
 
 	return {
 		verification_type: values.verificationType as VerificationType,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: inputData,
 	};
 }

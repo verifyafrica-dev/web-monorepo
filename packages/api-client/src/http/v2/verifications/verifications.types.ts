@@ -14,7 +14,7 @@ export interface VerificationLink {
 	verification_id: string;
 	verification_reference: string;
 	provider: string;
-	link_type?: "shufti" | "new_link" | string;
+	link_type?: "shufti_link" | "verify_link" | string;
 	ttl_minutes?: number | null;
 	expires_at?: string | null;
 	used_at?: string | null;

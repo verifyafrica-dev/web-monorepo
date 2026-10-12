@@ -125,7 +125,7 @@ export function buildKybVerificationLinkPayload(
 
 	return {
 		verification_type: KYB_VERIFICATION_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			...(country ? { country } : {}),
 			language: "EN",

@@ -67,7 +67,7 @@ export function useProductVerificationSubmit(
 							tenantId,
 							payload: {
 								...payload,
-								method_type: "new_link",
+								method_type: "verify_link",
 							},
 						})
 					: await createVerificationMutation.mutateAsync({
