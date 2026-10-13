@@ -1,12 +1,6 @@
 import { CaretLeftIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { format } from "date-fns";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
-import { useSubmitNewVerifyGovernmentRegistryV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 import type { NewVerifySession } from "@verifyafrica/api-client/http/v2/verifications/new-verify/new-verify.types";
 import { uploadNewVerifyProofFile } from "@verifyafrica/api-client/lib/new-verify-proof-upload";
 import { Button } from "@verifyafrica/ui/components/ui/button";
@@ -18,7 +12,6 @@ import {
 } from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
-import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 import {
 	Select,
 	SelectContent,
@@ -26,6 +19,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
+import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
+import { format } from "date-fns";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useSubmitNewVerifyGovernmentRegistryV2Mutation } from "#/api/http/v2/verifications/new-verify/new-verify.hooks";
 
 import { KycDatePicker } from "../../../../../(auth)/_auth_layout/app/kyc/-components/kyc-form-primitives";
 import { FacialCapture } from "./facial-biometrics/facial-capture";
@@ -53,6 +52,21 @@ function isValidCiIdentityId(value: string) {
 		/^[A-Z0-9]+$/.test(normalized)
 	);
 }
+
+const IDENTITY_TYPE_OPTIONS: Record<
+	string,
+	{ value: string; label: string }[]
+> = {
+	gh_voter_card_lookup: [
+		{ value: "new_voters_card", label: "New voter's card" },
+		{ value: "old_voters_card", label: "Old voter's card" },
+	],
+};
+
+const DEFAULT_IDENTITY_TYPE_OPTIONS = [
+	{ value: "national_id", label: "National ID" },
+	{ value: "passport", label: "Passport" },
+];
 
 const US_SSN_FIELD_PLACEHOLDERS: Record<string, string> = {
 	ssn: "9-digit SSN, e.g. 765439022",
@@ -227,10 +241,7 @@ export function GovernmentRegistryVerification({
 						disabled={isSubmitting}
 						aria-label="Go back"
 					>
-						<CaretLeftIcon
-							className="size-5"
-							weight="bold"
-						/>
+						<CaretLeftIcon className="size-5" weight="bold" />
 					</Button>
 					<h2 className="truncate text-lg font-semibold tracking-tight">
 						Selfie
@@ -258,10 +269,7 @@ export function GovernmentRegistryVerification({
 						disabled={isSubmitting}
 						aria-label="Go back"
 					>
-						<CaretLeftIcon
-							className="size-5"
-							weight="bold"
-						/>
+						<CaretLeftIcon className="size-5" weight="bold" />
 					</Button>
 					<h2 className="truncate text-lg font-semibold tracking-tight">
 						Selfie capture
@@ -307,10 +315,7 @@ export function GovernmentRegistryVerification({
 			) : null}
 
 			{visibleFields.map((fieldName) => (
-				<form.Field
-					key={fieldName}
-					name={fieldName}
-				>
+				<form.Field key={fieldName} name={fieldName}>
 					{(field) => (
 						<Field className="gap-2">
 							<FieldLabel htmlFor={`registry-${fieldName}`}>
@@ -330,8 +335,14 @@ export function GovernmentRegistryVerification({
 										<SelectValue placeholder="Select identity type" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="national_id">National ID</SelectItem>
-										<SelectItem value="passport">Passport</SelectItem>
+										{(
+											IDENTITY_TYPE_OPTIONS[session.verification_type] ??
+											DEFAULT_IDENTITY_TYPE_OPTIONS
+										).map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							) : fieldName === "date_of_birth" ? (
@@ -396,10 +407,7 @@ export function GovernmentRegistryVerification({
 						disabled={isSubmitting}
 					/>
 					<div className="space-y-1">
-						<Label
-							htmlFor="registry-include-selfie"
-							className="font-medium"
-						>
+						<Label htmlFor="registry-include-selfie" className="font-medium">
 							Include a selfie for facial matching
 						</Label>
 						<p className="text-sm text-muted-foreground text-pretty">

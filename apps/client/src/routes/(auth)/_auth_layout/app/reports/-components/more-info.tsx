@@ -30,7 +30,7 @@ function hasInfoValues(value: object | undefined) {
 	);
 }
 
-function AgentCard({ agent }: { agent: VerificationAgentInfo }) {
+function _AgentCard({ agent }: { agent: VerificationAgentInfo }) {
 	return (
 		<Card>
 			<CardHeader>
@@ -74,7 +74,7 @@ function AgentCard({ agent }: { agent: VerificationAgentInfo }) {
 	);
 }
 
-function GeolocationCard({
+function _GeolocationCard({
 	geolocation,
 }: {
 	geolocation: VerificationGeoLocation;
@@ -89,10 +89,7 @@ function GeolocationCard({
 					label="Host"
 					value={formatInfoValue(geolocation.host)}
 				/>
-				<ReportDetailField
-					label="IP"
-					value={formatInfoValue(geolocation.ip)}
-				/>
+				<ReportDetailField label="IP" value={formatInfoValue(geolocation.ip)} />
 				<ReportDetailField
 					label="RDNS"
 					value={formatInfoValue(geolocation.rdns)}
@@ -107,7 +104,9 @@ function GeolocationCard({
 				/>
 				<ReportDetailField
 					label="Country Name"
-					value={formatInfoValue(geolocation.country_name ?? geolocation.country)}
+					value={formatInfoValue(
+						geolocation.country_name ?? geolocation.country,
+					)}
 				/>
 				<ReportDetailField
 					label="Country Code"
@@ -183,12 +182,14 @@ export function MoreInfo({
 	}
 
 	return (
-		<section className="flex flex-col gap-4">
-			<h2 className="text-lg font-semibold">Info</h2>
-			{showAgent && agent ? <AgentCard agent={agent} /> : null}
-			{showGeolocation && geolocation ? (
-				<GeolocationCard geolocation={geolocation} />
-			) : null}
-		</section>
+		<>
+			{/* <section className="flex flex-col gap-4">
+				<h2 className="text-lg font-semibold">Info</h2>
+				{showAgent && agent ? <_AgentCard agent={agent} /> : null}
+				{showGeolocation && geolocation ? (
+					<_GeolocationCard geolocation={geolocation} />
+				) : null}
+			</section> */}
+		</>
 	);
 }

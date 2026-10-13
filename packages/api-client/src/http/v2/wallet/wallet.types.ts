@@ -77,6 +77,7 @@ export interface WalletTransaction {
 	type: TransactionType;
 	reason: string;
 	metadata?: Record<string, unknown>;
+	verification_type?: string | null;
 	created_at: string;
 }
 
@@ -116,7 +117,8 @@ export type WalletFundingRequestListResponse =
 	V2PaginatedSuccessResponse<WalletFundingRequest>;
 export type TopUpSessionResponse = V2SuccessResponse<TopUpSessionData>;
 export type TopUpVerifyResponse = V2SuccessResponse<TopUpVerifyData>;
-export type AdminManualCreditResponse = V2SuccessResponse<AdminManualCreditData>;
+export type AdminManualCreditResponse =
+	V2SuccessResponse<AdminManualCreditData>;
 
 export interface PaginatedWalletBalanceListResult {
 	items: Wallet[];

@@ -40,7 +40,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ng",
 		description: "Verify Nigerian Bank Verification Number",
 		requiredParameters: ["bvn"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.NG_NIN_VERIFICATION.value,
@@ -48,7 +53,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ng",
 		description: "Verify Nigerian National Identification Number",
 		requiredParameters: ["nin"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.NG_VIRTUAL_NIN_VERIFICATION.value,
@@ -56,7 +66,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ng",
 		description: "Verify Nigerian Virtual NIN",
 		requiredParameters: ["virtual_nin"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.NG_ADVANCED_PHONE_NUMBER_VERIFICATION.value,
@@ -64,7 +79,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ng",
 		description: "Advanced phone number verification with validation",
 		requiredParameters: ["phone_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.NG_PHONE_NUMBER_LOOKUP.value,
@@ -96,7 +116,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghanaian passport",
 		requiredParameters: ["passport_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.GH_VOTER_CARD_LOOKUP.value,
@@ -104,7 +129,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghanaian voter card",
 		requiredParameters: ["voter_id"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.GH_SSNIT_LOOKUP.value,
@@ -112,7 +142,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghana SSNIT number",
 		requiredParameters: ["ssnit_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.GH_DRIVERS_LICENSE_LOOKUP.value,
@@ -120,7 +155,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "gh",
 		description: "Verify Ghanaian driver's license",
 		requiredParameters: ["license_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.KE_PASSPORT_LOOKUP.value,
@@ -128,7 +168,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ke",
 		description: "Verify Kenyan passport",
 		requiredParameters: ["passport_number"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.KE_NATIONAL_ID_LOOKUP.value,
@@ -136,7 +181,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ke",
 		description: "Verify Kenyan National ID (Huduma Namba)",
 		requiredParameters: ["national_id"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.KE_PHONE_NUMBER_LOOKUP.value,
@@ -160,7 +210,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ci",
 		description: "Verify Ivorian National ID",
 		requiredParameters: ["national_id"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.CI_RESIDENCE_CARD_LOOKUP.value,
@@ -168,7 +223,12 @@ const REGISTRY_VERIFICATION_TYPES: RegistryVerificationType[] = [
 		countryCode: "ci",
 		description: "Verify Ivorian Residence Card",
 		requiredParameters: ["residence_card_id"],
-		validationParameters: ["first_name", "last_name", "date_of_birth", "selfie"],
+		validationParameters: [
+			"first_name",
+			"last_name",
+			"date_of_birth",
+			"selfie",
+		],
 	},
 	{
 		value: VERIFICATION_TYPES.US_SSN_VERIFICATION.value,
@@ -382,7 +442,10 @@ function appendRegistryFieldValues(
 			: trimmed;
 	}
 
-	if (requiresLastNameField(values.verificationType) && values.lastName.trim()) {
+	if (
+		requiresLastNameField(values.verificationType) &&
+		values.lastName.trim()
+	) {
 		inputData.last_name = values.lastName.trim();
 	}
 
@@ -410,6 +473,30 @@ function appendRegistryFieldValues(
 	}
 }
 
+/** Fields the customer must enter on the hosted link; the API rejects them in link mode. */
+const CUSTOMER_INPUT_PARAMETERS = new Set([
+	"id_number",
+	"bvn",
+	"nin",
+	"virtual_nin",
+	"phone_number",
+	"cac_number",
+	"passport_id",
+	"passport_number",
+	"voter_id",
+	"ssnit_number",
+	"license_number",
+	"national_id",
+	"residence_card_id",
+	"tax_pin",
+	"ssn",
+	"selfie",
+]);
+
+export function isCustomerInputParameter(parameter: string | null | undefined) {
+	return Boolean(parameter && CUSTOMER_INPUT_PARAMETERS.has(parameter));
+}
+
 export function buildGovernmentRegistryLinkPayload(
 	values: GovernmentRegistryFormValues & {
 		email: string;
@@ -421,10 +508,17 @@ export function buildGovernmentRegistryLinkPayload(
 		email: values.email.trim(),
 		language: "EN",
 		ttl: Number(values.urlLimit),
-		require_selfie: values.requireSelfie,
+		require_selfie:
+			values.requireSelfie &&
+			registryTypeSupportsSelfie(values.verificationType),
 	};
 
 	appendRegistryFieldValues(inputData, values);
+	for (const key of Object.keys(inputData)) {
+		if (isCustomerInputParameter(key)) {
+			delete inputData[key];
+		}
+	}
 
 	return {
 		verification_type: values.verificationType as VerificationType,

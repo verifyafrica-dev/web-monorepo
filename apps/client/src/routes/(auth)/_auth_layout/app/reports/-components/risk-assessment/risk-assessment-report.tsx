@@ -1,14 +1,10 @@
 import { HourglassMediumIcon } from "@phosphor-icons/react";
-import {
-	type VerificationRequestDetail,
-	VerificationStatusSchema,
-} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { useMemo } from "react";
 
 import { ReportDetailField } from "../report-detail-field";
-import { ReportOutcomeCard } from "../report-outcome-card";
 import { ReportFieldGrid, ReportSectionCard } from "../report-sections";
 import {
 	buildRiskAssessmentSections,
@@ -24,7 +20,7 @@ const SERVICE_STATUS_CLASS_NAMES: Record<string, string> = {
 	rejected: "border-red-200 bg-red-500 text-white",
 };
 
-function RiskLevelSummary({ sections }: { sections: RiskAssessmentSections }) {
+function _RiskLevelSummary({ sections }: { sections: RiskAssessmentSections }) {
 	if (!sections.rangeName && !sections.assessmentTitle) return null;
 
 	return (
@@ -56,7 +52,7 @@ function RiskLevelSummary({ sections }: { sections: RiskAssessmentSections }) {
 	);
 }
 
-function PendingQuestionnaire() {
+function _PendingQuestionnaire() {
 	return (
 		<div className="flex gap-3 rounded-lg border bg-muted/60 p-4">
 			<HourglassMediumIcon className="mt-0.5 size-5 shrink-0 text-secondary" />
@@ -150,12 +146,12 @@ export function RiskAssessmentReport({
 			}),
 		[verification.input_data, verification.response_data],
 	);
-	const isPending =
-		verification.status === VerificationStatusSchema.enum.PENDING &&
-		!sections.hasResult;
-	const isUnknownProfile = /risk reference/i.test(
-		sections.outcome.errorMessage ?? "",
-	);
+	// const isPending =
+	// 	verification.status === VerificationStatusSchema.enum.PENDING &&
+	// 	!sections.hasResult;
+	// const isUnknownProfile = /risk reference/i.test(
+	// 	sections.outcome.errorMessage ?? "",
+	// );
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -163,13 +159,13 @@ export function RiskAssessmentReport({
 				<ReportFieldGrid fields={sections.submitted} />
 			</ReportSectionCard>
 
-			<ReportOutcomeCard
+			{/* <ReportOutcomeCard
 				title="Risk Assessment Outcome"
 				outcome={sections.outcome}
 				checks={sections.checks}
 			>
 				{isPending ? (
-					<PendingQuestionnaire />
+					<_PendingQuestionnaire />
 				) : null}
 				{isUnknownProfile ? (
 					<p className="text-sm text-pretty text-muted-foreground">
@@ -178,14 +174,14 @@ export function RiskAssessmentReport({
 						and live credentials only accept live profiles.
 					</p>
 				) : null}
-				<RiskLevelSummary sections={sections} />
+				<_RiskLevelSummary sections={sections} />
 				{sections.scores.length > 0 ? (
 					<div className="space-y-3 border-t pt-4">
 						<p className="text-sm font-medium">Score Breakdown</p>
 						<ReportFieldGrid fields={sections.scores} />
 					</div>
 				) : null}
-			</ReportOutcomeCard>
+			</ReportOutcomeCard> */}
 
 			<ServiceChecks services={sections.services} />
 			<QuestionnaireAnswers groups={sections.questionnaire} />
