@@ -9,20 +9,14 @@ import {
 	KeyIcon,
 	LinkSimpleIcon,
 	ListBulletsIcon,
+	PulseIcon,
 	WebhooksLogoIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-
 import {
-	useReplaceTenantApiKeyV2Mutation,
-	useTenantApiKeyV2Query,
-	useTenantV2DetailQuery,
-	useTenantWebhookV2Query,
-	useUpdateTenantApiKeyV2Mutation,
-} from "#/api/http/v2/tenants/tenants.hooks";
-import { CodeBlock } from "#/components/ui-extended/code-block";
+	detectDeployEnvironment,
+	getAppOrigin,
+} from "@verifyafrica/config/domains";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -45,6 +39,16 @@ import {
 } from "@verifyafrica/ui/components/ui/tabs";
 import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+	useReplaceTenantApiKeyV2Mutation,
+	useTenantApiKeyV2Query,
+	useTenantV2DetailQuery,
+	useTenantWebhookV2Query,
+	useUpdateTenantApiKeyV2Mutation,
+} from "#/api/http/v2/tenants/tenants.hooks";
+import { CodeBlock } from "#/components/ui-extended/code-block";
 import { DashboardOnboarding } from "../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../-data";
 import { useCurrentTenant } from "../team/-data";
@@ -120,10 +124,7 @@ function WebhooksPage() {
 					</TabsTrigger>
 				</TabsList>
 
-				<TabsContent
-					value="configuration"
-					className="flex flex-col gap-6"
-				>
+				<TabsContent value="configuration" className="flex flex-col gap-6">
 					<ConfigurationTab />
 				</TabsContent>
 
@@ -361,14 +362,21 @@ function ConfigurationTab() {
 }
 
 function WebhooksHeader() {
+	const [statusPageUrl, setStatusPageUrl] = useState(
+		getAppOrigin("production", "status"),
+	);
+
+	useEffect(() => {
+		setStatusPageUrl(
+			getAppOrigin(detectDeployEnvironment(window.location.host), "status"),
+		);
+	}, []);
+
 	return (
 		<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 			<div className="flex items-start gap-3">
 				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-					<WebhooksLogoIcon
-						className="size-5"
-						weight="duotone"
-					/>
+					<WebhooksLogoIcon className="size-5" weight="duotone" />
 				</div>
 				<div className="flex flex-col gap-1">
 					<h1 className="text-2xl font-semibold tracking-tight">Webhooks</h1>
@@ -378,20 +386,24 @@ function WebhooksHeader() {
 					</p>
 				</div>
 			</div>
-			<Button
-				variant="outline"
-				className="cursor-pointer"
-				asChild
-			>
-				<a
-					href="https://docs.verifyafrica.io"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Read the docs
-					<ArrowSquareOutIcon data-icon="inline-end" />
-				</a>
-			</Button>
+			<div className="flex flex-wrap gap-2">
+				<Button variant="outline" className="cursor-pointer" asChild>
+					<a href={statusPageUrl} target="_blank" rel="noopener noreferrer">
+						<PulseIcon data-icon="inline-start" />
+						Service status
+					</a>
+				</Button>
+				<Button variant="outline" className="cursor-pointer" asChild>
+					<a
+						href="https://docs.verifyafrica.io"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Read the docs
+						<ArrowSquareOutIcon data-icon="inline-end" />
+					</a>
+				</Button>
+			</div>
 		</div>
 	);
 }
@@ -416,10 +428,7 @@ function ApiKeyCardSkeleton() {
 				</div>
 				<div className="grid gap-3 sm:grid-cols-3">
 					{["last-used", "status", "expires"].map((item) => (
-						<Skeleton
-							key={item}
-							className="h-20 rounded-lg"
-						/>
+						<Skeleton key={item} className="h-20 rounded-lg" />
 					))}
 				</div>
 				<Separator />
@@ -510,7 +519,7 @@ function UsageInstructionsCard({
 							<p className="text-sm text-muted-foreground">
 								When a verification reaches a terminal status, we POST a JSON
 								payload to your saved webhook URL with your webhook token in the
-								Authorization header. 								Successful checks use{" "}
+								Authorization header. Successful checks use{" "}
 								<code>sf.verification.completed</code> or{" "}
 								<code>kr.verification.completed</code>; failed checks use{" "}
 								<code>sf.verification.failed</code> or{" "}
