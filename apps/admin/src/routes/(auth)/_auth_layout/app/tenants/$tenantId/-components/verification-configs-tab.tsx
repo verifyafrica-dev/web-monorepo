@@ -21,6 +21,7 @@ import {
 	buildVerificationConfigDrafts,
 	buildVerificationConfigUpdates,
 	formatVerificationLabel,
+	isToggleOnlyVerificationType,
 	normalizeVerificationProvider,
 	type VerificationConfigDraft,
 	validateVerificationConfigDrafts,
@@ -191,6 +192,37 @@ function VerificationConfigRow({
 	const price = draft?.price ?? "";
 	const inherited = !row.has_override;
 	const effectiveLabel = isEnabled ? price || "—" : "Disabled";
+
+	if (isToggleOnlyVerificationType(row.verification_type)) {
+		return (
+			<div className="grid gap-4 rounded-lg border p-4 lg:grid-cols-[minmax(0,1.4fr)_auto_minmax(0,1.3fr)] lg:items-center">
+				<div>
+					<p className="font-medium">
+						{formatVerificationLabel(row.verification_type)}
+					</p>
+					<p className="text-sm text-muted-foreground">
+						{inherited ? "Enabled by default" : "Tenant override active"}
+					</p>
+				</div>
+
+				<div className="flex items-center gap-2">
+					<Switch
+						checked={isEnabled}
+						disabled={disabled}
+						onCheckedChange={(checked) => {
+							onDraftChange({ isEnabled: checked, price });
+						}}
+					/>
+					<Label>Enabled</Label>
+				</div>
+
+				<p className="text-sm text-muted-foreground">
+					Pricing is set on each mixed verification template. Disabling this
+					blocks the tenant from starting any mixed verification.
+				</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="grid gap-4 rounded-lg border p-4 lg:grid-cols-[minmax(0,1.4fr)_auto_minmax(0,0.8fr)_minmax(0,0.5fr)] lg:items-center">

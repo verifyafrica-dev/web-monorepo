@@ -251,16 +251,29 @@ export type VerificationConfigDraft = {
 	price: string;
 };
 
+/** Types without a global price row; the tenant only gets an on/off switch. */
+const TOGGLE_ONLY_VERIFICATION_TYPES = new Set(["mixed_verification"]);
+
+export function isToggleOnlyVerificationType(verificationType: string) {
+	return TOGGLE_ONLY_VERIFICATION_TYPES.has(verificationType);
+}
+
+function buildVerificationConfigDraft(
+	row: TenantVerificationConfigRow,
+): VerificationConfigDraft {
+	return {
+		isEnabled: row.has_override
+			? Boolean(row.override_is_enabled)
+			: row.global_is_active,
+		price: row.override_price ?? row.global_price ?? "",
+	};
+}
+
 export function buildVerificationConfigDrafts(
 	configs: TenantVerificationConfigRow[],
 ) {
 	return configs.reduce<Record<string, VerificationConfigDraft>>((acc, row) => {
-		acc[row.verification_type] = {
-			isEnabled: row.has_override
-				? Boolean(row.override_is_enabled)
-				: row.global_is_active,
-			price: row.override_price ?? row.global_price ?? "",
-		};
+		acc[row.verification_type] = buildVerificationConfigDraft(row);
 		return acc;
 	}, {});
 }
@@ -275,11 +288,13 @@ export function buildVerificationConfigUpdates(
 			return [];
 		}
 
-		const matchesGlobal =
-			draft.isEnabled === row.global_is_active &&
-			(draft.isEnabled ? draft.price === (row.global_price ?? "") : true);
+		const toggleOnly = isToggleOnlyVerificationType(row.verification_type);
+		const current = buildVerificationConfigDraft(row);
+		const isUnchanged =
+			draft.isEnabled === current.isEnabled &&
+			(toggleOnly || !draft.isEnabled || draft.price === current.price);
 
-		if (matchesGlobal) {
+		if (isUnchanged) {
 			return [];
 		}
 
@@ -287,7 +302,7 @@ export function buildVerificationConfigUpdates(
 			{
 				verification_type: row.verification_type,
 				is_enabled: draft.isEnabled,
-				price: draft.isEnabled ? draft.price : null,
+				price: draft.isEnabled && !toggleOnly ? draft.price : null,
 			},
 		];
 	});
@@ -299,7 +314,7 @@ export function validateVerificationConfigDrafts(
 ) {
 	for (const row of configs) {
 		const draft = drafts[row.verification_type];
-		if (!draft?.isEnabled) {
+		if (!draft?.isEnabled || isToggleOnlyVerificationType(row.verification_type)) {
 			continue;
 		}
 
