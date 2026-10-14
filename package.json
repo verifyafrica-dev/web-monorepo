@@ -16,9 +16,11 @@
     "dev:app": "cd apps/app && bun run dev --force",
     "dev:client": "cd apps/client && bun run dev",
     "dev:admin": "cd apps/admin && bun run dev",
+    "dev:status": "cd apps/status && bun run dev",
     "build": "bun run --filter='./apps/*' build",
     "build:app": "bun run --filter='@verifyafrica/app' build",
     "build:client": "bun run --filter='@verifyafrica/client' build",
-    "build:admin": "bun run --filter='@verifyafrica/admin' build"
+    "build:admin": "bun run --filter='@verifyafrica/admin' build",
+    "build:status": "bun run --filter='@verifyafrica/status' build"
   }
 }

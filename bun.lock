@@ -253,6 +253,46 @@
         "vitest": "^4.1.5",
       },
     },
+    "apps/status": {
+      "name": "@verifyafrica/status",
+      "dependencies": {
+        "@fontsource-variable/outfit": "^5.2.8",
+        "@phosphor-icons/react": "^2.1.10",
+        "@tailwindcss/vite": "^4.1.18",
+        "@tanstack/react-query": "5.102.0",
+        "@tanstack/react-router": "1.170.41",
+        "@tanstack/react-router-ssr-query": "1.167.3",
+        "@tanstack/react-start": "1.168.60",
+        "@tanstack/router-plugin": "1.168.42",
+        "@verifyafrica/api-client": "workspace:*",
+        "@verifyafrica/config": "workspace:*",
+        "@verifyafrica/ui": "workspace:*",
+        "axios": "^1.18.0",
+        "clsx": "^2.1.1",
+        "date-fns": "^4.4.0",
+        "nitro": "^3.0.260610-beta",
+        "radix-ui": "^1.5.0",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "shadcn": "^4.11.0",
+        "tailwind-merge": "^3.0.2",
+        "tailwindcss": "^4.1.18",
+        "tw-animate-css": "^1.3.6",
+        "zod": "^4.3.6",
+      },
+      "devDependencies": {
+        "@biomejs/biome": "2.4.5",
+        "@tailwindcss/typography": "^0.5.16",
+        "@tanstack/router-cli": "1.167.40",
+        "@types/node": "^22.10.2",
+        "@types/react": "^19.2.0",
+        "@types/react-dom": "^19.2.0",
+        "@vitejs/plugin-react": "^6.0.1",
+        "portless": "^0.15.0",
+        "typescript": "^6.0.2",
+        "vite": "^8.0.0",
+      },
+    },
     "packages/api-client": {
       "name": "@verifyafrica/api-client",
       "dependencies": {
@@ -1078,6 +1118,8 @@
     "@verifyafrica/client": ["@verifyafrica/client@workspace:apps/client"],
 
     "@verifyafrica/config": ["@verifyafrica/config@workspace:packages/config"],
+
+    "@verifyafrica/status": ["@verifyafrica/status@workspace:apps/status"],
 
     "@verifyafrica/ui": ["@verifyafrica/ui@workspace:packages/ui"],
 
@@ -2138,6 +2180,8 @@
     "@tanstack/react-router/@tanstack/react-store": ["@tanstack/react-store@0.11.2", "", { "dependencies": { "@tanstack/store": "0.11.2", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-oj5O5DmiMWE+ih+SioX2ayC1kbK7d3fpLx0B75fPJr9nY3zU+hoW010yr64qXsY/9fyiLVE2bn5mGNV3owm8RQ=="],
 
     "@tanstack/start-plugin-core/picomatch": ["picomatch@4.0.7", "", {}, "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="],
+
+    "@verifyafrica/ui/country-state-city": ["country-state-city@github:Itzadetunji/country-state-city#38d1505", {}, "Itzadetunji-country-state-city-38d1505", "sha512-IFJrC0lDH8/AgCLAYroKK5OlYmWnm4yAthU92XRXiYU/9+isR8svoOKWEKGRYgvXgaSBVyf+vY8WyTu1zc9iiA=="],
 
     "accepts/mime-types": ["mime-types@3.0.2", "", { "dependencies": { "mime-db": "^1.54.0" } }, "sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A=="],
 
