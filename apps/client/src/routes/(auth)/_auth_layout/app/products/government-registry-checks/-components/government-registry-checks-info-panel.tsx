@@ -1,10 +1,4 @@
-import {
-	BankIcon,
-	GlobeHemisphereWestIcon,
-	IdentificationCardIcon,
-	LinkIcon,
-	MagnifyingGlassIcon,
-} from "@phosphor-icons/react";
+import { BankIcon, LinkIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
@@ -61,9 +55,11 @@ export function GovernmentRegistryChecksInfoPanel({
 							<div className="space-y-1">
 								<p className="font-medium">Link mode</p>
 								<p className="leading-relaxed text-muted-foreground">
-									Available only for checks that support selfie matching.
-									The customer captures a selfie on the hosted page. Billing
-									runs when the check is submitted to the registry provider.
+									Available for every check. Send the customer a link and they
+									enter their own identifier (and selfie, where supported) on
+									the hosted page. You can't send those details in link mode.
+									Billing runs when the check is submitted to the registry
+									provider.
 								</p>
 							</div>
 						</div>
@@ -73,9 +69,9 @@ export function GovernmentRegistryChecksInfoPanel({
 							<div className="space-y-1">
 								<p className="font-medium">Direct mode</p>
 								<p className="leading-relaxed text-muted-foreground">
-									Run the check immediately with the details you enter here.
-									Results return asynchronously while provider work runs in the
-									background.
+									Run the check immediately with the details you enter here. All
+									required fields must be filled. Results return asynchronously
+									while provider work runs in the background.
 								</p>
 							</div>
 						</div>

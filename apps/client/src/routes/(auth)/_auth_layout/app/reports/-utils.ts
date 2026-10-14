@@ -79,6 +79,23 @@ export function formatHumanLabel(value: string) {
 		.join(" ");
 }
 
+export function formatLanguageName(value: unknown): string | undefined {
+	const raw = asNonEmptyString(value);
+	if (!raw) {
+		return undefined;
+	}
+
+	try {
+		return (
+			new Intl.DisplayNames(["en"], { type: "language" }).of(
+				raw.toLowerCase(),
+			) ?? raw
+		);
+	} catch {
+		return raw;
+	}
+}
+
 export function formatYesNo(value: unknown): string | undefined {
 	if (value === true || value === "1" || value === "true") {
 		return "Yes";

@@ -1,77 +1,51 @@
 import {
-	CaretRightIcon,
 	ChartBarIcon,
+	InfoIcon,
 	PaperPlaneTiltIcon,
-	SlidersHorizontalIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@verifyafrica/ui/components/ui/accordion";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
-import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@verifyafrica/ui/components/ui/dialog";
-import { Input } from "@verifyafrica/ui/components/ui/input";
-import { Label } from "@verifyafrica/ui/components/ui/label";
-import { Slider } from "@verifyafrica/ui/components/ui/slider";
-import { Switch } from "@verifyafrica/ui/components/ui/switch";
-import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 import {
 	Field,
 	FieldDescription,
+	FieldError,
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
-import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
+import { Input } from "@verifyafrica/ui/components/ui/input";
 import {
-	DEFAULT_VERIFICATION_URL_LIMIT,
-	verificationConsentSchema,
-} from "../../../-components/VerificationConsentCheckbox/data";
+	RadioGroup,
+	RadioGroupItem,
+} from "@verifyafrica/ui/components/ui/radio-group";
+import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { z } from "zod";
+import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
+import { verificationConsentSchema } from "../../../-components/VerificationConsentCheckbox/data";
+import { isTestWalletEnvironment } from "../../../billing/-data";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
-import {
-	AML_SCREENING_FILTERS,
-	DEFAULT_AML_SCREENING_FILTERS,
-	type AmlScreeningFilterKey,
-} from "../../aml-screening/-data";
-import {
-	DEFAULT_RISK_RANGES,
-	RISK_ASSESSMENT_CHECKS,
-	RISK_LEVELS,
-	buildRiskAssessmentPayload,
-	type RiskLevelKey,
-	type RiskRange,
-} from "../-data";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
+import { buildRiskAssessmentPayload, RISK_ASSESSMENT_CHECKS } from "../-data";
 
 const riskAssessmentFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	phone: z.string().trim().min(1, "Phone number is required"),
-	selectedCheck: z.string().min(1, "Select a configured check"),
+	selectedCheck: z.string().min(1, "Select a risk profile"),
 	consent: verificationConsentSchema,
 });
 
-function clamp(value: number, min = 0, max = 100) {
-	return Math.min(Math.max(value, min), max);
-}
+const HOW_IT_WORKS = [
+	"We create a Shufti-hosted questionnaire link for your customer.",
+	"The customer answers the questions for the selected profile. Shufti may also ask for a quick face check.",
+	"Shufti scores the answers, and the report shows the risk range, score breakdown and every answer.",
+];
 
 export function RiskAssessmentForm() {
-	const [filters, setFilters] = useState(DEFAULT_AML_SCREENING_FILTERS);
-	const [riskRanges, setRiskRanges] = useState(DEFAULT_RISK_RANGES);
-	const [isCheckDialogOpen, setIsCheckDialogOpen] = useState(false);
+	const isTestEnvironment = isTestWalletEnvironment();
 	const {
 		submitVerification,
 		linkResult,
@@ -79,15 +53,12 @@ export function RiskAssessmentForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit risk assessment verification.",
+		product: PRODUCT_SLUG.RISK_ASSESSMENT,
 	});
-
-	const hasSelectedFilters = useMemo(
-		() => Object.values(filters).some(Boolean),
-		[filters],
-	);
 
 	const form = useForm({
 		defaultValues: {
@@ -101,18 +72,9 @@ export function RiskAssessmentForm() {
 			onSubmit: riskAssessmentFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			if (!hasSelectedFilters) {
-				toast.error("Select at least one filter");
-				return;
-			}
-
 			const submitted = await submitVerification(
 				buildRiskAssessmentPayload(value),
-				{
-					mode: "link",
-					email: value.email,
-					urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
-				},
+				{ mode: "provider_link", email: value.email },
 			);
 
 			if (submitted) {
@@ -123,23 +85,6 @@ export function RiskAssessmentForm() {
 
 	function resetForms() {
 		form.reset();
-		setFilters(DEFAULT_AML_SCREENING_FILTERS);
-		setRiskRanges(DEFAULT_RISK_RANGES);
-	}
-
-	const selectedCheckTitle = RISK_ASSESSMENT_CHECKS.find(
-		(check) => check.risk_reference === form.state.values.selectedCheck,
-	)?.title;
-
-	function toggleFilter(key: AmlScreeningFilterKey, checked: boolean) {
-		setFilters((current) => ({ ...current, [key]: checked }));
-	}
-
-	function updateRiskRange(key: RiskLevelKey, updates: Partial<RiskRange>) {
-		setRiskRanges((current) => ({
-			...current,
-			[key]: { ...current[key], ...updates },
-		}));
 	}
 
 	return (
@@ -153,6 +98,24 @@ export function RiskAssessmentForm() {
 						void form.handleSubmit();
 					}}
 				>
+					<div className="flex gap-3 rounded-lg border bg-muted/60 p-4">
+						<InfoIcon className="mt-0.5 size-5 shrink-0 text-secondary" />
+						<div className="flex flex-col gap-2">
+							<p className="text-sm font-medium">
+								Risk assessment is link-only
+							</p>
+							<p className="text-sm text-pretty text-muted-foreground">
+								The risk score is built from the customer's own answers, so
+								there is no direct mode. Shufti hosts the questionnaire.
+							</p>
+							<ol className="flex list-decimal flex-col gap-1 pl-4 text-sm text-pretty text-muted-foreground">
+								{HOW_IT_WORKS.map((step) => (
+									<li key={step}>{step}</li>
+								))}
+							</ol>
+						</div>
+					</div>
+
 					<FieldGroup className="gap-4">
 						<form.Field name="email">
 							{(field) => (
@@ -186,7 +149,7 @@ export function RiskAssessmentForm() {
 										onChange={field.handleChange}
 									/>
 									<FieldDescription>
-										Enter the phone number to use for the risk assessment flow
+										The customer's phone number, including the country code.
 									</FieldDescription>
 								</Field>
 							)}
@@ -195,133 +158,58 @@ export function RiskAssessmentForm() {
 
 					<form.Field name="selectedCheck">
 						{(field) => (
-							<div className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-								<div className="space-y-1">
-									<p className="text-sm font-medium">Selected Check</p>
-									<p className="text-sm text-muted-foreground">
-										Choose one configured check to use for this request.
-									</p>
+							<Field className="gap-3">
+								<div className="flex flex-wrap items-center gap-2">
+									<FieldLabel>Risk Profile</FieldLabel>
+									{isTestEnvironment ? (
+										<Badge variant="outline">Test profiles</Badge>
+									) : null}
 								</div>
-								<Button
-									type="button"
-									variant="outline"
-									className="w-full shrink-0 sm:w-auto"
-									onClick={() => setIsCheckDialogOpen(true)}
+								<FieldDescription>
+									{isTestEnvironment
+										? "This environment uses Shufti test credentials, so only test profiles are available."
+										: "Each profile asks industry-specific questions and has its own scoring thresholds."}
+								</FieldDescription>
+								<RadioGroup
+									aria-label="Risk profile"
+									value={field.state.value}
+									onValueChange={field.handleChange}
+									className="sm:grid-cols-2"
 								>
-									<ChartBarIcon className="size-4" />
-									{selectedCheckTitle ?? "Select check"}
-									<CaretRightIcon className="size-4" />
-								</Button>
-
-								<Dialog
-									open={isCheckDialogOpen}
-									onOpenChange={setIsCheckDialogOpen}
-								>
-									<DialogContent className="sm:max-w-md">
-										<DialogHeader>
-											<DialogTitle className="font-semibold">
-												Select check
-											</DialogTitle>
-										</DialogHeader>
-										<div className="flex flex-col gap-2">
-											{RISK_ASSESSMENT_CHECKS.map((check) => (
-												<Button
-													key={check.id}
-													type="button"
-													variant={
-														field.state.value === check.risk_reference
-															? "default"
-															: "outline"
-													}
-													className="h-auto justify-start px-4 py-3"
-													onClick={() => {
-														field.handleChange(check.risk_reference);
-													}}
-												>
-													<ChartBarIcon className="size-4" />
-													{check.title}
-												</Button>
-											))}
-										</div>
-									</DialogContent>
-								</Dialog>
-							</div>
+									{RISK_ASSESSMENT_CHECKS.map((check) => {
+										const id = `risk-assessment-profile-${check.risk_reference}`;
+										return (
+											<label
+												key={check.id}
+												htmlFor={id}
+												className={cn(
+													"flex h-full cursor-pointer flex-col gap-2 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/60",
+													"has-data-[state=checked]:border-primary has-data-[state=checked]:ring-1 has-data-[state=checked]:ring-primary",
+												)}
+											>
+												<span className="flex items-center justify-between gap-2">
+													<span className="flex items-center gap-2 text-sm font-medium">
+														<ChartBarIcon className="size-4 shrink-0 text-secondary" />
+														{check.title}
+													</span>
+													<RadioGroupItem
+														id={id}
+														value={check.risk_reference}
+													/>
+												</span>
+												<span className="text-xs text-pretty text-muted-foreground">
+													{check.description}
+												</span>
+											</label>
+										);
+									})}
+								</RadioGroup>
+								{field.state.meta.isTouched && !field.state.meta.isValid ? (
+									<FieldError errors={field.state.meta.errors} />
+								) : null}
+							</Field>
 						)}
 					</form.Field>
-
-					<Accordion
-						type="single"
-						collapsible
-						defaultValue="advanced"
-						className="rounded-lg border px-4"
-					>
-						<AccordionItem
-							value="advanced"
-							className="border-none"
-						>
-							<AccordionTrigger className="py-4 hover:no-underline">
-								<div className="flex items-center gap-3 text-left">
-									<SlidersHorizontalIcon className="size-5 shrink-0 text-secondary" />
-									<div>
-										<p className="text-sm font-medium">Advanced Settings</p>
-										<p className="text-xs font-normal text-muted-foreground">
-											Filters and risk ranges
-										</p>
-									</div>
-								</div>
-							</AccordionTrigger>
-							<AccordionContent className="space-y-6 pb-4">
-								<div className="space-y-4">
-									<div className="space-y-1">
-										<p className="text-sm font-medium">Risk Ranges</p>
-										<p className="text-sm text-muted-foreground">
-											Set the risk ranges with linear scale adjuster.
-										</p>
-									</div>
-
-									<div className="space-y-4">
-										{RISK_LEVELS.map((level) => (
-											<RiskRangeRow
-												key={level.key}
-												label={level.label}
-												badgeClassName={level.badgeClassName}
-												range={riskRanges[level.key]}
-												onChange={(updates) =>
-													updateRiskRange(level.key, updates)
-												}
-											/>
-										))}
-									</div>
-								</div>
-
-								<Field className="gap-3">
-									<FieldLabel>Filters</FieldLabel>
-									<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-										{AML_SCREENING_FILTERS.map((filter) => (
-											<div
-												key={filter.key}
-												className="flex items-center gap-2"
-											>
-												<Checkbox
-													id={`risk-assessment-filter-${filter.key}`}
-													checked={filters[filter.key]}
-													onCheckedChange={(checked) =>
-														toggleFilter(filter.key, checked === true)
-													}
-												/>
-												<Label
-													htmlFor={`risk-assessment-filter-${filter.key}`}
-													className="text-sm font-normal"
-												>
-													{filter.label}
-												</Label>
-											</div>
-										))}
-									</div>
-								</Field>
-							</AccordionContent>
-						</AccordionItem>
-					</Accordion>
 
 					<form.Field name="consent">
 						{(field) => (
@@ -333,15 +221,19 @@ export function RiskAssessmentForm() {
 						)}
 					</form.Field>
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					<form.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
 								className="w-full cursor-pointer"
-								disabled={!canSubmit || !hasSelectedFilters || isSubmitting}
+								disabled={!canSubmit || isSubmitting || isProductDisabled}
 							>
 								<PaperPlaneTiltIcon className="size-4" />
-								{isSubmitting ? "Submitting..." : "Submit Verification"}
+								{isSubmitting
+									? "Creating link..."
+									: "Create Questionnaire Link"}
 							</Button>
 						)}
 					</form.Subscribe>
@@ -354,83 +246,8 @@ export function RiskAssessmentForm() {
 				linkResult={linkResult}
 				verification={verificationResult}
 				onStartNew={() => handleStartNewVerification(resetForms)}
-				description="Your risk assessment verification request was created successfully."
+				description="Your risk assessment questionnaire link was created successfully."
 			/>
 		</Card>
-	);
-}
-
-function RiskRangeRow({
-	label,
-	badgeClassName,
-	range,
-	onChange,
-}: {
-	label: string;
-	badgeClassName: string;
-	range: RiskRange;
-	onChange: (updates: Partial<RiskRange>) => void;
-}) {
-	const isFixedRange = range.min === range.max;
-
-	return (
-		<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-			<div className="flex items-center gap-3 sm:w-36">
-				<Switch
-					checked={range.enabled}
-					onCheckedChange={(enabled) => onChange({ enabled })}
-					aria-label={`Toggle ${label} risk range`}
-				/>
-				<Badge
-					variant="outline"
-					className={badgeClassName}
-				>
-					{label}
-				</Badge>
-			</div>
-
-			<div className="flex min-w-0 flex-1 items-center gap-3">
-				<Slider
-					value={[range.min, range.max]}
-					onValueChange={([min, max]) =>
-						onChange({
-							min: clamp(min ?? range.min),
-							max: clamp(max ?? range.max),
-						})
-					}
-					min={0}
-					max={100}
-					step={1}
-					disabled={!range.enabled || isFixedRange}
-					className="flex-1"
-				/>
-				<div className="flex items-center gap-2">
-					<Input
-						type="number"
-						min={0}
-						max={100}
-						value={range.min}
-						disabled={!range.enabled || isFixedRange}
-						className="w-16 px-2"
-						onChange={(event) => {
-							const min = clamp(Number(event.target.value));
-							onChange({ min: Math.min(min, range.max) });
-						}}
-					/>
-					<Input
-						type="number"
-						min={0}
-						max={100}
-						value={range.max}
-						disabled={!range.enabled || isFixedRange}
-						className="w-16 px-2"
-						onChange={(event) => {
-							const max = clamp(Number(event.target.value));
-							onChange({ max: Math.max(max, range.min) });
-						}}
-					/>
-				</div>
-			</div>
-		</div>
 	);
 }

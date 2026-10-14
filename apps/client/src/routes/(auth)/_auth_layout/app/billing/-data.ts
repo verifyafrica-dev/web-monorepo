@@ -1,17 +1,17 @@
-import type { AxiosError } from "axios";
-import { subDays } from "date-fns";
-import type { DateRange } from "react-day-picker";
-
-import { env } from "#/config/env";
 import type {
 	BillingInformation,
 	BillingInformationCreatePayload,
 	BillingInformationUpdatePayload,
 	InvoiceListItem,
 } from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import { VERIFICATION_TYPES_BY_PRODUCT } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { normalizeCountryCode } from "@verifyafrica/ui/lib/country-state-city";
 import { pickChangedFields } from "@verifyafrica/ui/lib/pick-changed-fields";
+import type { AxiosError } from "axios";
+import { subDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { env } from "#/config/env";
 
 export type BillingFormState = {
 	billing_name: string;
@@ -96,7 +96,25 @@ export type Transaction = {
 	transactionId: string;
 	currency: string;
 	meta: Record<string, unknown>;
+	product: string | null;
 };
+
+const PRODUCT_LABEL_BY_VERIFICATION_TYPE = new Map<string, string>(
+	(
+		Object.entries(VERIFICATION_TYPES_BY_PRODUCT) as Array<
+			[string, readonly string[]]
+		>
+	).flatMap(([label, types]) => types.map((type) => [type, label] as const)),
+);
+
+export function getTransactionProductLabel(
+	verificationType: string | null | undefined,
+) {
+	if (!verificationType) {
+		return null;
+	}
+	return PRODUCT_LABEL_BY_VERIFICATION_TYPE.get(verificationType) ?? null;
+}
 
 export type ExportDurationPreset =
 	| "custom"
@@ -276,6 +294,12 @@ export function mapWalletTransaction(
 		transactionId: id,
 		currency,
 		meta: transaction.metadata ?? {},
+		product: getTransactionProductLabel(
+			transaction.verification_type ??
+				(typeof transaction.metadata?.type === "string"
+					? transaction.metadata.type
+					: null),
+		),
 	};
 }
 

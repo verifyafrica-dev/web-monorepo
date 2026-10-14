@@ -75,7 +75,7 @@ export function buildDocumentVerificationLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: DOCUMENT_VERIFICATION_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),

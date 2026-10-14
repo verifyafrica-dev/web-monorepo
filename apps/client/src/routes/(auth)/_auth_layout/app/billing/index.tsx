@@ -6,6 +6,34 @@ import {
 } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Badge } from "@verifyafrica/ui/components/ui/badge";
+import { Button } from "@verifyafrica/ui/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
+import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@verifyafrica/ui/components/ui/table";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@verifyafrica/ui/components/ui/tabs";
+import {
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -18,24 +46,6 @@ import {
 	useWalletBalanceV2Query,
 	WALLET_V2_QUERY_KEYS,
 } from "#/api/http/v2/wallet/wallet.hooks";
-import {
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
-import { Badge } from "@verifyafrica/ui/components/ui/badge";
-import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@verifyafrica/ui/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@verifyafrica/ui/components/ui/tabs";
-import { cn } from "@verifyafrica/ui/lib/utils";
 import { useCurrentTenant } from "../team/-data";
 import { AddCreditsDialog } from "./-components/add-credits-dialog";
 import { ExportTransactionsDialog } from "./-components/export-transactions-dialog";
@@ -299,10 +309,7 @@ function BillingPage() {
 							<TabsTrigger value="invoices">Invoices</TabsTrigger>
 						</TabsList>
 
-						<TabsContent
-							value="transactions"
-							className="flex flex-col gap-4"
-						>
+						<TabsContent value="transactions" className="flex flex-col gap-4">
 							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 								<h2 className="text-lg font-semibold flex-1">
 									Transaction History
@@ -341,10 +348,9 @@ function BillingPage() {
 											"Reference",
 											"Date",
 											"Description",
+											"Product",
 											"Amount",
 											"Type",
-											"Balance Before",
-											"Balance After",
 											"Actions",
 										]}
 									/>
@@ -366,6 +372,7 @@ function BillingPage() {
 												<TableHead>Reference</TableHead>
 												<TableHead>Date</TableHead>
 												<TableHead>Description</TableHead>
+												<TableHead>Product</TableHead>
 												<TableHead>Amount</TableHead>
 												<TableHead>Type</TableHead>
 												{/* <TableHead>Balance Before</TableHead>
@@ -400,6 +407,20 @@ function BillingPage() {
 															</TableCell>
 															<TableCell>{transaction.date}</TableCell>
 															<TableCell>{transaction.description}</TableCell>
+															<TableCell>
+																{transaction.product ? (
+																	<Badge
+																		variant="outline"
+																		className="whitespace-nowrap"
+																	>
+																		{transaction.product}
+																	</Badge>
+																) : (
+																	<span className="text-muted-foreground">
+																		-
+																	</span>
+																)}
+															</TableCell>
 															<TableCell
 																className={cn(
 																	"font-medium",
@@ -469,10 +490,7 @@ function BillingPage() {
 							)}
 						</TabsContent>
 
-						<TabsContent
-							value="invoices"
-							className="flex flex-col gap-4"
-						>
+						<TabsContent value="invoices" className="flex flex-col gap-4">
 							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 								<h2 className="text-lg font-semibold flex-1">Invoices</h2>
 								<div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">

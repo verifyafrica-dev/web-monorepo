@@ -1,8 +1,7 @@
 import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import { useState } from "react";
 import { getProduct } from "../-data";
 import { GovernmentRegistryChecksForm } from "./-components/government-registry-checks-form";
 import { GovernmentRegistryChecksInfoPanel } from "./-components/government-registry-checks-info-panel";
@@ -13,7 +12,11 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Government Registry Checks | VerifyAfrica" },
-			{ name: "description", content: "Validate business and identity data against government registries." },
+			{
+				name: "description",
+				content:
+					"Validate business and identity data against government registries.",
+			},
 		],
 	}),
 	component: GovernmentRegistryChecksPage,

@@ -1,24 +1,22 @@
-import { PaperPlaneTiltIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
-import { Input } from "@verifyafrica/ui/components/ui/input";
 import {
 	Field,
 	FieldDescription,
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import { Input } from "@verifyafrica/ui/components/ui/input";
+import { toast } from "sonner";
+import { z } from "zod";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
-import {
-	DEFAULT_VERIFICATION_URL_LIMIT,
-	verificationConsentSchema,
-} from "../../../-components/VerificationConsentCheckbox/data";
+import { verificationConsentSchema } from "../../../-components/VerificationConsentCheckbox/data";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import {
 	buildCryptoWalletScreeningPayload,
 	isValidWalletAddress,
@@ -38,9 +36,11 @@ export function CryptoWalletScreeningForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit crypto wallet screening verification.",
+		product: PRODUCT_SLUG.CRYPTO_WALLET_SCREENING,
 	});
 
 	const form = useForm({
@@ -61,11 +61,7 @@ export function CryptoWalletScreeningForm() {
 
 			const submitted = await submitVerification(
 				buildCryptoWalletScreeningPayload(value),
-				{
-					mode: "link",
-					email: value.email,
-					urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
-				},
+				{ mode: "direct" },
 			);
 
 			if (submitted) {
@@ -89,6 +85,18 @@ export function CryptoWalletScreeningForm() {
 						void form.handleSubmit();
 					}}
 				>
+					<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
+						<MagnifyingGlassIcon className="mt-0.5 size-4 shrink-0 text-secondary" />
+						<div className="space-y-0.5">
+							<p className="text-sm font-medium">Direct screening</p>
+							<p className="text-sm text-muted-foreground">
+								The wallet address is screened straight away. No customer
+								interaction is needed and the result is available on the report
+								within seconds.
+							</p>
+						</div>
+					</div>
+
 					<FieldGroup className="gap-4">
 						<form.Field name="email">
 							{(field) => (
@@ -118,6 +126,7 @@ export function CryptoWalletScreeningForm() {
 									<Input
 										id="crypto-wallet-screening-wallet-address"
 										placeholder="Wallet Address"
+										className="font-mono"
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(event) => field.handleChange(event.target.value)}
@@ -141,14 +150,16 @@ export function CryptoWalletScreeningForm() {
 						)}
 					</form.Field>
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					<form.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
 								className="w-full cursor-pointer"
-								disabled={!canSubmit || isSubmitting}
+								disabled={!canSubmit || isSubmitting || isProductDisabled}
 							>
-								<PaperPlaneTiltIcon className="size-4" />
+								<MagnifyingGlassIcon className="size-4" />
 								{isSubmitting ? "Submitting..." : "Submit Verification"}
 							</Button>
 						)}

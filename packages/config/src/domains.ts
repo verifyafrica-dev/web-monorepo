@@ -10,7 +10,7 @@
 
 export type DeployEnvironment = "local" | "test" | "production";
 
-export type AppSurface = "client" | "admin" | "app" | "api";
+export type AppSurface = "client" | "admin" | "app" | "status" | "api";
 
 export const DEPLOY_ENVIRONMENTS = ["local", "test", "production"] as const;
 
@@ -19,6 +19,7 @@ export const PORTLESS_HOSTS = {
 	client: "client.verifyafrica.localhost",
 	admin: "admin.verifyafrica.localhost",
 	app: "app.verifyafrica.localhost",
+	status: "status.verifyafrica.localhost",
 } as const;
 
 /** Docker Compose API port exposed to frontends in local dev. */
@@ -33,18 +34,21 @@ export const APP_ORIGINS: Record<
 		client: `https://${PORTLESS_HOSTS.client}`,
 		admin: `https://${PORTLESS_HOSTS.admin}`,
 		app: `https://${PORTLESS_HOSTS.app}`,
+		status: `https://${PORTLESS_HOSTS.status}`,
 		api: `http://localhost:${DEV_API_PORT}`,
 	},
 	test: {
 		client: "https://test.dashboard.verifyafrica.io",
 		admin: "https://test.admin.verifyafrica.io",
 		app: "https://test.app.verifyafrica.io",
+		status: "https://test.status.verifyafrica.io",
 		api: "https://test.api.verifyafrica.io",
 	},
 	production: {
 		client: "https://dashboard.verifyafrica.io",
 		admin: "https://admin.verifyafrica.io",
 		app: "https://app.verifyafrica.io",
+		status: "https://status.verifyafrica.io",
 		api: "https://api.verifyafrica.io",
 	},
 };
@@ -54,6 +58,7 @@ export const LEGACY_LOCAL_ORIGINS: Record<AppSurface, string> = {
 	client: "http://localhost:3000",
 	admin: "http://localhost:3005",
 	app: "http://localhost:8010",
+	status: "http://localhost:8040",
 	api: "http://localhost:8000",
 };
 
@@ -89,6 +94,7 @@ export function detectDeployEnvironment(host: string): DeployEnvironment {
 		normalized.includes("test.dashboard.verifyafrica.io") ||
 		normalized.includes("test.admin.verifyafrica.io") ||
 		normalized.includes("test.app.verifyafrica.io") ||
+		normalized.includes("test.status.verifyafrica.io") ||
 		normalized.includes("test.api.verifyafrica.io")
 	) {
 		return "test";
@@ -98,6 +104,7 @@ export function detectDeployEnvironment(host: string): DeployEnvironment {
 		normalized.includes("dashboard.verifyafrica.io") ||
 		normalized.includes("admin.verifyafrica.io") ||
 		normalized.includes("app.verifyafrica.io") ||
+		normalized.includes("status.verifyafrica.io") ||
 		normalized.includes("api.verifyafrica.io")
 	) {
 		return "production";

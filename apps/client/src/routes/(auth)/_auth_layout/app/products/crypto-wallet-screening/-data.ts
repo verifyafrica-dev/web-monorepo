@@ -43,7 +43,7 @@ export function buildCryptoWalletScreeningPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: CRYPTO_WALLET_SCREENING_TYPE,
-		method_type: "onsite",
+		method_type: "offsite",
 		input_data: {
 			email: values.email.trim(),
 			is_crypto_request: true,

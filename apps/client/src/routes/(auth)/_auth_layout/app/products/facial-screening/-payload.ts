@@ -75,7 +75,7 @@ export function buildFacialScreeningLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: FACIAL_VERIFICATION_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),

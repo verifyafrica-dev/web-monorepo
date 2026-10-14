@@ -1,7 +1,4 @@
-import {
-	FileTextIcon,
-	ShieldCheckIcon,
-} from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Separator } from "@verifyafrica/ui/components/ui/separator";
@@ -16,12 +13,12 @@ export function CryptoWalletScreeningInfoPanel() {
 					<div className="space-y-1.5">
 						<div className="flex items-center gap-2 text-sm font-medium">
 							<ShieldCheckIcon className="size-4 text-secondary" />
-							Hosted Wallet Screening
+							Wallet Screening
 						</div>
 						<p className="text-sm leading-relaxed text-muted-foreground">
-							VerifyAfrica creates an onsite screening flow for the submitted
-							wallet address and returns a hosted verification link you can share
-							with the customer.
+							The wallet address is checked against sanctions, warning and watch
+							lists. Any linked entity is returned as a potential match with its
+							sources, aliases and associates.
 						</p>
 					</div>
 				</section>
@@ -35,7 +32,7 @@ export function CryptoWalletScreeningInfoPanel() {
 						<div className="space-y-1">
 							<p className="text-sm font-medium">Email Address</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								The email used to create and track the hosted request.
+								The email the screening request is recorded against.
 							</p>
 						</div>
 
@@ -67,12 +64,12 @@ export function CryptoWalletScreeningInfoPanel() {
 
 					<div className="space-y-1.5">
 						<div className="flex items-center gap-2 text-sm font-medium">
-							<FileTextIcon className="size-4 text-secondary" />
-							Onsite Only
+							<MagnifyingGlassIcon className="size-4 text-secondary" />
+							Direct Mode
 						</div>
 						<p className="text-sm leading-relaxed text-muted-foreground">
-							Crypto Wallet Screening supports hosted link mode only. Offsite or
-							direct submission is not available for this verification.
+							Screens the wallet immediately with no customer interaction. The
+							result is ready on the report within seconds.
 						</p>
 					</div>
 				</section>

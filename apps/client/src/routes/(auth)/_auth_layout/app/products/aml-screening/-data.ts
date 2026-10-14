@@ -124,7 +124,7 @@ export function buildAmlScreeningLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: AML_SCREENING_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),

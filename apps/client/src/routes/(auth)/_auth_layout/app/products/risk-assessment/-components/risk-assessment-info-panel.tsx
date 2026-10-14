@@ -8,9 +8,9 @@ export function RiskAssessmentInfoPanel() {
 				<section className="space-y-4">
 					<h2 className="text-sm font-semibold text-secondary">How It Works</h2>
 					<p className="text-sm leading-relaxed text-muted-foreground">
-						Run an onsite risk assessment using a phone number and a configured
-						check. Advanced settings let you tune risk score ranges and screening
-						filters before submitting the request.
+						Send the customer a Shufti-hosted questionnaire for the selected risk
+						profile. Their answers are scored and the report shows the risk
+						range, the score breakdown and every answer.
 					</p>
 				</section>
 
@@ -21,26 +21,28 @@ export function RiskAssessmentInfoPanel() {
 
 					<div className="space-y-4">
 						<div className="space-y-1">
-							<p className="text-sm font-medium">Selected Check</p>
+							<p className="text-sm font-medium">Risk Profile</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								A pre-configured risk check template that defines how the
-								assessment is evaluated.
+								An industry questionnaire configured on Shufti, such as
+								Gaming/Gambling or Banking/FinTech. Test credentials only
+								accept test profiles.
 							</p>
 						</div>
 
 						<div className="space-y-1">
-							<p className="text-sm font-medium">Risk Ranges</p>
+							<p className="text-sm font-medium">Risk Range</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Score bands from 0 to 100 that classify outcomes as low, medium,
-								high, or prohibited.
+								The band the total score falls into: low, medium, high or
+								prohibited. The thresholds are set on the profile in Shufti.
 							</p>
 						</div>
 
 						<div className="space-y-1">
-							<p className="text-sm font-medium">Filters</p>
+							<p className="text-sm font-medium">Link Only</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								Screening datasets applied during the assessment, such as
-								sanctions and PEP lists.
+								There is no direct mode, because the score depends on the
+								customer's own answers. Shufti may also ask for a quick face
+								check.
 							</p>
 						</div>
 					</div>

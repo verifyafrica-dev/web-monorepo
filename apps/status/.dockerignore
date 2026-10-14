@@ -1,0 +1,15 @@
+node_modules
+.output
+.tanstack
+.nitro
+.git
+.env
+.env.*
+!.env.example
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode
+.husky
+README.md

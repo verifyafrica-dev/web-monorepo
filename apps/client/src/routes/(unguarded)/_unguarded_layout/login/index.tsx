@@ -87,7 +87,7 @@ function LoginPage() {
 						}
 
 						toast.success("Login successful");
-						navigate({ to: getPostLoginPath(redirect_to) });
+						navigate({ href: getPostLoginPath(redirect_to) });
 					},
 					onError: (error) => {
 						const axiosError = error as V2AxiosError;

@@ -109,7 +109,7 @@ export const PRODUCTS: Product[] = [
 		slug: PRODUCT_SLUG.RISK_ASSESSMENT,
 		title: "Risk Assessment",
 		description:
-			"Run an onsite risk assessment flow using a phone number and optional risk reference.",
+			"Send customers a Shufti-hosted questionnaire and score their answers against an industry risk profile.",
 		icon: ChartBarIcon,
 		iconWeight: PRODUCT_ICON_WEIGHT,
 	},

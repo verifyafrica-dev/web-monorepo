@@ -32,7 +32,7 @@ export function extractHostedVerificationUrl(
 ) {
 	const linkToken = verification?.link?.link;
 	if (linkToken) {
-		if (verification?.link?.link_type === "new_link") {
+		if (verification?.link?.link_type === "verify_link") {
 			return buildNewVerifyUrl(linkToken);
 		}
 

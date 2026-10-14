@@ -28,7 +28,9 @@ const { http, getAccessTokenKey, setAccessToken, setTokens } = createHttpClient(
 	isPublicRoute: (url) => /\/v2\/verifications\/new-verify\/[^/?]+/.test(url),
 	onLogout: () => {
 		useAuthStore.getState().clearAuth();
-		window.location.href = buildLoginRedirectUrl(location.pathname);
+		window.location.href = buildLoginRedirectUrl(
+			location.pathname + location.search + location.hash,
+		);
 	},
 });
 

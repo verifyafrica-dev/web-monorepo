@@ -1,33 +1,19 @@
 import { asRecord, asUnknownArray, type UnknownRecord } from "../../-utils";
+import {
+	isEmptyReportValue,
+	type ReportField,
+	type ReportFieldFormat,
+	type ReportMatch,
+} from "../report-sections";
 
-export type RegistryFieldFormat =
-	| "text"
-	| "date"
-	| "datetime"
-	| "title"
-	| "yesNo";
-
-export type RegistryField = {
-	key: string;
-	label: string;
-	value: unknown;
-	format?: RegistryFieldFormat;
-	mono?: boolean;
-	wide?: boolean;
-};
+export type RegistryFieldFormat = ReportFieldFormat;
+export type RegistryField = ReportField;
+export type RegistryMatch = ReportMatch;
 
 export type RegistryImage = {
 	key: string;
 	label: string;
 	src: string;
-};
-
-export type RegistryMatch = {
-	key: string;
-	label: string;
-	submitted: unknown;
-	match: boolean;
-	confidence?: number;
 };
 
 export type RegistryTableColumn = {
@@ -71,12 +57,7 @@ const BASE64_IMAGE_SIGNATURES: Array<[string, string]> = [
 	["UklGR", "image/webp"],
 ];
 
-export function isEmptyRegistryValue(value: unknown) {
-	if (value === null || value === undefined) return true;
-	if (typeof value === "string") return value.trim().length === 0;
-	if (Array.isArray(value)) return value.length === 0;
-	return false;
-}
+export const isEmptyRegistryValue = isEmptyReportValue;
 
 /** Korapay returns registry photos as raw base64 without a data URI prefix. */
 export function toImageSrc(value: unknown): string | null {

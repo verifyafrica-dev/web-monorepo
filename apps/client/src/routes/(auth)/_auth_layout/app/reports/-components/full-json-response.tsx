@@ -1,7 +1,8 @@
 import { CaretDownIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 
 import { CodeBlock } from "#/components/ui-extended/code-block";
+import { VirtualizedCodeBlock } from "#/components/ui-extended/virtualized-code-block";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -82,6 +83,38 @@ function serializeVerification(verification: VerificationRequestDetail) {
 	}
 }
 
+/** Above this, highlighting and mounting every line at once freezes the page. */
+const VIRTUALIZE_LINE_THRESHOLD = 1_500;
+
+function countLines(text: string, limit: number) {
+	let lines = 1;
+	for (
+		let index = text.indexOf("\n");
+		index !== -1 && lines <= limit;
+		index = text.indexOf("\n", index + 1)
+	) {
+		lines += 1;
+	}
+	return lines;
+}
+
+const JsonViewer = memo(function JsonViewer({ json }: { json: string }) {
+	if (countLines(json, VIRTUALIZE_LINE_THRESHOLD) > VIRTUALIZE_LINE_THRESHOLD) {
+		return <VirtualizedCodeBlock code={json} language="json" />;
+	}
+
+	return (
+		<CodeBlock
+			code={json}
+			language="json"
+			showLineNumbers
+			wrap
+			size="xs"
+			className="max-h-96"
+		/>
+	);
+});
+
 export function FullJsonResponse({
 	verification,
 }: {
@@ -92,12 +125,22 @@ export function FullJsonResponse({
 		successMessage: "JSON response copied.",
 		errorMessage: "Unable to copy JSON response.",
 	});
-	const json = useMemo(() => {
-		if (!expanded) {
-			return "";
+	const cacheRef = useRef<{
+		verification: VerificationRequestDetail;
+		json: string;
+	} | null>(null);
+
+	const getJson = useCallback(() => {
+		if (cacheRef.current?.verification !== verification) {
+			cacheRef.current = {
+				verification,
+				json: serializeVerification(verification),
+			};
 		}
-		return serializeVerification(verification);
-	}, [expanded, verification]);
+		return cacheRef.current.json;
+	}, [verification]);
+
+	const json = useMemo(() => (expanded ? getJson() : ""), [expanded, getJson]);
 
 	return (
 		<Card>
@@ -123,10 +166,7 @@ export function FullJsonResponse({
 					variant="outline"
 					size="sm"
 					className="shrink-0"
-					onClick={() => {
-						const payload = json || serializeVerification(verification);
-						void copy(payload);
-					}}
+					onClick={() => void copy(getJson())}
 					aria-label="Copy JSON response"
 				>
 					{copied ? (
@@ -139,14 +179,7 @@ export function FullJsonResponse({
 			</CardHeader>
 			{expanded ? (
 				<CardContent className="pt-0">
-					<CodeBlock
-						code={json}
-						language="json"
-						showLineNumbers
-						wrap
-						size="xs"
-						className="max-h-96"
-					/>
+					<JsonViewer json={json} />
 				</CardContent>
 			) : null}
 		</Card>

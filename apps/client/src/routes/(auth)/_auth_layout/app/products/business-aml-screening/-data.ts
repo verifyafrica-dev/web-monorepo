@@ -85,7 +85,7 @@ export function buildBusinessAmlScreeningLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: BUSINESS_AML_SCREENING_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			language: "EN",
 			email: values.email.trim(),

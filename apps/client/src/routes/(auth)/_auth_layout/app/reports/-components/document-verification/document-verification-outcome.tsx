@@ -1,32 +1,12 @@
-import type { VerificationResponseData } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@verifyafrica/ui/components/ui/card";
-import { getCountryName } from "@verifyafrica/ui/lib/country-state-city";
 import { cn } from "@verifyafrica/ui/lib/utils";
-import { asNonEmptyString, displayValue } from "../../-utils";
+
 import { ReportDetailField } from "../report-detail-field";
-
-function asStringArray(value: unknown): string[] {
-	if (!Array.isArray(value)) {
-		return [];
-	}
-
-	return value
-		.map((item) => String(item ?? "").trim())
-		.filter((item) => item.length > 0);
-}
-
-function formatLabel(value: string) {
-	return value
-		.replace(/_/g, " ")
-		.replace(/-/g, " ")
-		.replace(/\b\w/g, (char) => char.toUpperCase());
-}
+import { ReportSectionCard } from "../report-sections";
+import {
+	type DocumentCheck,
+	formatDocumentType,
+} from "./document-verification-sections";
 
 function getResultValueLabel(
 	value: unknown,
@@ -71,6 +51,9 @@ function getResultValueLabel(
 	return "Not available";
 }
 
+const NOT_AVAILABLE_BADGE_CLASS =
+	"border-slate-300 bg-slate-100 text-slate-700";
+
 function ResultBadge({ value }: { value: unknown }) {
 	const label = getResultValueLabel(value);
 
@@ -78,11 +61,9 @@ function ResultBadge({ value }: { value: unknown }) {
 		<Badge
 			variant="outline"
 			className={cn(
-				"capitalize",
 				label === "Passed" && "border-emerald-200 bg-emerald-500 text-white",
 				label === "Failed" && "border-red-200 bg-red-500 text-white",
-				label === "Not available" &&
-					"border-slate-300 bg-slate-100 text-slate-700",
+				label === "Not available" && NOT_AVAILABLE_BADGE_CLASS,
 			)}
 		>
 			{label}
@@ -90,71 +71,54 @@ function ResultBadge({ value }: { value: unknown }) {
 	);
 }
 
-export function DocumentVerificationOutcome({
-	responseData,
+function BadgeList({
+	values,
+	format = (value) => value,
+	mono = false,
 }: {
-	responseData: VerificationResponseData;
+	values: string[];
+	format?: (value: string) => string | undefined;
+	mono?: boolean;
 }) {
-	const declinedReason = asNonEmptyString(responseData.declined_reason);
-	const extractedProof = responseData.additional_data?.document?.proof;
-	const supportedTypes = asStringArray(
-		responseData.verification_data?.document?.supported_types,
-	);
-	const selectedTypes = asStringArray(
-		responseData.verification_data?.document?.selected_type,
-	);
+	if (values.length === 0) {
+		return (
+			<Badge variant="outline" className={NOT_AVAILABLE_BADGE_CLASS}>
+				Not available
+			</Badge>
+		);
+	}
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-base font-semibold">
-					Document Verification Outcome
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="grid gap-4 sm:grid-cols-2">
-				<ReportDetailField
-					label="Full Name"
-					value={displayValue(
-						responseData.additional_data?.document?.proof?.full_name,
-					)}
-				/>
-				<ReportDetailField
-					label="First Name"
-					value={displayValue(
-						responseData.verification_data?.document?.name?.first_name,
-					)}
-				/>
-				<ReportDetailField
-					label="Last Name"
-					value={displayValue(
-						responseData.verification_data?.document?.name?.last_name,
-					)}
-				/>
-				<ReportDetailField
-					label="Gender"
-					value={displayValue(extractedProof?.gender)}
-				/>
-				<ReportDetailField
-					label="Issue Date"
-					value={displayValue(extractedProof?.issue_date)}
-				/>
-				<ReportDetailField
-					label="Expiry Date"
-					value={displayValue(extractedProof?.expiry_date)}
-				/>
-				<ReportDetailField
-					label="Place of Birth"
-					value={displayValue(extractedProof?.place_of_birth)}
-					valueClassName="capitalize"
-				/>
-				<ReportDetailField
-					label="Country"
-					value={displayValue(getCountryName(extractedProof?.country_code))}
-				/>
-				<ReportDetailField
-					label="Customer Unique ID"
-					value={displayValue(responseData.customer_unique_id)}
-				/>
+		<div className="flex flex-wrap gap-1">
+			{values.map((value) => (
+				<Badge
+					key={value}
+					variant="outline"
+					className={cn(mono && "font-mono")}
+				>
+					{format(value) ?? value}
+				</Badge>
+			))}
+		</div>
+	);
+}
+
+export function DocumentVerificationOutcome({
+	declinedReason,
+	declinedCodes,
+	selectedTypes,
+	supportedTypes,
+	checks,
+}: {
+	declinedReason?: string;
+	declinedCodes: string[];
+	selectedTypes: string[];
+	supportedTypes: string[];
+	checks: DocumentCheck[];
+}) {
+	return (
+		<ReportSectionCard title="Document Verification Outcome">
+			<div className="grid gap-4 sm:grid-cols-2">
 				{declinedReason ? (
 					<ReportDetailField
 						label="Declined Reason"
@@ -162,114 +126,38 @@ export function DocumentVerificationOutcome({
 						value={<span className="font-medium">{declinedReason}</span>}
 					/>
 				) : null}
-				<ReportDetailField
-					label="Supported Types"
-					value={
-						supportedTypes.length > 0 ? (
-							<div className="flex flex-wrap gap-1">
-								{supportedTypes.map((type) => (
-									<Badge
-										key={type}
-										variant="outline"
-									>
-										{formatLabel(type)}
-									</Badge>
-								))}
-							</div>
-						) : (
-							<Badge
-								variant="outline"
-								className="border-slate-300 bg-slate-100 text-slate-700"
-							>
-								Not available
-							</Badge>
-						)
-					}
-				/>
+				{declinedCodes.length > 0 ? (
+					<ReportDetailField
+						label="Declined Codes"
+						className="sm:col-span-2"
+						value={<BadgeList values={declinedCodes} mono />}
+					/>
+				) : null}
 				<ReportDetailField
 					label="Selected Type"
 					value={
-						selectedTypes.length > 0 ? (
-							<div className="flex flex-wrap gap-1">
-								{selectedTypes.map((type) => (
-									<Badge
-										key={type}
-										variant="outline"
-									>
-										{formatLabel(type)}
-									</Badge>
-								))}
-							</div>
-						) : (
-							<Badge
-								variant="outline"
-								className="border-slate-300 bg-slate-100 text-slate-700"
-							>
-								Not available
-							</Badge>
-						)
+						<BadgeList values={selectedTypes} format={formatDocumentType} />
 					}
 				/>
 				<ReportDetailField
-					label="Document"
+					label="Supported Types"
 					value={
-						<ResultBadge value={responseData.verification_data?.document} />
+						<BadgeList values={supportedTypes} format={formatDocumentType} />
 					}
 				/>
-				<ReportDetailField
-					label="Document Country"
-					value={
-						<ResultBadge
-							value={responseData.verification_data?.document?.country}
+			</div>
+			<div className="space-y-3 border-t pt-4">
+				<p className="text-sm font-medium">Verification Checks</p>
+				<div className="grid gap-4 sm:grid-cols-2">
+					{checks.map((check) => (
+						<ReportDetailField
+							key={check.key}
+							label={check.label}
+							value={<ResultBadge value={check.value} />}
 						/>
-					}
-				/>
-				<ReportDetailField
-					label="Document Must Not Be Expired"
-					value={
-						<ResultBadge
-							value={
-								responseData.verification_result?.document
-									?.document_must_not_be_expired
-							}
-						/>
-					}
-				/>
-				<ReportDetailField
-					label="Document Proof"
-					value={
-						<ResultBadge
-							value={responseData.verification_result?.document?.document_proof}
-						/>
-					}
-				/>
-				<ReportDetailField
-					label="Document Visibility"
-					value={
-						<ResultBadge
-							value={
-								responseData.verification_result?.document?.document_visibility
-							}
-						/>
-					}
-				/>
-				<ReportDetailField
-					label="Name Check"
-					value={
-						<ResultBadge
-							value={responseData.verification_result?.document?.name}
-						/>
-					}
-				/>
-				<ReportDetailField
-					label="Selected Type Check"
-					value={
-						<ResultBadge
-							value={responseData.verification_result?.document?.selected_type}
-						/>
-					}
-				/>
-			</CardContent>
-		</Card>
+					))}
+				</div>
+			</div>
+		</ReportSectionCard>
 	);
 }

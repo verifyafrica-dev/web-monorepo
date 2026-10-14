@@ -50,6 +50,11 @@ import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { useTenantSupportedCountries } from "../../-countries";
 import { NoCountriesNotice } from "../../-no-countries-notice";
+import { PRODUCT_SLUG } from "../../-data";
+import {
+	ProductDisabledNotice,
+	useIsProductDisabled,
+} from "../../-product-access";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
@@ -142,6 +147,9 @@ export function DocumentVerificationForm() {
 		useTenantSupportedCountries({ product: "document_verification" });
 	const isSubmitting =
 		createVerificationMutation.isPending || createNewVerifyMutation.isPending;
+	const isProductDisabled = useIsProductDisabled(
+		PRODUCT_SLUG.DOCUMENT_VERIFICATION,
+	);
 
 	async function submitVerification(
 		payload: ReturnType<typeof buildDocumentVerificationLinkPayload>,
@@ -744,13 +752,15 @@ export function DocumentVerificationForm() {
 						</directForm.Field>
 					)}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{mode !== "direct" ? (
 						<linkForm.Subscribe selector={(state) => state.canSubmit}>
 							{(canSubmit) => (
 								<Button
 									type="submit"
 									className="w-full cursor-pointer"
-									disabled={!canSubmit || isSubmitting}
+									disabled={!canSubmit || isSubmitting || isProductDisabled}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
 									{isSubmitting ? "Submitting..." : "Submit Verification"}
@@ -774,7 +784,8 @@ export function DocumentVerificationForm() {
 										isDocumentUploading ||
 										(requireBackside &&
 											(!backsideProofUrl || isBacksideUploading)) ||
-										isSubmitting
+										isSubmitting ||
+										isProductDisabled
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />

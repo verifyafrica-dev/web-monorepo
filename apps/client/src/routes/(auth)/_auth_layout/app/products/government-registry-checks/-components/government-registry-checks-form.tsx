@@ -6,14 +6,21 @@ import {
 	UserCircleCheckIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { format } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
-
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@verifyafrica/ui/components/ui/accordion";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
 import { Checkbox } from "@verifyafrica/ui/components/ui/checkbox";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import {
@@ -24,22 +31,16 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@verifyafrica/ui/components/ui/accordion";
-import {
-	Field,
-	FieldDescription,
-	FieldGroup,
-	FieldLabel,
-} from "@verifyafrica/ui/components/ui/field";
-import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@verifyafrica/ui/components/ui/toggle-group";
+import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
+import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { format } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
@@ -48,16 +49,18 @@ import {
 	type VerificationMode,
 	verificationConsentSchema,
 } from "../../../-components/VerificationConsentCheckbox/data";
-import { useTenantSupportedCountries } from "../../-countries";
-import { NoCountriesNotice } from "../../-no-countries-notice";
+import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
-import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { useTenantSupportedCountries } from "../../-countries";
+import { NoCountriesNotice } from "../../-no-countries-notice";
 import {
 	IMAGE_UPLOAD_MIME_TYPES,
 	PRODUCT_UPLOAD_VERIFICATIONS,
 } from "../../-upload-utils";
-import { KycDatePicker } from "../../../kyc/-components/kyc-form-primitives";
+import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import {
 	allowsCustomerDataValidation,
 	buildGovernmentRegistryDirectPayload,
@@ -75,8 +78,6 @@ import {
 	requiresIdentityDetails,
 	requiresLastNameField,
 } from "../-data";
-import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
-import { PhoneInput } from "@verifyafrica/ui/components/ui-extended/phone-input";
 
 const baseFormSchema = z.object({
 	country: z.string().min(1, "Country is required"),
@@ -119,20 +120,11 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 					message: "Select a verification URL limit",
 				});
 			}
-			if (
-				values.verificationType &&
-				!registryTypeSupportsSelfie(values.verificationType)
-			) {
-				context.addIssue({
-					code: "custom",
-					path: ["verificationType"],
-					message:
-						"Link mode is only available for checks that support selfie matching",
-				});
-			}
 		}
 
-		if (!values.input.trim()) {
+		const isDirect = mode === "direct";
+
+		if (isDirect && !values.input.trim()) {
 			context.addIssue({
 				code: "custom",
 				path: ["input"],
@@ -140,7 +132,7 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 			});
 		}
 
-		if (values.input.trim()) {
+		if (isDirect && values.input.trim()) {
 			const inputField = getPrimaryInputParameter(values.verificationType);
 			if (
 				isCiIdentityIdParameter(inputField) &&
@@ -161,7 +153,7 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 			}
 		}
 
-		if (requiresIdentityDetails(values.verificationType)) {
+		if (isDirect && requiresIdentityDetails(values.verificationType)) {
 			const requiredDetails = [
 				["validationFirstName", "First name is required"],
 				["validationLastName", "Last name is required"],
@@ -186,6 +178,7 @@ function buildGovernmentRegistryFormSchema(mode: VerificationMode) {
 		}
 
 		if (
+			isDirect &&
 			requiresLastNameField(values.verificationType) &&
 			!values.lastName.trim()
 		) {
@@ -246,9 +239,11 @@ export function GovernmentRegistryChecksForm({
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit government registry verification.",
+		product: PRODUCT_SLUG.GOVERNMENT_REGISTRY_CHECKS,
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
@@ -288,10 +283,7 @@ export function GovernmentRegistryChecksForm({
 
 			const payload =
 				mode === "link"
-					? buildGovernmentRegistryLinkPayload({
-							...value,
-							requireSelfie: true,
-						})
+					? buildGovernmentRegistryLinkPayload(value)
 					: buildGovernmentRegistryDirectPayload(value, { selfieProofUrl });
 
 			const submitted = await submitVerification(
@@ -312,16 +304,10 @@ export function GovernmentRegistryChecksForm({
 	});
 
 	useEffect(() => {
-		if (!supportsSelfie && mode === "link") {
-			setMode("direct");
+		if (!supportsSelfie) {
+			form.setFieldValue("requireSelfie", false);
 		}
-	}, [supportsSelfie, mode]);
-
-	useEffect(() => {
-		if (mode === "link") {
-			form.setFieldValue("requireSelfie", true);
-		}
-	}, [form, mode]);
+	}, [form, supportsSelfie]);
 
 	const resetDependentFields = () => {
 		form.setFieldValue("input", "");
@@ -380,16 +366,11 @@ export function GovernmentRegistryChecksForm({
 							{VERIFICATION_MODES.map((option) => {
 								const Icon =
 									option.value === "link" ? LinkIcon : MagnifyingGlassIcon;
-								const linkUnavailable =
-									option.value === "link" &&
-									Boolean(verificationType) &&
-									!supportsSelfie;
 
 								return (
 									<ToggleGroupItem
 										key={option.value}
 										value={option.value}
-										disabled={linkUnavailable}
 										className={cn("flex-1 sm:flex-none")}
 									>
 										<Icon className="size-4" />
@@ -399,12 +380,6 @@ export function GovernmentRegistryChecksForm({
 							})}
 						</ToggleGroup>
 					</div>
-					{verificationType && !supportsSelfie ? (
-						<p className="text-xs text-muted-foreground">
-							This check does not support selfie matching, so only direct mode is
-							available.
-						</p>
-					) : null}
 
 					<FieldGroup className="gap-4">
 						<form.Field name="country">
@@ -485,10 +460,7 @@ export function GovernmentRegistryChecksForm({
 											</SelectTrigger>
 											<SelectContent>
 												{verificationTypes.map((type) => (
-													<SelectItem
-														key={type.value}
-														value={type.value}
-													>
+													<SelectItem key={type.value} value={type.value}>
 														{type.label}
 													</SelectItem>
 												))}
@@ -507,11 +479,18 @@ export function GovernmentRegistryChecksForm({
 								{(field) => (
 									<Field className="gap-1.5">
 										<FieldLabel htmlFor="government-registry-checks-last-name">
-											Last Name <span className="text-destructive">*</span>
+											Last Name{" "}
+											{isLinkMode ? null : (
+												<span className="text-destructive">*</span>
+											)}
 										</FieldLabel>
 										<Input
 											id="government-registry-checks-last-name"
-											placeholder="Enter last name"
+											placeholder={
+												isLinkMode
+													? "Optional, the customer can enter it"
+													: "Enter last name"
+											}
 											value={field.state.value}
 											onBlur={field.handleBlur}
 											onChange={(event) =>
@@ -564,10 +543,7 @@ export function GovernmentRegistryChecksForm({
 												</SelectTrigger>
 												<SelectContent>
 													{VERIFICATION_URL_LIMITS.map((limit) => (
-														<SelectItem
-															key={limit.value}
-															value={limit.value}
-														>
+														<SelectItem key={limit.value} value={limit.value}>
 															{limit.label}
 														</SelectItem>
 													))}
@@ -579,13 +555,24 @@ export function GovernmentRegistryChecksForm({
 							</>
 						) : null}
 
-						{showFullForm ? (
+						{showFullForm && isLinkMode ? (
+							<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+								<UserCircleCheckIcon className="size-5 shrink-0 text-secondary" />
+								<p className="text-sm text-muted-foreground text-pretty">
+									The customer enters their {inputLabel}
+									{showIdentityDetails ? " and phone number" : ""}
+									{supportsSelfie ? " and selfie" : ""} on the verification
+									link. You can't send these in link mode.
+								</p>
+							</div>
+						) : null}
+
+						{showFullForm && !isLinkMode ? (
 							<form.Field name="input">
 								{(field) => (
 									<Field className="gap-1.5">
 										<FieldLabel htmlFor="government-registry-checks-input">
-											{inputLabel}{" "}
-											<span className="text-destructive">*</span>
+											{inputLabel} <span className="text-destructive">*</span>
 										</FieldLabel>
 										<Input
 											id="government-registry-checks-input"
@@ -624,8 +611,9 @@ export function GovernmentRegistryChecksForm({
 									<div>
 										<p className="text-sm font-medium">Identity details</p>
 										<p className="text-xs text-muted-foreground text-pretty">
-											Required for this check. Must match the SSN holder's
-											records.
+											{isLinkMode
+												? "Optional. Prefill to lock these on the link, or leave blank for the customer to enter."
+												: "Required for this check. Must match the SSN holder's records."}
 										</p>
 									</div>
 								</div>
@@ -635,7 +623,9 @@ export function GovernmentRegistryChecksForm({
 											<Field className="gap-1.5">
 												<FieldLabel htmlFor="government-registry-checks-identity-first-name">
 													First Name{" "}
-													<span className="text-destructive">*</span>
+													{isLinkMode ? null : (
+														<span className="text-destructive">*</span>
+													)}
 												</FieldLabel>
 												<Input
 													id="government-registry-checks-identity-first-name"
@@ -656,7 +646,9 @@ export function GovernmentRegistryChecksForm({
 											<Field className="gap-1.5">
 												<FieldLabel htmlFor="government-registry-checks-identity-last-name">
 													Last Name{" "}
-													<span className="text-destructive">*</span>
+													{isLinkMode ? null : (
+														<span className="text-destructive">*</span>
+													)}
 												</FieldLabel>
 												<Input
 													id="government-registry-checks-identity-last-name"
@@ -677,7 +669,9 @@ export function GovernmentRegistryChecksForm({
 											<Field className="gap-1.5">
 												<FieldLabel htmlFor="government-registry-checks-identity-dob">
 													Date of Birth{" "}
-													<span className="text-destructive">*</span>
+													{isLinkMode ? null : (
+														<span className="text-destructive">*</span>
+													)}
 												</FieldLabel>
 												<KycDatePicker
 													id="government-registry-checks-identity-dob"
@@ -695,26 +689,26 @@ export function GovernmentRegistryChecksForm({
 									</form.Field>
 
 									<form.Field name="phoneNumber">
-										{(field) => (
-											<Field className="gap-1.5">
-												<FieldLabel htmlFor="government-registry-checks-identity-phone">
-													Phone Number{" "}
-													<span className="text-destructive">*</span>
-												</FieldLabel>
-												<PhoneInput
-													id="government-registry-checks-identity-phone"
-													lockedCountry="US"
-													placeholder="+1 210 904 1086"
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={field.handleChange}
-													disabled={isSubmitting}
-												/>
-												<FieldDescription>
-													US phone number
-												</FieldDescription>
-											</Field>
-										)}
+										{(field) =>
+											isLinkMode ? null : (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="government-registry-checks-identity-phone">
+														Phone Number{" "}
+														<span className="text-destructive">*</span>
+													</FieldLabel>
+													<PhoneInput
+														id="government-registry-checks-identity-phone"
+														lockedCountry="US"
+														placeholder="+1 210 904 1086"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={field.handleChange}
+														disabled={isSubmitting}
+													/>
+													<FieldDescription>US phone number</FieldDescription>
+												</Field>
+											)
+										}
 									</form.Field>
 								</div>
 							</div>
@@ -819,24 +813,27 @@ export function GovernmentRegistryChecksForm({
 
 					{showFullForm && isLinkMode && supportsSelfie && verificationType ? (
 						<form.Field name="requireSelfie">
-							{() => (
+							{(field) => (
 								<div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
 									<Checkbox
 										id="government-registry-checks-require-selfie"
-										checked
-										disabled
+										checked={field.state.value}
+										onCheckedChange={(checked) =>
+											field.handleChange(checked === true)
+										}
+										disabled={isSubmitting}
 									/>
 									<div className="space-y-1">
 										<Label
 											htmlFor="government-registry-checks-require-selfie"
 											className="font-medium"
 										>
-											Customer selfie required
+											Require customer selfie
 										</Label>
 										<p className="text-sm text-muted-foreground">
-											Link mode is only available when this check captures a
-											selfie. The customer must capture or upload one on the
-											hosted page.
+											The customer must capture or upload a selfie on the
+											verification link for facial matching. When off, the
+											selfie is optional for them.
 										</p>
 									</div>
 								</div>
@@ -907,6 +904,8 @@ export function GovernmentRegistryChecksForm({
 						</form.Field>
 					) : null}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{showFullForm ? (
 						<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
 							<Button
@@ -927,7 +926,8 @@ export function GovernmentRegistryChecksForm({
 											!canSubmit ||
 											(includeSelfie && !selfieProofUrl) ||
 											isProofUploading ||
-											isSubmitting
+											isSubmitting ||
+											isProductDisabled
 										}
 									>
 										<PaperPlaneTiltIcon className="size-4" />

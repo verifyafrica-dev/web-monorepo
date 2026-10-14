@@ -46,7 +46,7 @@ export function buildAddressVerificationLinkPayload(
 ): VerificationRequestCreatePayload {
 	return {
 		verification_type: ADDRESS_VERIFICATION_TYPE,
-		method_type: "new_link",
+		method_type: "verify_link",
 		input_data: {
 			country: values.country.trim().toUpperCase(),
 			language: "EN",

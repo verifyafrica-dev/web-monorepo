@@ -19,6 +19,11 @@ import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
+import { PRODUCT_SLUG } from "../../-data";
+import {
+	ProductDisabledNotice,
+	useIsProductDisabled,
+} from "../../-product-access";
 import { mixedVerificationRequiresAddress } from "../-data";
 
 type StartMixedVerificationDialogProps = {
@@ -37,6 +42,9 @@ export function StartMixedVerificationDialog({
 	onStarted,
 }: StartMixedVerificationDialogProps) {
 	const startMutation = useStartMixedVerificationV2Mutation();
+	const isProductDisabled = useIsProductDisabled(
+		PRODUCT_SLUG.MIXED_VERIFICATIONS,
+	);
 	const [email, setEmail] = useState("");
 	const [fullAddress, setFullAddress] = useState("");
 	const requiresAddress = template
@@ -138,6 +146,8 @@ export function StartMixedVerificationDialog({
 					</div>
 				)}
 
+				{isProductDisabled && <ProductDisabledNotice />}
+
 				<DialogFooter>
 					<Button
 						type="button"
@@ -151,7 +161,7 @@ export function StartMixedVerificationDialog({
 					<Button
 						type="button"
 						className="cursor-pointer tracking-wide"
-						disabled={startMutation.isPending}
+						disabled={startMutation.isPending || isProductDisabled}
 						onClick={() => void handleStart()}
 					>
 						{startMutation.isPending ? "Starting..." : "Start"}

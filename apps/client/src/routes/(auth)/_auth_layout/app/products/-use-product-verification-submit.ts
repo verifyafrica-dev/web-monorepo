@@ -14,6 +14,11 @@ import {
 } from "@verifyafrica/api-client/lib/verification-links";
 
 import { useCurrentTenant } from "../team/-data";
+import type { ProductSlug } from "./-data";
+import {
+	PRODUCT_DISABLED_MESSAGE,
+	useDisabledProducts,
+} from "./-product-access";
 
 export type LinkSubmitOptions = {
 	mode: "link";
@@ -25,22 +30,36 @@ export type DirectSubmitOptions = {
 	mode: "direct" | "result";
 };
 
-type SubmitOptions = LinkSubmitOptions | DirectSubmitOptions;
+/** Provider-hosted journey (e.g. Shufti onsite): the payload's own method_type is kept. */
+export type ProviderLinkSubmitOptions = {
+	mode: "provider_link";
+	email: string;
+};
+
+type SubmitOptions =
+	| LinkSubmitOptions
+	| DirectSubmitOptions
+	| ProviderLinkSubmitOptions;
 
 type UseProductVerificationSubmitOptions = {
 	errorMessage?: string;
+	product?: ProductSlug;
 };
 
 export function useProductVerificationSubmit(
 	options?: UseProductVerificationSubmitOptions,
 ) {
 	const { tenantId } = useCurrentTenant();
+	const isProductDisabled = useDisabledProducts();
 	const createVerificationMutation = useCreateVerificationRequestV2Mutation();
 	const createNewVerifyMutation = useCreateNewVerifyV2Mutation();
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [verificationResult, setVerificationResult] =
 		useState<VerificationRequest | null>(null);
 	const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+	const isCurrentProductDisabled = options?.product
+		? isProductDisabled(options.product)
+		: false;
 
 	async function submitVerification(
 		payload: VerificationRequestCreatePayload,
@@ -51,6 +70,11 @@ export function useProductVerificationSubmit(
 			return false;
 		}
 
+		if (isCurrentProductDisabled) {
+			toast.error(PRODUCT_DISABLED_MESSAGE);
+			return false;
+		}
+
 		try {
 			const verification =
 				submitOptions.mode === "link"
@@ -58,13 +82,18 @@ export function useProductVerificationSubmit(
 							tenantId,
 							payload: {
 								...payload,
-								method_type: "new_link",
+								method_type: "verify_link",
 							},
 						})
 					: await createVerificationMutation.mutateAsync({
 							tenantId,
 							payload,
 						});
+
+			const providerLink =
+				submitOptions.mode === "provider_link"
+					? buildLinkResult(verification, submitOptions.email)
+					: null;
 
 			if (submitOptions.mode === "link") {
 				setLinkResult(
@@ -74,6 +103,9 @@ export function useProductVerificationSubmit(
 						Number(submitOptions.urlLimit),
 					),
 				);
+				setVerificationResult(null);
+			} else if (providerLink?.verificationUrl) {
+				setLinkResult(providerLink);
 				setVerificationResult(null);
 			} else {
 				setVerificationResult(verification);
@@ -106,6 +138,7 @@ export function useProductVerificationSubmit(
 		setIsResultDialogOpen,
 		isSubmitting:
 			createVerificationMutation.isPending || createNewVerifyMutation.isPending,
+		isProductDisabled: isCurrentProductDisabled,
 		handleStartNewVerification,
 	};
 }

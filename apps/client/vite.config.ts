@@ -33,7 +33,18 @@ const config = defineConfig({
 	},
 	plugins: [
 		devtools(),
-		nitro(),
+		nitro({
+			handlers: [
+				{
+					route: "/api/image-proxy",
+					method: "GET",
+					handler: path.resolve(
+						import.meta.dirname,
+						"src/server/image-proxy.ts",
+					),
+				},
+			],
+		}),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),

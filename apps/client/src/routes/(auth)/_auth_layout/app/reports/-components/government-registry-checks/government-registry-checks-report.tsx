@@ -1,11 +1,4 @@
 import type { GovernmentRegistryChecksVerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
-import { Badge } from "@verifyafrica/ui/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from "@verifyafrica/ui/components/ui/card";
 import {
 	Table,
 	TableBody,
@@ -14,142 +7,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "@verifyafrica/ui/lib/utils";
-import { format, isValid, parseISO } from "date-fns";
-import type { ReactNode } from "react";
 
-import {
-	asNonEmptyString,
-	asRecord,
-	displayValue,
-	formatHumanLabel,
-	formatYesNo,
-} from "../../-utils";
+import { asNonEmptyString, asRecord } from "../../-utils";
 import { ReportDetailField } from "../report-detail-field";
+import {
+	formatReportValue,
+	MatchBadge,
+	ReportDataMatches,
+	ReportFieldGrid,
+	ReportSectionCard,
+} from "../report-sections";
 import { ProofImagePreviewDialog } from "../verification-proofs/proof-image-preview-dialog";
 import {
 	buildRegistrySections,
-	isEmptyRegistryValue,
-	type RegistryField,
-	type RegistryFieldFormat,
 	type RegistryMatch,
 	type RegistryTable,
 } from "./government-registry-checks-sections";
-
-function formatDate(value: string, pattern: string) {
-	const parsed = parseISO(value);
-	return isValid(parsed) ? format(parsed, pattern) : value;
-}
-
-function formatRegistryValue(
-	value: unknown,
-	valueFormat: RegistryFieldFormat = "text",
-): string {
-	if (isEmptyRegistryValue(value)) return "N/A";
-	if (Array.isArray(value)) {
-		return value
-			.map((item) => formatRegistryValue(item, valueFormat))
-			.join(", ");
-	}
-
-	switch (valueFormat) {
-		case "date":
-			return typeof value === "string"
-				? formatDate(value, "d MMM yyyy")
-				: displayValue(value);
-		case "datetime":
-			return typeof value === "string"
-				? formatDate(value, "d MMM yyyy, h:mm a")
-				: displayValue(value);
-		case "title":
-			return typeof value === "string"
-				? formatHumanLabel(value)
-				: displayValue(value);
-		case "yesNo":
-			return (
-				formatYesNo(value) ??
-				(typeof value === "string"
-					? formatHumanLabel(value)
-					: displayValue(value))
-			);
-		default:
-			return displayValue(value);
-	}
-}
-
-function SectionCard({
-	title,
-	children,
-}: {
-	title: string;
-	children: ReactNode;
-}) {
-	return (
-		<Card>
-			<CardHeader className="pb-3">
-				<CardTitle className="text-base font-semibold">{title}</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-6">{children}</CardContent>
-		</Card>
-	);
-}
-
-function FieldGrid({ fields }: { fields: RegistryField[] }) {
-	if (fields.length === 0) return null;
-
-	return (
-		<div className="grid gap-4 sm:grid-cols-2">
-			{fields.map((entry) => (
-				<ReportDetailField
-					key={entry.key}
-					label={entry.label}
-					value={formatRegistryValue(entry.value, entry.format)}
-					mono={entry.mono}
-					className={cn(entry.wide && "sm:col-span-2")}
-				/>
-			))}
-		</div>
-	);
-}
-
-function MatchBadge({ match }: { match: boolean }) {
-	return (
-		<Badge
-			variant="outline"
-			className={cn(
-				match
-					? "border-emerald-200 bg-emerald-500 text-white"
-					: "border-red-200 bg-red-500 text-white",
-			)}
-		>
-			{match ? "Match" : "No match"}
-		</Badge>
-	);
-}
-
-function DataMatches({ matches }: { matches: RegistryMatch[] }) {
-	if (matches.length === 0) return null;
-
-	return (
-		<div className="space-y-3 border-t pt-4">
-			<p className="text-sm font-medium">Submitted Data Match</p>
-			<div className="grid gap-4 sm:grid-cols-2">
-				{matches.map((entry) => (
-					<ReportDetailField
-						key={entry.key}
-						label={entry.label}
-						value={
-							<div className="flex flex-wrap items-center gap-2">
-								<span>{formatRegistryValue(entry.submitted)}</span>
-								<MatchBadge match={entry.match} />
-							</div>
-						}
-					/>
-				))}
-			</div>
-		</div>
-	);
-}
 
 function FaceMatch({ match }: { match: RegistryMatch }) {
 	return (
@@ -191,7 +64,7 @@ function RegistryDataTable({ table }: { table: RegistryTable }) {
 							<TableRow key={index}>
 								{table.columns.map((column) => (
 									<TableCell key={column.key} className="whitespace-nowrap">
-										{formatRegistryValue(row[column.key], column.format)}
+										{formatReportValue(row[column.key], column.format)}
 									</TableCell>
 								))}
 							</TableRow>
@@ -234,14 +107,14 @@ export function GovernmentRegistryChecksReport({
 	return (
 		<div className="space-y-6">
 			{hasPersonal ? (
-				<SectionCard title={sections.personalTitle}>
-					<FieldGrid fields={sections.personal} />
-					<DataMatches matches={sections.dataMatches} />
-				</SectionCard>
+				<ReportSectionCard title={sections.personalTitle}>
+					<ReportFieldGrid fields={sections.personal} />
+					<ReportDataMatches matches={sections.dataMatches} />
+				</ReportSectionCard>
 			) : null}
 
 			{hasImages ? (
-				<SectionCard title="Images">
+				<ReportSectionCard title="Images">
 					{sections.images.length > 0 ? (
 						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 							{sections.images.map((image) => (
@@ -261,28 +134,28 @@ export function GovernmentRegistryChecksReport({
 						</div>
 					) : null}
 					{sections.faceMatch ? <FaceMatch match={sections.faceMatch} /> : null}
-				</SectionCard>
+				</ReportSectionCard>
 			) : null}
 
 			{sections.document.length > 0 ? (
-				<SectionCard title="Document Details">
-					<FieldGrid fields={sections.document} />
-				</SectionCard>
+				<ReportSectionCard title="Document Details">
+					<ReportFieldGrid fields={sections.document} />
+				</ReportSectionCard>
 			) : null}
 
 			{sections.contact.length > 0 ? (
-				<SectionCard title="Contact & Location">
-					<FieldGrid fields={sections.contact} />
-				</SectionCard>
+				<ReportSectionCard title="Contact & Location">
+					<ReportFieldGrid fields={sections.contact} />
+				</ReportSectionCard>
 			) : null}
 
 			{hasAdditional ? (
-				<SectionCard title="Additional Details">
-					<FieldGrid fields={sections.additional} />
+				<ReportSectionCard title="Additional Details">
+					<ReportFieldGrid fields={sections.additional} />
 					{sections.tables.map((table) => (
 						<RegistryDataTable key={table.key} table={table} />
 					))}
-				</SectionCard>
+				</ReportSectionCard>
 			) : null}
 		</div>
 	);
