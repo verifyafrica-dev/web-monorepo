@@ -57,7 +57,7 @@ function ProductsPage() {
 					return (
 						<Card
 							key={product.slug}
-							className={cn("h-full", isDisabled && "opacity-60")}
+							className={cn("h-full", isDisabled && "opacity-60 grayscale")}
 							aria-disabled={isDisabled || undefined}
 						>
 							<CardContent className="flex h-full flex-col gap-4">
