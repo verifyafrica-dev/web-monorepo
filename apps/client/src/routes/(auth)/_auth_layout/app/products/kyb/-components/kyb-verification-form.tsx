@@ -50,6 +50,8 @@ import {
 import { useTenantSupportedCountries } from "../../-countries";
 import { NoCountriesNotice } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import {
 	buildKybVerificationLinkPayload,
 	buildKybVerificationPayload,
@@ -167,9 +169,11 @@ export function KybVerificationForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit KYB verification.",
+		product: PRODUCT_SLUG.KYB,
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
@@ -750,12 +754,14 @@ export function KybVerificationForm() {
 						)}
 					</form.Field>
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					<form.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
 								className="w-full cursor-pointer"
-								disabled={!canSubmit || isSubmitting}
+								disabled={!canSubmit || isSubmitting || isProductDisabled}
 							>
 								<PaperPlaneTiltIcon className="size-4" />
 								{isSubmitting ? "Submitting..." : "Submit Verification"}

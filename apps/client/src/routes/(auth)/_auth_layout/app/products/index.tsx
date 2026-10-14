@@ -3,10 +3,12 @@ import { useTenantV2DetailQuery } from "#/api/http/v2/tenants/tenants.hooks";
 import { useTenantMixedVerificationsV2Query } from "#/api/http/v2/verifications/verifications.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
+import { cn } from "@verifyafrica/ui/lib/utils";
 import { DashboardOnboarding } from "../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../-data";
 import { useCurrentTenant } from "../team/-data";
 import { PRODUCTS } from "./-data";
+import { ProductDisabledNotice, useDisabledProducts } from "./-product-access";
 import { MIXED_VERIFICATIONS_LIST_PARAMS } from "./mixed-verifications/-data";
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/products/")({
@@ -24,6 +26,7 @@ function ProductsPage() {
 	const tenantQuery = useTenantV2DetailQuery(tenantId, Boolean(tenantId));
 	const isKycVerified = tenantQuery.data?.kyc.kyc_verified ?? false;
 	const isKycLoading = tenantQuery.isPending || tenantQuery.isFetching;
+	const isProductDisabled = useDisabledProducts();
 	const showOnboarding =
 		!tenantQuery.isError &&
 		!isKycLoading &&
@@ -49,9 +52,14 @@ function ProductsPage() {
 			<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 				{PRODUCTS.map((product) => {
 					const Icon = product.icon;
+					const isDisabled = isProductDisabled(product.slug);
 
 					return (
-						<Card key={product.slug} className="h-full">
+						<Card
+							key={product.slug}
+							className={cn("h-full", isDisabled && "opacity-60")}
+							aria-disabled={isDisabled || undefined}
+						>
 							<CardContent className="flex h-full flex-col gap-4">
 								<div className="flex size-12 items-center justify-center rounded-md bg-secondary/10 text-secondary">
 									<Icon className="size-6" weight={product.iconWeight} />
@@ -62,11 +70,20 @@ function ProductsPage() {
 										{product.description}
 									</p>
 								</div>
-								<Button variant="outline" className="w-full" asChild>
-									<Link to={`/app/products/${product.slug}`}>
-										Get Started
-									</Link>
-								</Button>
+								{isDisabled ? (
+									<div className="flex flex-col gap-2">
+										<ProductDisabledNotice />
+										<Button variant="outline" className="w-full" disabled>
+											Disabled
+										</Button>
+									</div>
+								) : (
+									<Button variant="outline" className="w-full" asChild>
+										<Link to={`/app/products/${product.slug}`}>
+											Get Started
+										</Link>
+									</Button>
+								)}
 							</CardContent>
 						</Card>
 					);

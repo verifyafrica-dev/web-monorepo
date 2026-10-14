@@ -34,6 +34,8 @@ import { VerificationResultDialog } from "../../-components/verification-result-
 import { useTenantSupportedCountries } from "../../-countries";
 import { NO_COUNTRIES_MESSAGE } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
 import { ScreeningCountriesMultiSelect } from "@verifyafrica/ui/components/ui-extended/screening-countries-multi-select";
@@ -97,9 +99,11 @@ export function AmlScreeningForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit AML screening verification.",
+		product: PRODUCT_SLUG.AML_SCREENING,
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
@@ -579,6 +583,8 @@ export function AmlScreeningForm() {
 						</directForm.Field>
 					)}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{mode === "link" ? (
 						<linkForm.Subscribe selector={(state) => state.canSubmit}>
 							{(canSubmit) => (
@@ -589,7 +595,8 @@ export function AmlScreeningForm() {
 										!canSubmit ||
 										!hasSelectedFilters ||
 										isSubmitting ||
-										isBiometricUploading
+										isBiometricUploading ||
+										isProductDisabled
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
@@ -607,7 +614,8 @@ export function AmlScreeningForm() {
 										!canSubmit ||
 										!hasSelectedFilters ||
 										isSubmitting ||
-										isBiometricUploading
+										isBiometricUploading ||
+										isProductDisabled
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />

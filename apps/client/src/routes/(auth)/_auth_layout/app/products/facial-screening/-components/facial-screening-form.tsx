@@ -40,6 +40,8 @@ import { VerificationConsentCheckbox } from "../../../-components/VerificationCo
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import { PRODUCT_UPLOAD_VERIFICATIONS } from "../../-upload-utils";
 import {
 	DEFAULT_VERIFICATION_URL_LIMIT,
@@ -135,9 +137,11 @@ export function FacialScreeningForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit facial screening verification.",
+		product: PRODUCT_SLUG.FACIAL_SCREENING,
 	});
 
 	const linkForm = useForm({
@@ -501,13 +505,15 @@ export function FacialScreeningForm() {
 						</directForm.Field>
 					)}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{mode === "link" ? (
 						<linkForm.Subscribe selector={(state) => state.canSubmit}>
 							{(canSubmit) => (
 								<Button
 									type="submit"
 									className="w-full cursor-pointer"
-									disabled={!canSubmit || isSubmitting}
+									disabled={!canSubmit || isSubmitting || isProductDisabled}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
 									{isSubmitting ? "Submitting..." : "Submit Verification"}
@@ -524,7 +530,8 @@ export function FacialScreeningForm() {
 										!canSubmit ||
 										!facePhotoUrl ||
 										isProofUploading ||
-										isSubmitting
+										isSubmitting ||
+										isProductDisabled
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />

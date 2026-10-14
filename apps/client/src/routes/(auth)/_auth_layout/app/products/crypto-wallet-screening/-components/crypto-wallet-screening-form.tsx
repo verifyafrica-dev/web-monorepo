@@ -15,6 +15,8 @@ import { VerificationConsentCheckbox } from "../../../-components/VerificationCo
 import { verificationConsentSchema } from "../../../-components/VerificationConsentCheckbox/data";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import {
 	buildCryptoWalletScreeningPayload,
 	isValidWalletAddress,
@@ -34,9 +36,11 @@ export function CryptoWalletScreeningForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit crypto wallet screening verification.",
+		product: PRODUCT_SLUG.CRYPTO_WALLET_SCREENING,
 	});
 
 	const form = useForm({
@@ -146,12 +150,14 @@ export function CryptoWalletScreeningForm() {
 						)}
 					</form.Field>
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					<form.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
 								className="w-full cursor-pointer"
-								disabled={!canSubmit || isSubmitting}
+								disabled={!canSubmit || isSubmitting || isProductDisabled}
 							>
 								<MagnifyingGlassIcon className="size-4" />
 								{isSubmitting ? "Submitting..." : "Submit Verification"}

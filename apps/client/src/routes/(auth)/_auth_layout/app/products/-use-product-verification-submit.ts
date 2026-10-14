@@ -14,6 +14,11 @@ import {
 } from "@verifyafrica/api-client/lib/verification-links";
 
 import { useCurrentTenant } from "../team/-data";
+import type { ProductSlug } from "./-data";
+import {
+	PRODUCT_DISABLED_MESSAGE,
+	useDisabledProducts,
+} from "./-product-access";
 
 export type LinkSubmitOptions = {
 	mode: "link";
@@ -38,18 +43,23 @@ type SubmitOptions =
 
 type UseProductVerificationSubmitOptions = {
 	errorMessage?: string;
+	product?: ProductSlug;
 };
 
 export function useProductVerificationSubmit(
 	options?: UseProductVerificationSubmitOptions,
 ) {
 	const { tenantId } = useCurrentTenant();
+	const isProductDisabled = useDisabledProducts();
 	const createVerificationMutation = useCreateVerificationRequestV2Mutation();
 	const createNewVerifyMutation = useCreateNewVerifyV2Mutation();
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [verificationResult, setVerificationResult] =
 		useState<VerificationRequest | null>(null);
 	const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+	const isCurrentProductDisabled = options?.product
+		? isProductDisabled(options.product)
+		: false;
 
 	async function submitVerification(
 		payload: VerificationRequestCreatePayload,
@@ -57,6 +67,11 @@ export function useProductVerificationSubmit(
 	) {
 		if (!tenantId) {
 			toast.error("No tenant selected.");
+			return false;
+		}
+
+		if (isCurrentProductDisabled) {
+			toast.error(PRODUCT_DISABLED_MESSAGE);
 			return false;
 		}
 
@@ -123,6 +138,7 @@ export function useProductVerificationSubmit(
 		setIsResultDialogOpen,
 		isSubmitting:
 			createVerificationMutation.isPending || createNewVerifyMutation.isPending,
+		isProductDisabled: isCurrentProductDisabled,
 		handleStartNewVerification,
 	};
 }

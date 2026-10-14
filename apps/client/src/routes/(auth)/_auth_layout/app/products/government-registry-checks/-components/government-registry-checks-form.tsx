@@ -59,6 +59,8 @@ import {
 	PRODUCT_UPLOAD_VERIFICATIONS,
 } from "../../-upload-utils";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import {
 	allowsCustomerDataValidation,
 	buildGovernmentRegistryDirectPayload,
@@ -237,9 +239,11 @@ export function GovernmentRegistryChecksForm({
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit government registry verification.",
+		product: PRODUCT_SLUG.GOVERNMENT_REGISTRY_CHECKS,
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
@@ -900,6 +904,8 @@ export function GovernmentRegistryChecksForm({
 						</form.Field>
 					) : null}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{showFullForm ? (
 						<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
 							<Button
@@ -920,7 +926,8 @@ export function GovernmentRegistryChecksForm({
 											!canSubmit ||
 											(includeSelfie && !selfieProofUrl) ||
 											isProofUploading ||
-											isSubmitting
+											isSubmitting ||
+											isProductDisabled
 										}
 									>
 										<PaperPlaneTiltIcon className="size-4" />

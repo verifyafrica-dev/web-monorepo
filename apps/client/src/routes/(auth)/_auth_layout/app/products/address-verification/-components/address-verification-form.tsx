@@ -30,6 +30,8 @@ import {
 import { VerificationConsentCheckbox } from "../../../-components/VerificationConsentCheckbox";
 import { useTenantSupportedCountries } from "../../-countries";
 import { NoCountriesNotice } from "../../-no-countries-notice";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import { ProductProofUpload } from "../../-components/product-proof-upload";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
@@ -90,9 +92,11 @@ export function AddressVerificationForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit address verification.",
+		product: PRODUCT_SLUG.ADDRESS_VERIFICATION,
 	});
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({ product: "address_verification" });
@@ -509,13 +513,15 @@ export function AddressVerificationForm() {
 						</directForm.Field>
 					)}
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					{mode === "link" ? (
 						<linkForm.Subscribe selector={(state) => state.canSubmit}>
 							{(canSubmit) => (
 								<Button
 									type="submit"
 									className="w-full cursor-pointer"
-									disabled={!canSubmit || isSubmitting}
+									disabled={!canSubmit || isSubmitting || isProductDisabled}
 								>
 									<PaperPlaneTiltIcon className="size-4" />
 									{isSubmitting ? "Submitting..." : "Submit Verification"}
@@ -532,7 +538,8 @@ export function AddressVerificationForm() {
 										!canSubmit ||
 										!proofOfAddressUrl ||
 										isProofUploading ||
-										isSubmitting
+										isSubmitting ||
+										isProductDisabled
 									}
 								>
 									<PaperPlaneTiltIcon className="size-4" />

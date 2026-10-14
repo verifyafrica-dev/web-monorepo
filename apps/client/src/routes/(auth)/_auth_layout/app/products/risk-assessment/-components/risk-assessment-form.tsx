@@ -27,6 +27,8 @@ import { verificationConsentSchema } from "../../../-components/VerificationCons
 import { isTestWalletEnvironment } from "../../../billing/-data";
 import { VerificationResultDialog } from "../../-components/verification-result-dialog";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
+import { PRODUCT_SLUG } from "../../-data";
+import { ProductDisabledNotice } from "../../-product-access";
 import { buildRiskAssessmentPayload, RISK_ASSESSMENT_CHECKS } from "../-data";
 
 const riskAssessmentFormSchema = z.object({
@@ -51,9 +53,11 @@ export function RiskAssessmentForm() {
 		isResultDialogOpen,
 		setIsResultDialogOpen,
 		isSubmitting,
+		isProductDisabled,
 		handleStartNewVerification,
 	} = useProductVerificationSubmit({
 		errorMessage: "Failed to submit risk assessment verification.",
+		product: PRODUCT_SLUG.RISK_ASSESSMENT,
 	});
 
 	const form = useForm({
@@ -217,12 +221,14 @@ export function RiskAssessmentForm() {
 						)}
 					</form.Field>
 
+					{isProductDisabled && <ProductDisabledNotice />}
+
 					<form.Subscribe selector={(state) => state.canSubmit}>
 						{(canSubmit) => (
 							<Button
 								type="submit"
 								className="w-full cursor-pointer"
-								disabled={!canSubmit || isSubmitting}
+								disabled={!canSubmit || isSubmitting || isProductDisabled}
 							>
 								<PaperPlaneTiltIcon className="size-4" />
 								{isSubmitting

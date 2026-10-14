@@ -347,6 +347,8 @@ export interface UserTenantMembership {
 	available_countries?: string[];
 	/** Per-product country codes after global, product, and tenant switches. */
 	product_countries?: Record<string, string[]>;
+	/** Public product slugs (e.g. `document_verification`) the tenant cannot use. */
+	disabled_products?: string[];
 	role: UserRole;
 	date_added: string;
 	/** True when the user created this organization (not only invited into it). */
