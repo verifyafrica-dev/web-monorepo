@@ -30,8 +30,10 @@ import type {
 	VerificationSupportedCountriesData,
 	VerificationTypeDefinition,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { VerificationStatusSchema } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 
 const VERIFICATIONS_V2_STALE_TIME = 60_000;
+const VERIFICATION_PENDING_POLL_INTERVAL = 5_000;
 
 export const VERIFICATIONS_V2_QUERY_KEYS = {
 	all: ["verifications-v2"] as const,
@@ -129,6 +131,10 @@ export const useVerificationRequestDetailV2Query = (
 		queryFn: () => VERIFICATIONS_V2_API.REQUEST_DETAIL(verificationId ?? ""),
 		enabled: enabled && Boolean(verificationId),
 		staleTime: VERIFICATIONS_V2_STALE_TIME,
+		refetchInterval: (query) =>
+			query.state.data?.status === VerificationStatusSchema.enum.PENDING
+				? VERIFICATION_PENDING_POLL_INTERVAL
+				: false,
 	});
 };
 
@@ -338,10 +344,7 @@ export const useRefreshVerificationStatusV2Mutation = () => {
 	return useMutation({
 		mutationFn: (verificationId: string) =>
 			VERIFICATIONS_V2_API.REQUEST_REFRESH_STATUS(verificationId),
-		onSuccess: (data: VerificationRequest) => {
-			queryClient.invalidateQueries({
-				queryKey: VERIFICATIONS_V2_QUERY_KEYS.requestDetail(data.id),
-			});
+		onSettled: () => {
 			queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.all,
 			});
