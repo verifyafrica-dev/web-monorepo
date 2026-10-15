@@ -285,6 +285,122 @@ const collectPdfInternalLinkAreas = (
 	});
 };
 
+type PdfTextRun = PdfArea & { text: string; fontSizePx: number };
+
+const PX_TO_PT = 0.75;
+/** Rects narrower than this are visually hidden (e.g. `sr-only`). */
+const MIN_TEXT_RUN_SIZE_PX = 2;
+const WORD_PATTERN = /\S+/g;
+/** Characters outside Latin-1 that the standard PDF fonts (WinAnsi) can encode. */
+const WIN_ANSI_EXTRAS = new Set("€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ");
+
+const toWinAnsiText = (text: string) =>
+	Array.from(text.normalize("NFC"), (char) => {
+		if (char.charCodeAt(0) <= 0xff || WIN_ANSI_EXTRAS.has(char)) return char;
+		const decomposed = char.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+		return /^[\x20-\x7e]+$/.test(decomposed) ? decomposed : "?";
+	}).join("");
+
+const isTextVisible = (element: Element) => {
+	const style = window.getComputedStyle(element);
+	return (
+		style.visibility !== "hidden" &&
+		style.display !== "none" &&
+		Number.parseFloat(style.opacity) > 0
+	);
+};
+
+/**
+ * Collects each rendered line of text with its position, so it can be written
+ * as an invisible layer over the rasterised page. This is what makes the PDF
+ * text selectable, copyable and searchable. Positions are CSS px relative to the clone.
+ */
+const collectPdfTextRuns = (clone: HTMLElement): PdfTextRun[] => {
+	const cloneRect = clone.getBoundingClientRect();
+	const runs: PdfTextRun[] = [];
+	const range = document.createRange();
+	const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+
+	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+		const parent = node.parentElement;
+		const content = node.textContent ?? "";
+		if (!parent || !content.trim() || parent.closest("svg, script, style"))
+			continue;
+		if (!isTextVisible(parent)) continue;
+
+		const fontSizePx = Number.parseFloat(
+			window.getComputedStyle(parent).fontSize,
+		);
+		let line: { start: number; end: number; rect: PdfArea } | null = null;
+
+		const flush = () => {
+			if (!line) return;
+			const text = content.slice(line.start, line.end).replace(/\s+/g, " ");
+			if (
+				line.rect.width >= MIN_TEXT_RUN_SIZE_PX &&
+				line.rect.height >= MIN_TEXT_RUN_SIZE_PX
+			) {
+				runs.push({ ...line.rect, text, fontSizePx });
+			}
+			line = null;
+		};
+
+		for (const match of content.matchAll(WORD_PATTERN)) {
+			const start = match.index ?? 0;
+			const end = start + match[0].length;
+			range.setStart(node, start);
+			range.setEnd(node, end);
+			const rect = range.getBoundingClientRect();
+			if (rect.width === 0 && rect.height === 0) continue;
+
+			const word = {
+				x: rect.left - cloneRect.left,
+				y: rect.top - cloneRect.top,
+				width: rect.width,
+				height: rect.height,
+			};
+			const current = line as {
+				start: number;
+				end: number;
+				rect: PdfArea;
+			} | null;
+			const sameLine =
+				current &&
+				Math.abs(
+					current.rect.y + current.rect.height / 2 - (word.y + word.height / 2),
+				) <
+					word.height / 2 &&
+				word.x >= current.rect.x;
+
+			if (current && sameLine) {
+				const right = Math.max(
+					current.rect.x + current.rect.width,
+					word.x + word.width,
+				);
+				const top = Math.min(current.rect.y, word.y);
+				const bottom = Math.max(
+					current.rect.y + current.rect.height,
+					word.y + word.height,
+				);
+				current.end = end;
+				current.rect = {
+					x: current.rect.x,
+					y: top,
+					width: right - current.rect.x,
+					height: bottom - top,
+				};
+			} else {
+				flush();
+				line = { start, end, rect: word };
+			}
+		}
+		flush();
+	}
+
+	range.detach();
+	return runs;
+};
+
 /**
  * Splits tall content into page slices that start at an element's top edge, so
  * breaks fall between lines and blocks rather than through text.
@@ -318,6 +434,32 @@ const getPageSlices = (clone: HTMLElement, contentHeight: number) => {
 		offset = end;
 	}
 	return slices;
+};
+
+const writeInvisibleTextLayer = (
+	pdf: jsPDF,
+	runs: PdfTextRun[],
+	slice: { offset: number; height: number },
+	marginMm: number,
+) => {
+	pdf.setFont("helvetica", "normal");
+
+	for (const run of runs) {
+		const centerY = run.y + run.height / 2 - slice.offset;
+		if (centerY < 0 || centerY >= slice.height) continue;
+
+		const text = toWinAnsiText(run.text);
+		const fontSizePt = run.fontSizePx * PX_TO_PT;
+		pdf.setFontSize(fontSizePt);
+		const naturalWidthMm = pdf.getTextWidth(text);
+		if (naturalWidthMm <= 0) continue;
+
+		pdf.text(text, marginMm + cssPxToMm(run.x), marginMm + cssPxToMm(centerY), {
+			baseline: "middle",
+			renderingMode: "invisible",
+			horizontalScale: cssPxToMm(run.width) / naturalWidthMm,
+		});
+	}
 };
 
 const createPdfClone = (source: HTMLElement) => {
@@ -399,6 +541,7 @@ export const generatePDFWithColorSupport = async (
 		originalStyles = convertModernColorsToRGB(clone);
 		const linkAreas = collectPdfLinkAreas(clone);
 		const internalLinkAreas = collectPdfInternalLinkAreas(clone);
+		const textRuns = collectPdfTextRuns(clone);
 		const slices = getPageSlices(clone, contentHeight);
 		const firstChild = clone.firstElementChild as HTMLElement | null;
 		const firstChildMarginTop = firstChild?.style.marginTop ?? "";
@@ -460,6 +603,8 @@ export const generatePDFWithColorSupport = async (
 			);
 			canvas.width = 0;
 			canvas.height = 0;
+
+			writeInvisibleTextLayer(pdf, textRuns, slice, marginMm);
 
 			for (const area of linkAreas) {
 				const top = area.y - slice.offset;
