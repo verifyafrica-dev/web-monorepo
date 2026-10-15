@@ -53,7 +53,7 @@ function buildDocumentBlock(direct?: {
 		if (direct.requireBackside) {
 			document.backside_proof_required = SHUFTI_CHOICES.YES;
 			if (direct.backsideProof) {
-				document.backside_proof = direct.backsideProof;
+				document.additional_proof = direct.backsideProof;
 			}
 		}
 		if (direct.dob) {
