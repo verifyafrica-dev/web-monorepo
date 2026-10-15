@@ -39,7 +39,11 @@ export function CountryOptionLabel({
 	const isoCode = getCountryCode(countryCode ?? name);
 	const country = isoCode as Country;
 	const hasFlag = isoCode.length === 2 && Boolean(flags[country]);
-	const displayName = (isoCode && getCountryName(isoCode)) || name;
+	// Sub-national jurisdictions (e.g. "United States (Alaska)") share an ISO code.
+	const displayName =
+		(countryCode && name.trim()) ||
+		(isoCode && getCountryName(isoCode)) ||
+		name;
 
 	return (
 		<span className={cn("flex items-center gap-2", className)}>

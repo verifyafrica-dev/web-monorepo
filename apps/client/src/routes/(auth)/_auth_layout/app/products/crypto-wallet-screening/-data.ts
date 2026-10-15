@@ -6,16 +6,7 @@ import type {
 const CRYPTO_WALLET_SCREENING_TYPE =
 	"crypto_wallet_screening" satisfies VerificationType;
 
-const CRYPTO_WALLET_FILTERS = [
-	"sanction",
-	"warning",
-	"fitness-probity",
-	"SIP",
-	"SIE",
-	"Insolvency",
-	"pep",
-	"pep-class-1",
-] as const;
+const CRYPTO_WALLET_FILTERS = ["sanction", "warning", "adverse-media"] as const;
 
 type CryptoWalletFormValues = {
 	email: string;
@@ -46,16 +37,14 @@ export function buildCryptoWalletScreeningPayload(
 		method_type: "offsite",
 		input_data: {
 			email: values.email.trim(),
-			is_crypto_request: true,
+			is_crypto_request: "1",
 			verification_mode: "any",
 			background_checks: {
 				name: {
 					full_name: values.walletAddress.trim(),
-					match_score: 100,
 				},
+				match_score: 100,
 				filters: [...CRYPTO_WALLET_FILTERS],
-				legacy_version: "",
-				ongoing: "",
 			},
 		},
 	};

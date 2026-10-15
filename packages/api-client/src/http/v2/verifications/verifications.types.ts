@@ -456,6 +456,7 @@ export interface AmlBackgroundChecksInput {
 	alias_search?: boolean | string;
 	dob?: string;
 	legacy_version?: string;
+	ongoing?: string;
 	biometric_search_image?: string;
 	context?: string;
 }
@@ -491,7 +492,7 @@ export interface BusinessAmlScreeningInputData extends VerificationInputDataBase
 }
 
 export interface CryptoWalletScreeningInputData extends VerificationInputDataBase {
-	is_crypto_request?: boolean;
+	is_crypto_request?: boolean | "1";
 	verification_mode?: string;
 	background_checks?: AmlBackgroundChecksInput;
 }
@@ -558,7 +559,7 @@ export interface VerificationInputData extends VerificationInputDataBase {
 	aml_for_businesses?: BusinessAmlScreeningInput;
 	kyb?: KybScreeningInput;
 	risk_assessment?: RiskAssessmentInput;
-	is_crypto_request?: boolean;
+	is_crypto_request?: boolean | "1";
 	verification_mode?: string;
 	nin?: string;
 	bvn?: string;
