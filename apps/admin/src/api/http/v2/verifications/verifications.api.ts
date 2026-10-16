@@ -8,6 +8,8 @@ import type {
 	BulkVerificationCreatePayload,
 	CountryAvailability,
 	CountryAvailabilityUpdatePayload,
+	ProductAvailability,
+	ProductAvailabilityUpdatePayload,
 	MixedVerification,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
@@ -62,6 +64,7 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 		`/v2/verifications/batch/${batchId}/retry-failed/`,
 	linkDetail: (link: string) => `/v2/verifications/links/${link}/`,
 	countryAvailability: "/v2/verifications/country-availability/",
+	productAvailability: "/v2/verifications/product-availability/",
 } as const;
 
 const withTenantHeader = (tenantId: string) => ({
@@ -351,4 +354,16 @@ export const VERIFICATIONS_V2_API = {
 		await $http
 			.put(VERIFICATIONS_V2_ENDPOINTS.countryAvailability, data)
 			.then((res) => unwrapV2Data<CountryAvailability>(res)),
+
+	PRODUCT_AVAILABILITY: async (): Promise<ProductAvailability> =>
+		await $http
+			.get(VERIFICATIONS_V2_ENDPOINTS.productAvailability)
+			.then((res) => unwrapV2Data<ProductAvailability>(res)),
+
+	UPDATE_PRODUCT_AVAILABILITY: async (
+		data: ProductAvailabilityUpdatePayload,
+	): Promise<ProductAvailability> =>
+		await $http
+			.put(VERIFICATIONS_V2_ENDPOINTS.productAvailability, data)
+			.then((res) => unwrapV2Data<ProductAvailability>(res)),
 };

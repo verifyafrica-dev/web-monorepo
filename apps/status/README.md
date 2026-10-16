@@ -41,6 +41,8 @@ Each row on the page is a **component**. They are defined in `service_status/com
 | Verification Products | Document, Facial, Address, AML, Business AML, KYB, Crypto Wallet, Risk Assessment | Outcomes of real Shufti calls |
 | Government Registry | Nigeria, Ghana, Kenya, Côte d'Ivoire, South Africa, United States | Outcomes of real KoraPay calls, grouped by the country prefix of the verification type (`ng_`, `gh_`, …) |
 
+The public summary only includes **globally enabled** products and registry countries. Products (and GRC variants) turned off under Verification Settings → Global Products / Product Variants are omitted from the page.
+
 **No paid test calls are made.** Product health comes only from real customer traffic.
 
 ### 1.2 Recording provider calls

@@ -849,6 +849,29 @@ export interface CountryAvailabilityUpdatePayload {
 	disabled_countries: string[];
 }
 
+export interface ProductAvailabilityProduct {
+	slug: string;
+	label: string;
+}
+
+export interface ProductAvailabilityVariant {
+	value: string;
+	label: string;
+}
+
+export interface ProductAvailability {
+	global_disabled: string[];
+	variant_disabled: Record<string, string[]>;
+	products: ProductAvailabilityProduct[];
+	variants: Record<string, ProductAvailabilityVariant[]>;
+}
+
+export interface ProductAvailabilityUpdatePayload {
+	/** Empty string for global product switches, otherwise a variant-scoped product slug. */
+	product: string;
+	disabled_keys: string[];
+}
+
 export function isGovernmentRegistryChecksVerificationDetail(
 	verification: VerificationRequestDetail,
 ): verification is GovernmentRegistryChecksVerificationRequestDetail {

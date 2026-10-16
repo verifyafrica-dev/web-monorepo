@@ -10,6 +10,8 @@ import type {
 	BulkVerificationCreatePayload,
 	CountryAvailability,
 	CountryAvailabilityUpdatePayload,
+	ProductAvailability,
+	ProductAvailabilityUpdatePayload,
 	MixedVerification,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
@@ -67,6 +69,7 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 		["verifications-v2", "prices", "detail", id] as const,
 	linkDetail: (link: string) => ["verifications-v2", "links", link] as const,
 	countryAvailability: ["verifications-v2", "country-availability"] as const,
+	productAvailability: ["verifications-v2", "product-availability"] as const,
 } as const;
 
 export const useVerificationTypesV2Query = (
@@ -472,6 +475,31 @@ export const useUpdateCountryAvailabilityV2Mutation = () => {
 		onSuccess: (data: CountryAvailability) => {
 			queryClient.setQueryData(
 				VERIFICATIONS_V2_QUERY_KEYS.countryAvailability,
+				data,
+			);
+		},
+	});
+};
+
+export const useProductAvailabilityV2Query = (
+	enabled = true,
+): UseQueryResult<ProductAvailability> =>
+	useQuery<ProductAvailability>({
+		queryKey: VERIFICATIONS_V2_QUERY_KEYS.productAvailability,
+		queryFn: VERIFICATIONS_V2_API.PRODUCT_AVAILABILITY,
+		enabled,
+		staleTime: VERIFICATIONS_V2_STALE_TIME,
+	});
+
+export const useUpdateProductAvailabilityV2Mutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: ProductAvailabilityUpdatePayload) =>
+			VERIFICATIONS_V2_API.UPDATE_PRODUCT_AVAILABILITY(payload),
+		onSuccess: (data: ProductAvailability) => {
+			queryClient.setQueryData(
+				VERIFICATIONS_V2_QUERY_KEYS.productAvailability,
 				data,
 			);
 		},
