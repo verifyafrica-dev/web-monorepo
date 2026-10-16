@@ -349,6 +349,8 @@ export interface UserTenantMembership {
 	product_countries?: Record<string, string[]>;
 	/** Public product slugs (e.g. `document_verification`) the tenant can use. */
 	allowed_products?: string[];
+	/** Per multi-type product: verification types still available after global + tenant switches. */
+	product_variants?: Record<string, string[]>;
 	role: UserRole;
 	date_added: string;
 	/** True when the user created this organization (not only invited into it). */

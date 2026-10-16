@@ -60,7 +60,11 @@ import {
 } from "../../-upload-utils";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
 import { PRODUCT_SLUG } from "../../-data";
-import { ProductDisabledNotice } from "../../-product-access";
+import {
+	ProductDisabledNotice,
+	useAllowedProductVariants,
+	VARIANT_DISABLED_MESSAGE,
+} from "../../-product-access";
 import {
 	allowsCustomerDataValidation,
 	buildGovernmentRegistryDirectPayload,
@@ -245,15 +249,39 @@ export function GovernmentRegistryChecksForm({
 		errorMessage: "Failed to submit government registry verification.",
 		product: PRODUCT_SLUG.GOVERNMENT_REGISTRY_CHECKS,
 	});
+	const allowedVariants = useAllowedProductVariants(
+		"government_registry_checks",
+	);
 	const { countries, isPending: isCountriesPending } =
 		useTenantSupportedCountries({
 			filter: filterToRegistryCountries,
 			product: "government_registry_checks",
 		});
-	const verificationTypes = useMemo(
-		() => (country ? getRegistryVerificationTypes(country) : []),
-		[country],
+	const verificationTypes = useMemo(() => {
+		if (!country) return [];
+		return getRegistryVerificationTypes(country).map((type) => ({
+			...type,
+			disabled: allowedVariants ? !allowedVariants.has(type.value) : false,
+		}));
+	}, [allowedVariants, country]);
+	const hasEnabledVerificationType = verificationTypes.some(
+		(type) => !type.disabled,
 	);
+	const isVariantDisabled = Boolean(
+		verificationType &&
+			allowedVariants &&
+			!allowedVariants.has(verificationType),
+	);
+	const countriesWithAvailability = useMemo(() => {
+		return countries.map((countryOption) => {
+			const types = getRegistryVerificationTypes(countryOption.code);
+			const disabled =
+				allowedVariants != null &&
+				types.length > 0 &&
+				types.every((type) => !allowedVariants.has(type.value));
+			return { ...countryOption, disabled };
+		});
+	}, [allowedVariants, countries]);
 
 	const showFullForm = Boolean(country && verificationType);
 	const isLinkMode = mode === "link";
@@ -415,10 +443,16 @@ export function GovernmentRegistryChecksForm({
 											</div>
 										</SelectTrigger>
 										<SelectContent>
-											{countries.map((countryOption) => (
+											{countriesWithAvailability.map((countryOption) => (
 												<SelectItem
 													key={countryOption.code}
 													value={countryOption.code}
+													disabled={countryOption.disabled}
+													className={
+														countryOption.disabled
+															? "opacity-50 grayscale"
+															: undefined
+													}
 												>
 													<CountryOptionLabel
 														name={countryOption.name}
@@ -460,14 +494,25 @@ export function GovernmentRegistryChecksForm({
 											</SelectTrigger>
 											<SelectContent>
 												{verificationTypes.map((type) => (
-													<SelectItem key={type.value} value={type.value}>
+													<SelectItem
+														key={type.value}
+														value={type.value}
+														disabled={type.disabled}
+														className={
+															type.disabled
+																? "opacity-50 grayscale"
+																: undefined
+														}
+													>
 														{type.label}
 													</SelectItem>
 												))}
 											</SelectContent>
 										</Select>
 										<FieldDescription>
-											Select a verification type from the available options
+											{hasEnabledVerificationType
+												? "Select a verification type from the available options"
+												: VARIANT_DISABLED_MESSAGE}
 										</FieldDescription>
 									</Field>
 								)}
@@ -905,6 +950,11 @@ export function GovernmentRegistryChecksForm({
 					) : null}
 
 					{isProductDisabled && <ProductDisabledNotice />}
+					{!isProductDisabled && isVariantDisabled && (
+						<p className="text-sm text-destructive">
+							{VARIANT_DISABLED_MESSAGE}
+						</p>
+					)}
 
 					{showFullForm ? (
 						<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
@@ -927,7 +977,8 @@ export function GovernmentRegistryChecksForm({
 											(includeSelfie && !selfieProofUrl) ||
 											isProofUploading ||
 											isSubmitting ||
-											isProductDisabled
+											isProductDisabled ||
+											isVariantDisabled
 										}
 									>
 										<PaperPlaneTiltIcon className="size-4" />

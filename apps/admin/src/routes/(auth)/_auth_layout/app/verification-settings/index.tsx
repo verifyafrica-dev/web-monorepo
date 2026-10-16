@@ -3,6 +3,8 @@ import {
 	FloppyDiskIcon,
 	GlobeHemisphereWestIcon,
 	PackageIcon,
+	SlidersIcon,
+	StackIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useMemo, useState } from "react";
@@ -24,6 +26,10 @@ import {
 	GlobalCountriesTab,
 	ProductCountriesTab,
 } from "./-components/country-availability-tabs";
+import {
+	GlobalProductsTab,
+	ProductVariantsTab,
+} from "./-components/product-availability-tabs";
 import {
 	buildVerificationPriceUpdates,
 	groupVerificationPrices,
@@ -160,6 +166,20 @@ function VerificationSettingsPage() {
 							<PackageIcon />
 							Product Countries
 						</TabsTrigger>
+						<TabsTrigger
+							value="global-products"
+							className="shrink-0 flex-none"
+						>
+							<SlidersIcon />
+							Global Products
+						</TabsTrigger>
+						<TabsTrigger
+							value="product-variants"
+							className="shrink-0 flex-none"
+						>
+							<StackIcon />
+							Product Variants
+						</TabsTrigger>
 					</TabsList>
 				</div>
 
@@ -169,6 +189,12 @@ function VerificationSettingsPage() {
 				</TabsContent>
 				<TabsContent value="product-countries">
 					<ProductCountriesTab />
+				</TabsContent>
+				<TabsContent value="global-products">
+					<GlobalProductsTab />
+				</TabsContent>
+				<TabsContent value="product-variants">
+					<ProductVariantsTab />
 				</TabsContent>
 			</Tabs>
 		</div>
