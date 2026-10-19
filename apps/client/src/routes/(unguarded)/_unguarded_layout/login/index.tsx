@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useUserV2LoginMutation } from "#/api/http/v2/users/users.hooks";
+import { env } from "#/config/env";
 import {
 	type UserLoginPayload,
 	UserLoginSchema,
@@ -75,6 +76,12 @@ function LoginPage() {
 							return;
 						}
 
+						if (user.must_change_password) {
+							toast.message("Choose a new password to continue");
+							navigate({ to: "/app", replace: true });
+							return;
+						}
+
 						const tenants = normalizeUserTenants(user.tenants);
 						if (tenants.length === 0) {
 							toast.message("Membership deactivated", {
@@ -119,12 +126,25 @@ function LoginPage() {
 			footer={
 				<p className="mt-6 text-center text-sm text-muted-foreground">
 					Don&apos;t have an account?{" "}
-					<Link
-						to="/register"
-						className="font-semibold text-foreground hover:underline"
-					>
-						Create an account
-					</Link>
+					{env.isPublicSignupEnabled ? (
+						<Link
+							to="/register"
+							className="font-semibold text-foreground hover:underline"
+						>
+							Create an account
+						</Link>
+					) : (
+						<>
+							Contact{" "}
+							<a
+								href={`mailto:${SUPPORT_EMAIL}`}
+								className="font-semibold text-foreground hover:underline"
+							>
+								{SUPPORT_EMAIL}
+							</a>{" "}
+							to request a test account.
+						</>
+					)}
 				</p>
 			}
 		>

@@ -337,6 +337,21 @@ export type UserAdminPatchUpdatePayload = z.infer<
 	typeof UserAdminPatchUpdateSchema
 >;
 
+export const AdminTestAccountCreateSchema = z.object({
+	tenant_name: z.string().trim().min(1, { message: "Organization name is required" }),
+	tenant_email: z.union([
+		z.literal(""),
+		z.email({ message: "Invalid organization email" }),
+	]),
+	first_name: z.string().trim().min(1, { message: "First name is required" }),
+	last_name: z.string().trim().min(1, { message: "Last name is required" }),
+	email: z.email({ message: "Invalid email address" }),
+});
+
+export type AdminTestAccountCreatePayload = z.infer<
+	typeof AdminTestAccountCreateSchema
+>;
+
 export interface UserTenantMembership {
 	id: string;
 	name: string;
@@ -372,6 +387,7 @@ export interface UserDetail {
 	avatar_url?: string;
 	tenants: UserTenantMembership | UserTenantMembership[] | null;
 	is_active?: boolean;
+	must_change_password?: boolean;
 	last_login?: string | null;
 	created_at: string;
 }
@@ -390,6 +406,8 @@ export interface UserSession {
 	phone_number?: string | null;
 	avatar_url?: string;
 	is_active?: boolean;
+	/** Signed in with a platform-issued temporary password that must be replaced. */
+	must_change_password?: boolean;
 	tenants: UserTenantMembership[];
 }
 

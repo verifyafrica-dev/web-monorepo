@@ -11,6 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { useUserV2RegisterMutation } from "#/api/http/v2/users/users.hooks";
+import { env } from "#/config/env";
 import {
 	UserRegisterFormSchema,
 	type UserRegisterFormValues,
@@ -40,7 +41,46 @@ export const Route = createFileRoute(
 	component: RegisterPage,
 });
 
+const SUPPORT_EMAIL = "support@verifyafrica.io";
+
 function RegisterPage() {
+	return env.isPublicSignupEnabled ? <RegisterForm /> : <SignupUnavailable />;
+}
+
+function SignupUnavailable() {
+	return (
+		<AuthPageShell
+			title="Request a test account"
+			subtitle="Sign up is not available on the test environment"
+		>
+			<div className="flex flex-col items-center gap-4 text-center">
+				<EnvelopeSimpleIcon className="size-12 text-primary" />
+				<p className="text-sm leading-relaxed text-muted-foreground">
+					Test accounts are created by the VerifyAfrica team. Contact{" "}
+					<a
+						href={`mailto:${SUPPORT_EMAIL}`}
+						className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+					>
+						{SUPPORT_EMAIL}
+					</a>{" "}
+					to request one. You will receive your sign-in details by email.
+				</p>
+				<div className="flex w-full flex-col gap-2">
+					<Button type="button" className="w-full" asChild>
+						<a href={`mailto:${SUPPORT_EMAIL}?subject=Test%20account%20request`}>
+							Contact support
+						</a>
+					</Button>
+					<Button type="button" variant="outline" className="w-full" asChild>
+						<Link to="/login">Back to sign in</Link>
+					</Button>
+				</div>
+			</div>
+		</AuthPageShell>
+	);
+}
+
+function RegisterForm() {
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 	const navigate = useNavigate();
