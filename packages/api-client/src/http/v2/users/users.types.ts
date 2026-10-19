@@ -147,6 +147,24 @@ export type UserChangePasswordFormValues = z.infer<
 	typeof UserChangePasswordFormSchema
 >;
 
+export const UserCompletePasswordChangeSchema = z
+	.object({
+		new_password: z
+			.string()
+			.min(8, { message: "Password must be at least 8 characters long" }),
+		confirm_new_password: z
+			.string()
+			.min(8, { message: "Password must be at least 8 characters long" }),
+	})
+	.refine((data) => data.new_password === data.confirm_new_password, {
+		message: "Passwords do not match",
+		path: ["confirm_new_password"],
+	});
+
+export type UserCompletePasswordChangePayload = z.infer<
+	typeof UserCompletePasswordChangeSchema
+>;
+
 export const AdminRequestPasswordOtpSchema = z.object({
 	email: z.email({ message: "Invalid email address" }),
 });

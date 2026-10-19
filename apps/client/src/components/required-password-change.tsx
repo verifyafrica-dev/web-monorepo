@@ -1,14 +1,13 @@
 import { EyeIcon, EyeSlashIcon, LockIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import {
-	UserChangePasswordFormSchema,
-	type UserChangePasswordFormValues,
+	UserCompletePasswordChangeSchema,
+	type UserCompletePasswordChangePayload,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -19,12 +18,10 @@ import {
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
-import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import {
-	useUserV2ChangePasswordMutation,
+	useUserV2CompletePasswordChangeMutation,
 	useUserV2LogoutMutation,
 } from "#/api/http/v2/users/users.hooks";
-import { useAuthStore } from "#/stores/auth-store";
 
 type PasswordInputProps = {
 	id: string;
@@ -88,56 +85,44 @@ function PasswordInput({
 
 export function RequiredPasswordChange() {
 	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	const changePasswordMutation = useUserV2ChangePasswordMutation();
+	const completePasswordChangeMutation = useUserV2CompletePasswordChangeMutation();
 	const { logout, isLoggingOut } = useUserV2LogoutMutation();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 
 	const form = useForm({
 		defaultValues: {
-			old_password: "",
 			new_password: "",
-			confirm_password: "",
-		} satisfies UserChangePasswordFormValues,
+			confirm_new_password: "",
+		} satisfies UserCompletePasswordChangePayload,
 		validators: {
-			onSubmit: UserChangePasswordFormSchema,
+			onSubmit: UserCompletePasswordChangeSchema,
 		},
 		onSubmit: async ({ value }) => {
 			setFormErrors([]);
 
-			await changePasswordMutation.mutateAsync(
-				{
-					old_password: value.old_password,
-					new_password: value.new_password,
+			await completePasswordChangeMutation.mutateAsync(value, {
+				onSuccess: () => {
+					toast.success("Password updated. Welcome to VerifyAfrica!");
+					navigate({ to: "/app", replace: true });
 				},
-				{
-					onSuccess: () => {
-						// Changing the password revokes every session, including this one.
-						deleteAllCookies();
-						useAuthStore.getState().clearAuth();
-						queryClient.clear();
-						toast.success("Password updated. Sign in with your new password.");
-						navigate({ to: "/login", replace: true });
-					},
-					onError: (error) => {
-						const data = (error as V2AxiosError).response?.data;
+				onError: (error) => {
+					const data = (error as V2AxiosError).response?.data;
 
-						if (data?.errors?.length) {
-							setFormErrors(data.errors.map((message) => ({ message })));
-						} else if (data?.message) {
-							setFormErrors([{ message: data.message }]);
-						} else {
-							setFormErrors([
-								{ message: "Failed to change password. Please try again." },
-							]);
-						}
-					},
+					if (data?.errors?.length) {
+						setFormErrors(data.errors.map((message) => ({ message })));
+					} else if (data?.message) {
+						setFormErrors([{ message: data.message }]);
+					} else {
+						setFormErrors([
+							{ message: "Failed to change password. Please try again." },
+						]);
+					}
 				},
-			);
+			});
 		},
 	});
 
-	const isSubmitting = changePasswordMutation.isPending;
+	const isSubmitting = completePasswordChangeMutation.isPending;
 
 	return (
 		<div className="flex min-h-dvh flex-col items-center justify-center px-4 py-12">
@@ -161,20 +146,6 @@ export function RequiredPasswordChange() {
 						}}
 					>
 						<FieldGroup className="grid gap-4">
-							<form.Field name="old_password">
-								{(field) => (
-									<PasswordInput
-										id="temporary-password"
-										label="Temporary Password"
-										placeholder="Enter the password from your email"
-										autoComplete="current-password"
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={field.handleChange}
-										errors={field.state.meta.errors}
-									/>
-								)}
-							</form.Field>
 							<form.Field name="new_password">
 								{(field) => (
 									<PasswordInput
@@ -189,7 +160,7 @@ export function RequiredPasswordChange() {
 									/>
 								)}
 							</form.Field>
-							<form.Field name="confirm_password">
+							<form.Field name="confirm_new_password">
 								{(field) => (
 									<PasswordInput
 										id="confirm-password"
