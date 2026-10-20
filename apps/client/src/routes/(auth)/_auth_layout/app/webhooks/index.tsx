@@ -19,6 +19,7 @@ import {
 } from "@verifyafrica/config/domains";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import { env } from "#/config/env";
 import {
 	Card,
 	CardContent,
@@ -213,7 +214,9 @@ function ConfigurationTab() {
 							</div>
 							<div>
 								<CardTitle className="font-semibold">
-									Production API Key
+									{env.deployEnvironment === "production"
+										? "Production API Key"
+										: "Test API Key"}
 								</CardTitle>
 								<CardDescription>
 									{apiKey.is_active

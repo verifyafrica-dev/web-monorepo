@@ -8,7 +8,7 @@ export function RiskAssessmentInfoPanel() {
 				<section className="space-y-4">
 					<h2 className="text-sm font-semibold text-secondary">How It Works</h2>
 					<p className="text-sm leading-relaxed text-muted-foreground">
-						Send the customer a Shufti-hosted questionnaire for the selected risk
+						Send the customer a hosted questionnaire for the selected risk
 						profile. Their answers are scored and the report shows the risk
 						range, the score breakdown and every answer.
 					</p>
@@ -23,9 +23,9 @@ export function RiskAssessmentInfoPanel() {
 						<div className="space-y-1">
 							<p className="text-sm font-medium">Risk Profile</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								An industry questionnaire configured on Shufti, such as
-								Gaming/Gambling or Banking/FinTech. Test credentials only
-								accept test profiles.
+								An industry questionnaire, such as Gaming/Gambling or
+								Banking/FinTech. The test environment only accepts test
+								profiles.
 							</p>
 						</div>
 
@@ -33,7 +33,7 @@ export function RiskAssessmentInfoPanel() {
 							<p className="text-sm font-medium">Risk Range</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
 								The band the total score falls into: low, medium, high or
-								prohibited. The thresholds are set on the profile in Shufti.
+								prohibited. Each profile has its own thresholds.
 							</p>
 						</div>
 
@@ -41,8 +41,8 @@ export function RiskAssessmentInfoPanel() {
 							<p className="text-sm font-medium">Link Only</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
 								There is no direct mode, because the score depends on the
-								customer's own answers. Shufti may also ask for a quick face
-								check.
+								customer's own answers. The customer may also be asked for a
+								quick face check.
 							</p>
 						</div>
 					</div>

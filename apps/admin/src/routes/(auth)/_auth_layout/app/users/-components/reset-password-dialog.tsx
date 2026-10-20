@@ -73,7 +73,11 @@ function ResetPasswordDialogContent({
 					<AlertDialogTitle>Reset Password?</AlertDialogTitle>
 					<AlertDialogDescription>
 						A new temporary password will be generated and emailed to{" "}
-						<strong>{user.email}</strong>. This action cannot be undone.
+						<strong>{user.email}</strong>.
+						{user.is_superuser
+							? ""
+							: " They will be asked to choose a new password when they next sign in."}{" "}
+						This action cannot be undone.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

@@ -9,6 +9,7 @@ import type {
 	AdminChangePasswordWithOtpPayload,
 	AdminRequestPasswordOtpPayload,
 	AdminResetPasswordWithOtpPayload,
+	AdminTestAccountCreatePayload,
 	AdminUser,
 	AuthResponseData,
 	InvitationAcceptPayload,
@@ -40,6 +41,7 @@ const USER_V2_ENDPOINTS = {
 	list: "/v2/users/",
 	detail: (id: string) => `/v2/users/${id}/`,
 	adminResetPassword: (id: string) => `/v2/users/${id}/reset-password/`,
+	adminTestAccounts: "/v2/users/test-accounts/",
 	activateAccount: "/v2/users/activate-account/",
 	adminLogin: "/v2/users/admin/login/",
 	adminForgotPassword: "/v2/users/admin/forgot-password/",
@@ -92,6 +94,13 @@ export const USERS_V2_API = {
 		await $http
 			.post(USER_V2_ENDPOINTS.adminResetPassword(userId), {})
 			.then((res) => unwrapV2Message(res)),
+
+	ADMIN_CREATE_TEST_ACCOUNT: async (
+		data: AdminTestAccountCreatePayload,
+	): Promise<AdminUser> =>
+		await $http
+			.post(USER_V2_ENDPOINTS.adminTestAccounts, data)
+			.then((res) => unwrapV2Data<AdminUser>(res)),
 
 	ACTIVATE_ACCOUNT: async (
 		data: UserActivateAccountPayload,

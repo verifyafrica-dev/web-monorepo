@@ -3,6 +3,7 @@ import {
 	DotsThreeVerticalIcon,
 	FunnelIcon,
 	MagnifyingGlassIcon,
+	UserPlusIcon,
 	UsersIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -50,8 +51,10 @@ import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { getUserInitials } from "#/lib/user.ts";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { env } from "#/config/env";
 import { useAuthStore } from "#/stores/auth-store";
 import { getTenantAvatarColor } from "../tenants/-data";
+import { CreateTestAccountDialog } from "./-components/create-test-account-dialog";
 import { ResetPasswordDialog } from "./-components/reset-password-dialog";
 import { ToggleUserAccountDialog } from "./-components/toggle-user-account-dialog";
 import { UserDetailsDialog } from "./-components/user-details-dialog";
@@ -129,6 +132,7 @@ function UsersPage() {
 	const [detailsOpen, setDetailsOpen] = useState(false);
 	const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
 	const [toggleAccountOpen, setToggleAccountOpen] = useState(false);
+	const [createTestAccountOpen, setCreateTestAccountOpen] = useState(false);
 	const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
 	const userListQuery = useMemo(
@@ -243,6 +247,12 @@ function UsersPage() {
 						/>
 						Refresh
 					</Button>
+					{env.isTestAccountCreationEnabled ? (
+						<Button onClick={() => setCreateTestAccountOpen(true)}>
+							<UserPlusIcon weight="bold" />
+							Create Test Account
+						</Button>
+					) : null}
 				</div>
 			</div>
 
@@ -451,6 +461,13 @@ function UsersPage() {
 				}}
 				onSuccess={() => void usersQuery.refetch()}
 			/>
+
+			{env.isTestAccountCreationEnabled ? (
+				<CreateTestAccountDialog
+					open={createTestAccountOpen}
+					onOpenChange={setCreateTestAccountOpen}
+				/>
+			) : null}
 		</div>
 	);
 }
@@ -544,6 +561,14 @@ function UserRow({
 				>
 					{user.is_active ? "Active" : "Inactive"}
 				</Badge>
+				{user.must_change_password ? (
+					<Badge
+						variant="outline"
+						className="ml-1 border-amber-200 bg-amber-50 text-amber-700"
+					>
+						Password change pending
+					</Badge>
+				) : null}
 			</TableCell>
 			<TableCell>{formatUserLastActive(user.last_login)}</TableCell>
 			<TableCell className="pr-4 text-right sm:pr-6">

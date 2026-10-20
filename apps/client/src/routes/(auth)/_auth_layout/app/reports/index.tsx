@@ -14,14 +14,11 @@ import { shouldShowDashboardOnboarding } from "../-data";
 import { useCurrentTenant } from "../team/-data";
 import { BatchVerificationsTab } from "./-components/batch-verifications-tab";
 import { IndividualVerificationsTab } from "./-components/individual-verifications-tab";
-import { COUNTRY_CODE_MAP } from "./-data";
 import {
 	mergeReportsSearchParams,
 	type ReportsSearchParams,
 	reportsSearchSchema,
 } from "./-filter-utils";
-
-const REPORTS_COUNTRIES = Object.values(COUNTRY_CODE_MAP).sort();
 
 export const Route = createFileRoute("/(auth)/_auth_layout/app/reports/")({
 	head: () => ({
@@ -74,7 +71,6 @@ function ReportsPage() {
 				<IndividualVerificationsTab
 					tenantId={tenantId}
 					searchParams={urlSearch}
-					countries={REPORTS_COUNTRIES}
 					updateSearchParams={updateSearchParams}
 				/>
 			);
@@ -84,7 +80,6 @@ function ReportsPage() {
 			<BatchVerificationsTab
 				tenantId={tenantId}
 				searchParams={urlSearch}
-				countries={REPORTS_COUNTRIES}
 				updateSearchParams={updateSearchParams}
 			/>
 		);

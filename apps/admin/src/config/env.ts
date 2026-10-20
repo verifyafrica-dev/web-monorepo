@@ -5,6 +5,13 @@
  * All variables must be prefixed with VITE_ to be accessible in the browser.
  */
 
+import { detectDeployEnvironment } from '@verifyafrica/config/domains';
+
+// Derived from the API URL rather than window.location so SSR and hydration agree.
+const deployEnvironment = import.meta.env.VITE_API_BASE_URL
+  ? detectDeployEnvironment(new URL(import.meta.env.VITE_API_BASE_URL).host)
+  : 'local';
+
 export const env = {
   // API Configuration
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
@@ -40,6 +47,9 @@ export const env = {
   isProduction: import.meta.env.PROD,
   isPublicSite: import.meta.env.VITE_SITE_TYPE === 'public',
   isDashboardSite: import.meta.env.VITE_SITE_TYPE === 'dashboard',
+  deployEnvironment,
+  // Mirrors the backend: superusers create accounts only where public signup is off.
+  isTestAccountCreationEnabled: deployEnvironment !== 'production',
 } as const;
 
 // Helper to log environment info (development only)

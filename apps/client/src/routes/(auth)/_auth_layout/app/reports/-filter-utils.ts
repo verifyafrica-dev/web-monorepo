@@ -2,8 +2,15 @@ import { z } from "zod";
 
 import {
 	VERIFICATION_STATUS_OPTIONS,
-	VERIFICATION_TYPE_OPTIONS,
+	VERIFICATION_TYPES_BY_PRODUCT,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
+import { getProductSlugForVerificationType } from "../products/-data";
+import {
+	getCountryCode,
+	getCountrySelectOptions,
+} from "@verifyafrica/ui/lib/country-state-city";
+
 import type {
 	VerificationBatchListQuery,
 	VerificationListQuery,
@@ -104,7 +111,8 @@ export function getIndividualFiltersFromSearch(
 		search: searchDraft,
 		verificationType: search.verification_type ?? "all",
 		status: search.status ?? "all",
-		country: search.country ?? "all",
+		// Older links stored the country name ("Nigeria"); the select is keyed by ISO code.
+		country: (search.country && getCountryCode(search.country)) || "all",
 	};
 }
 
@@ -138,15 +146,105 @@ export function buildReportsListQuery(
 
 	query.has_batch = false;
 	appendOptionalString(query, "status", filters.status);
-	appendOptionalString(query, "verification_type", filters.verificationType);
+	appendOptionalString(
+		query,
+		"verification_type",
+		resolveVerificationTypeFilter(filters.verificationType),
+	);
 	appendOptionalString(query, "country", filters.country);
 
 	return query as VerificationListQuery;
 }
 
-export const REPORTS_VERIFICATION_TYPES = VERIFICATION_TYPE_OPTIONS;
-export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS
+export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS;
 
 export function formatVerificationTypeLabel(type: string) {
 	return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+const VERIFICATION_TYPE_GROUP_PREFIX = "group:";
+
+export type ReportsVerificationTypeGroup = {
+	/** Filter value: a `group:<slug>` key for multi-type products, otherwise the single type. */
+	value: string;
+	label: string;
+	/** Selectable types under the group; empty for single-type products. */
+	types: { value: string; label: string }[];
+	verificationTypes: readonly string[];
+};
+
+function slugify(label: string) {
+	return label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "");
+}
+
+// Built on first use: computing these while the module loads crashed SSR, because the
+// country and product modules they read were not initialised yet in the server bundle.
+let countryOptions: ReturnType<typeof getCountrySelectOptions> | undefined;
+let verificationTypeGroups: ReportsVerificationTypeGroup[] | undefined;
+
+/** Every country from country-state-city; the filter value is the ISO alpha-2 code. */
+export function getReportsCountryOptions() {
+	countryOptions ??= getCountrySelectOptions();
+	return countryOptions;
+}
+
+export function getReportsVerificationTypeGroups(): ReportsVerificationTypeGroup[] {
+	if (verificationTypeGroups) {
+		return verificationTypeGroups;
+	}
+
+	const typeLabels: Record<string, string> = Object.fromEntries(
+		Object.values(VERIFICATION_TYPES).map((type) => [type.value, type.label]),
+	);
+
+	verificationTypeGroups = Object.entries(VERIFICATION_TYPES_BY_PRODUCT)
+		// Types without a dashboard product (Age, 2FA) are legacy provider types, not offered.
+		.filter(([, types]) => getProductSlugForVerificationType(types[0]) !== null)
+		.map(([label, types]) => {
+			const isMultiType = types.length > 1;
+			return {
+				value: isMultiType
+					? `${VERIFICATION_TYPE_GROUP_PREFIX}${slugify(label)}`
+					: types[0],
+				label,
+				types: isMultiType
+					? types.map((type) => ({
+							value: type,
+							label: typeLabels[type] ?? formatVerificationTypeLabel(type),
+						}))
+					: [],
+				verificationTypes: types,
+			};
+		});
+	return verificationTypeGroups;
+}
+
+export function getVerificationTypeFilterLabel(value: string) {
+	if (!value || value === "all") {
+		return "All Types";
+	}
+	for (const group of getReportsVerificationTypeGroups()) {
+		if (group.value === value) {
+			return group.types.length > 0 ? `All ${group.label}` : group.label;
+		}
+		const type = group.types.find((item) => item.value === value);
+		if (type) {
+			return type.label;
+		}
+	}
+	return formatVerificationTypeLabel(value);
+}
+
+/** Expand a selected group into the comma-separated types the list API accepts. */
+export function resolveVerificationTypeFilter(value: string) {
+	if (!value.startsWith(VERIFICATION_TYPE_GROUP_PREFIX)) {
+		return value;
+	}
+	const group = getReportsVerificationTypeGroups().find(
+		(item) => item.value === value,
+	);
+	return group ? group.verificationTypes.join(",") : "all";
 }

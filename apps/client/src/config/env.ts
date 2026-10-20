@@ -1,3 +1,4 @@
+import { detectDeployEnvironment } from "@verifyafrica/config/domains";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -26,6 +27,10 @@ if (!parsed.success) {
 }
 
 const data = parsed.data;
+// Derived from the API URL rather than window.location so SSR and hydration agree.
+const deployEnvironment = detectDeployEnvironment(
+	new URL(data.VITE_API_BASE_URL).host,
+);
 
 export const env = {
 	...parsed.data,
@@ -46,6 +51,9 @@ export const env = {
 	isProduction: import.meta.env.PROD,
 	isPublicSite: data.VITE_SITE_TYPE === "public",
 	isDashboardSite: data.VITE_SITE_TYPE === "dashboard",
+	deployEnvironment,
+	// Test (and local) APIs only accept superuser-created accounts.
+	isPublicSignupEnabled: deployEnvironment === "production",
 } as const;
 
 export type Env = z.infer<typeof envSchema>;

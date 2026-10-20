@@ -13,6 +13,7 @@ import {
 } from "#/api/http/v2/users/users.hooks";
 import { AppSidebar } from "#/components/app-sidebar";
 import { NoOrganizationState } from "#/components/no-organization-state";
+import { RequiredPasswordChange } from "#/components/required-password-change";
 import {
 	Avatar,
 	AvatarFallback,
@@ -83,6 +84,11 @@ function AuthLayout() {
 	}
 
 	const user = getUserQuery.data;
+
+	if (user?.must_change_password) {
+		return <RequiredPasswordChange />;
+	}
+
 	const tenants = user ? normalizeUserTenants(user.tenants) : [];
 	const displayName =
 		[user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() ||

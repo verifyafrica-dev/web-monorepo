@@ -17,6 +17,7 @@ import type {
 	UserAdminPatchUpdatePayload,
 	UserAdminPutUpdatePayload,
 	UserChangePasswordPayload,
+	UserCompletePasswordChangePayload,
 	UserForgotPasswordPayload,
 	UserListQuery,
 	UserLoginPayload,
@@ -36,6 +37,7 @@ const USER_V2_ENDPOINTS = {
 	detail: (id: string) => `/v2/users/${id}/`,
 	activateAccount: "/v2/users/activate-account/",
 	changePassword: "/v2/users/change-password/",
+	completePasswordChange: "/v2/users/complete-password-change/",
 	forgotPassword: "/v2/users/forgot-password/",
 	login: "/v2/users/login/",
 	logout: "/v2/users/logout/",
@@ -90,6 +92,13 @@ export const USERS_V2_API = {
 		await $http
 			.post(USER_V2_ENDPOINTS.changePassword, data)
 			.then((res) => unwrapV2Message(res)),
+
+	COMPLETE_PASSWORD_CHANGE: async (
+		data: UserCompletePasswordChangePayload,
+	): Promise<AuthResponseData> =>
+		await $http
+			.post(USER_V2_ENDPOINTS.completePasswordChange, data)
+			.then((res) => unwrapV2Data<AuthResponseData>(res)),
 
 	FORGOT_PASSWORD: async (data: UserForgotPasswordPayload): Promise<string> =>
 		await $http

@@ -24,11 +24,7 @@ export const UserListSortBySchema = z.enum([
 export type UserListSortBy = z.infer<typeof UserListSortBySchema>;
 
 export const UserLoginSchema = z.object({
-	email: z
-		.email({ message: "Invalid email address" })
-		.refine((value) => !isBlockedregisterEmailDomain(value), {
-			message: PUBLIC_EMAIL_DOMAIN_ERROR_MESSAGE,
-		}),
+	email: z.email({ message: "Invalid email address" }),
 	password: z
 		.string()
 		.min(8, { message: "Password must be at least 8 characters long" }),
@@ -149,6 +145,24 @@ export const UserChangePasswordFormSchema = UserChangePasswordSchema.extend({
 
 export type UserChangePasswordFormValues = z.infer<
 	typeof UserChangePasswordFormSchema
+>;
+
+export const UserCompletePasswordChangeSchema = z
+	.object({
+		new_password: z
+			.string()
+			.min(8, { message: "Password must be at least 8 characters long" }),
+		confirm_new_password: z
+			.string()
+			.min(8, { message: "Password must be at least 8 characters long" }),
+	})
+	.refine((data) => data.new_password === data.confirm_new_password, {
+		message: "Passwords do not match",
+		path: ["confirm_new_password"],
+	});
+
+export type UserCompletePasswordChangePayload = z.infer<
+	typeof UserCompletePasswordChangeSchema
 >;
 
 export const AdminRequestPasswordOtpSchema = z.object({
@@ -337,6 +351,21 @@ export type UserAdminPatchUpdatePayload = z.infer<
 	typeof UserAdminPatchUpdateSchema
 >;
 
+export const AdminTestAccountCreateSchema = z.object({
+	tenant_name: z.string().trim().min(1, { message: "Organization name is required" }),
+	tenant_email: z.union([
+		z.literal(""),
+		z.email({ message: "Invalid organization email" }),
+	]),
+	first_name: z.string().trim().min(1, { message: "First name is required" }),
+	last_name: z.string().trim().min(1, { message: "Last name is required" }),
+	email: z.email({ message: "Invalid email address" }),
+});
+
+export type AdminTestAccountCreatePayload = z.infer<
+	typeof AdminTestAccountCreateSchema
+>;
+
 export interface UserTenantMembership {
 	id: string;
 	name: string;
@@ -372,6 +401,7 @@ export interface UserDetail {
 	avatar_url?: string;
 	tenants: UserTenantMembership | UserTenantMembership[] | null;
 	is_active?: boolean;
+	must_change_password?: boolean;
 	last_login?: string | null;
 	created_at: string;
 }
@@ -390,6 +420,8 @@ export interface UserSession {
 	phone_number?: string | null;
 	avatar_url?: string;
 	is_active?: boolean;
+	/** Signed in with a platform-issued temporary password that must be replaced. */
+	must_change_password?: boolean;
 	tenants: UserTenantMembership[];
 }
 

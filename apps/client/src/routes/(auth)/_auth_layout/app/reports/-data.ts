@@ -2,6 +2,7 @@ import type {
 	VerificationBatch,
 	VerificationRequest,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { getCountryByCode } from "@verifyafrica/ui/lib/country-state-city";
 import { isPlainObject } from "@verifyafrica/ui/lib/validators";
 
 export type VerificationReport = {
@@ -27,15 +28,6 @@ export type BatchVerificationReport = {
 };
 
 export const REPORTS_PAGE_SIZE = 10;
-
-export const COUNTRY_CODE_MAP: Record<string, string> = {
-	ci: "Côte d'Ivoire",
-	gh: "Ghana",
-	ke: "Kenya",
-	ng: "Nigeria",
-	za: "South Africa",
-	us: "United States",
-};
 
 function capitalize(value: string) {
 	return value.charAt(0).toUpperCase() + value.slice(1);
@@ -77,8 +69,7 @@ export function getVerificationCountry(
 	const idType = innerData.id_type;
 
 	if (typeof idType === "string" && idType.length >= 2) {
-		const prefix = idType.substring(0, 2).toLowerCase();
-		return COUNTRY_CODE_MAP[prefix];
+		return getCountryByCode(idType.substring(0, 2))?.name;
 	}
 
 	return undefined;

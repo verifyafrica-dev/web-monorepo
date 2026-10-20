@@ -14,7 +14,7 @@ export interface VerificationLink {
 	verification_id: string;
 	verification_reference: string;
 	provider: string;
-	link_type?: "shufti_link" | "verify_link" | string;
+	link_type?: "sf_link" | "verify_link" | string;
 	ttl_minutes?: number | null;
 	expires_at?: string | null;
 	used_at?: string | null;
@@ -857,11 +857,18 @@ export interface ProductAvailabilityProduct {
 export interface ProductAvailabilityVariant {
 	value: string;
 	label: string;
+	/** Lowercase country code, e.g. `ng`. */
+	country: string;
+	country_name: string;
+	/** Label without the country, e.g. `BVN`. */
+	type_label: string;
 }
 
 export interface ProductAvailability {
 	global_disabled: string[];
 	variant_disabled: Record<string, string[]>;
+	/** Per variant-scoped product: countries with every check turned off. */
+	variant_disabled_countries: Record<string, string[]>;
 	products: ProductAvailabilityProduct[];
 	variants: Record<string, ProductAvailabilityVariant[]>;
 }
@@ -870,6 +877,8 @@ export interface ProductAvailabilityUpdatePayload {
 	/** Empty string for global product switches, otherwise a variant-scoped product slug. */
 	product: string;
 	disabled_keys: string[];
+	/** Variant-scoped products only; omit to keep the current country switches. */
+	disabled_countries?: string[];
 }
 
 export function isGovernmentRegistryChecksVerificationDetail(

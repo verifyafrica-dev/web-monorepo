@@ -200,7 +200,7 @@ export function WebhookFormCard() {
 						<CardTitle className="font-semibold">Webhook URL</CardTitle>
 						<CardDescription>
 							{isConfigured
-								? "Receive Shufti (`sf.`) and Kora (`kr.`) verification events at your endpoint"
+								? "Receive verification events (prefixed `sf.` and `kr.`) at your endpoint"
 								: "Add an endpoint to receive verification events"}
 						</CardDescription>
 					</div>

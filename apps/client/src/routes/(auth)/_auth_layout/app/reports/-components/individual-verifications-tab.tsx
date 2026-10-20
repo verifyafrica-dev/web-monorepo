@@ -27,7 +27,6 @@ import {
 	buildReportsListQuery,
 	getIndividualFiltersFromSearch,
 	REPORTS_VERIFICATION_STATUSES,
-	REPORTS_VERIFICATION_TYPES,
 	type ReportsFiltersFormValues,
 	type ReportsSearchParams,
 } from "../-filter-utils";
@@ -54,14 +53,12 @@ const COLUMNS = [
 type IndividualVerificationsTabProps = {
 	tenantId: string;
 	searchParams: ReportsSearchParams;
-	countries: string[];
 	updateSearchParams: (patch: Partial<ReportsSearchParams>) => void;
 };
 
 export function IndividualVerificationsTab({
 	tenantId,
 	searchParams,
-	countries,
 	updateSearchParams,
 }: IndividualVerificationsTabProps) {
 	const page = searchParams.page ?? 1;
@@ -147,9 +144,7 @@ export function IndividualVerificationsTab({
 			<ReportsFiltersForm
 				scope="requests"
 				values={filters}
-				verificationTypes={REPORTS_VERIFICATION_TYPES}
 				statuses={REPORTS_VERIFICATION_STATUSES}
-				countries={countries}
 				totalCount={total}
 				filteredCount={total}
 				disabled={verificationRequestsQuery.isPending}

@@ -27,6 +27,7 @@ import type {
 	UserAdminPutUpdatePayload,
 	UserApiErrorResponse,
 	UserChangePasswordPayload,
+	UserCompletePasswordChangePayload,
 	UserForgotPasswordPayload,
 	UserListQuery,
 	UserLoginError,
@@ -204,6 +205,26 @@ export const useUserV2ChangePasswordMutation = () =>
 	useMutation<string, UserLoginError, UserChangePasswordPayload>({
 		mutationFn: USERS_V2_API.CHANGE_PASSWORD,
 	});
+
+export const useUserV2CompletePasswordChangeMutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation<
+		AuthResponseData,
+		UserLoginError,
+		UserCompletePasswordChangePayload
+	>({
+		mutationFn: USERS_V2_API.COMPLETE_PASSWORD_CHANGE,
+		onSuccess: (data) => {
+			setAccessToken(data.access_token);
+			useAuthStore.setState({
+				access_token: data.access_token,
+				user: toAuthStoreUser(data.user),
+			});
+			queryClient.setQueryData(USER_V2_QUERY_KEYS.me, data.user);
+		},
+	});
+};
 
 export const useUserV2LogoutMutation = () => {
 	const navigate = useNavigate();

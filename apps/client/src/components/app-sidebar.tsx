@@ -86,7 +86,7 @@ const navItems = [
 		icon: ShieldCheckIcon,
 	},
 	{
-		title: "Webhooks",
+		title: "API & Webhooks",
 		to: "/app/webhooks",
 		icon: WebhooksLogoIcon,
 	},
