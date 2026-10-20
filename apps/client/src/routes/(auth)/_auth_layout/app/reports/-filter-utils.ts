@@ -5,6 +5,7 @@ import {
 	VERIFICATION_TYPES_BY_PRODUCT,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
+import { getProductSlugForVerificationType } from "../products/-data";
 import {
 	getCountryCode,
 	getCountrySelectOptions,
@@ -157,7 +158,7 @@ export function buildReportsListQuery(
 	return query as VerificationListQuery;
 }
 
-export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS
+export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS;
 
 export function formatVerificationTypeLabel(type: string) {
 	return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
@@ -186,22 +187,27 @@ function slugify(label: string) {
 }
 
 export const REPORTS_VERIFICATION_TYPE_GROUPS: ReportsVerificationTypeGroup[] =
-	Object.entries(VERIFICATION_TYPES_BY_PRODUCT).map(([label, types]) => {
-		const isMultiType = types.length > 1;
-		return {
-			value: isMultiType
-				? `${VERIFICATION_TYPE_GROUP_PREFIX}${slugify(label)}`
-				: types[0],
-			label,
-			types: isMultiType
-				? types.map((type) => ({
-						value: type,
-						label: VERIFICATION_TYPE_LABELS[type] ?? formatVerificationTypeLabel(type),
-					}))
-				: [],
-			verificationTypes: types,
-		};
-	});
+	Object.entries(VERIFICATION_TYPES_BY_PRODUCT)
+		// Types without a dashboard product (Age, 2FA) are legacy provider types, not offered.
+		.filter(([, types]) => getProductSlugForVerificationType(types[0]) !== null)
+		.map(([label, types]) => {
+			const isMultiType = types.length > 1;
+			return {
+				value: isMultiType
+					? `${VERIFICATION_TYPE_GROUP_PREFIX}${slugify(label)}`
+					: types[0],
+				label,
+				types: isMultiType
+					? types.map((type) => ({
+							value: type,
+							label:
+								VERIFICATION_TYPE_LABELS[type] ??
+								formatVerificationTypeLabel(type),
+						}))
+					: [],
+				verificationTypes: types,
+			};
+		});
 
 export function getVerificationTypeFilterLabel(value: string) {
 	if (!value || value === "all") {
@@ -224,6 +230,8 @@ export function resolveVerificationTypeFilter(value: string) {
 	if (!value.startsWith(VERIFICATION_TYPE_GROUP_PREFIX)) {
 		return value;
 	}
-	const group = REPORTS_VERIFICATION_TYPE_GROUPS.find((item) => item.value === value);
+	const group = REPORTS_VERIFICATION_TYPE_GROUPS.find(
+		(item) => item.value === value,
+	);
 	return group ? group.verificationTypes.join(",") : "all";
 }
