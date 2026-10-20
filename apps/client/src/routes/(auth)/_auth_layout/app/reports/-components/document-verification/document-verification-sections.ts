@@ -18,6 +18,7 @@ import {
 	submittedProof,
 	toCheckResult,
 	withoutEmpty,
+	formatLinkTtl,
 } from "../report-builders";
 import {
 	formatReportValue,
@@ -420,13 +421,8 @@ export function buildDocumentVerificationSections({
 	];
 
 	const providerCustomerId = asNonEmptyString(response.customer_unique_id);
-	const ttl = Number(input.ttl);
 	const additional = [
-		computed(
-			"ttl",
-			"Link Expiry",
-			Number.isFinite(ttl) && ttl > 0 ? `${ttl} minutes` : undefined,
-		),
+		computed("ttl", "Link Expiry", formatLinkTtl(input.ttl)),
 		computed("send_email", "Link Emailed to Customer", input.send_email, {
 			format: "yesNo",
 		}),

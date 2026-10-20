@@ -89,6 +89,17 @@ export function formatVerificationMode(value: unknown) {
 	return VERIFICATION_MODE_LABELS[raw.toLowerCase()] ?? formatHumanLabel(raw);
 }
 
+/** Hosted link lifetime: `1440` → "24 hours", `90` → "90 minutes". */
+export function formatLinkTtl(value: unknown): string | undefined {
+	const minutes = Number(value);
+	if (!Number.isFinite(minutes) || minutes <= 0) return undefined;
+	if (minutes >= 60 && minutes % 60 === 0 && minutes > 240) {
+		const hours = minutes / 60;
+		return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+	}
+	return `${minutes} minutes`;
+}
+
 /** Shufti check results are 1 / 0 / null; anything else is not a decided check. */
 export function toCheckResult(value: unknown): boolean | undefined {
 	if (value === 1 || value === "1" || value === true) return true;
@@ -212,12 +223,11 @@ export function linkSettingsFields(
 	input: UnknownRecord,
 	section: UnknownRecord = {},
 ): ReportField[] {
-	const ttl = Number(input.ttl);
 	return [
 		computed(
 			"ttl",
 			"Link Expiry",
-			Number.isFinite(ttl) && ttl > 0 ? `${ttl} minutes` : undefined,
+			formatLinkTtl(input.ttl),
 		),
 		computed("send_email", "Link Emailed to Customer", input.send_email, {
 			format: "yesNo",
