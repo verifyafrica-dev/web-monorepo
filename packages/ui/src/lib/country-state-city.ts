@@ -4,11 +4,7 @@ export { default as State } from "country-state-city/src/state";
 
 import Country from "country-state-city/src/country";
 
-const sortedCountries = Country.getAllCountries().sort((left, right) =>
-	left.name.localeCompare(right.name),
-);
-
-type CountryRecord = (typeof sortedCountries)[number];
+type CountryRecord = ReturnType<typeof Country.getAllCountries>[number];
 
 type CountrySelectOption = {
 	value: string;
@@ -17,35 +13,42 @@ type CountrySelectOption = {
 	isoCode: string;
 };
 
-const COUNTRY_BY_ISO_CODE = sortedCountries.reduce<Record<string, CountryRecord>>(
-	(acc, country) => {
-		acc[country.isoCode.toUpperCase()] = country;
-		return acc;
-	},
-	{},
-);
+type CountryTables = {
+	sorted: CountryRecord[];
+	byIsoCode: Record<string, CountryRecord>;
+	byName: Record<string, CountryRecord>;
+};
 
-const COUNTRY_BY_NAME = sortedCountries.reduce<Record<string, CountryRecord>>(
-	(acc, country) => {
-		acc[country.name.toLowerCase()] = country;
-		return acc;
-	},
-	{},
-);
+// Built on first use: module-level evaluation order is not guaranteed in the SSR bundle,
+// so importers that read these at load time could otherwise see them uninitialised.
+let tables: CountryTables | undefined;
 
-export const COUNTRY_NAME_BY_ISO_CODE = sortedCountries.reduce<
-	Record<string, string>
->((acc, country) => {
-	acc[country.isoCode.toUpperCase()] = country.name;
-	return acc;
-}, {});
+function getTables(): CountryTables {
+	if (tables) {
+		return tables;
+	}
+
+	const sorted = Country.getAllCountries().sort((left, right) =>
+		left.name.localeCompare(right.name),
+	);
+	const byIsoCode: Record<string, CountryRecord> = {};
+	const byName: Record<string, CountryRecord> = {};
+
+	for (const country of sorted) {
+		byIsoCode[country.isoCode.toUpperCase()] = country;
+		byName[country.name.toLowerCase()] = country;
+	}
+
+	tables = { sorted, byIsoCode, byName };
+	return tables;
+}
 
 export function getCountryByCode(countryCode?: string | null) {
 	if (!countryCode) {
 		return undefined;
 	}
 
-	return COUNTRY_BY_ISO_CODE[countryCode.trim().toUpperCase()];
+	return getTables().byIsoCode[countryCode.trim().toUpperCase()];
 }
 
 export function getCountryByName(name?: string | null) {
@@ -53,7 +56,7 @@ export function getCountryByName(name?: string | null) {
 		return undefined;
 	}
 
-	return COUNTRY_BY_NAME[name.trim().toLowerCase()];
+	return getTables().byName[name.trim().toLowerCase()];
 }
 
 export function getCountryCode(value?: string | null) {
@@ -99,11 +102,11 @@ export function getCountryName(value?: string | null) {
 }
 
 export function getSortedCountries() {
-	return sortedCountries;
+	return getTables().sorted;
 }
 
 export function getCountrySelectOptions() {
-	return sortedCountries.map<CountrySelectOption>((country) => {
+	return getTables().sorted.map<CountrySelectOption>((country) => {
 		const isoCode = country.isoCode.toUpperCase();
 
 		return {

@@ -29,8 +29,8 @@ import {
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	getVerificationTypeFilterLabel,
-	REPORTS_COUNTRY_OPTIONS,
-	REPORTS_VERIFICATION_TYPE_GROUPS,
+	getReportsCountryOptions,
+	getReportsVerificationTypeGroups,
 	type ReportsFiltersFormValues,
 	type ReportsListFilterScope,
 } from "../-filter-utils";
@@ -55,7 +55,9 @@ function VerificationTypeFilterMenu({
 					type="button"
 					className="flex h-9 w-full items-center justify-between gap-1.5 rounded-md border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 dark:hover:bg-input/50"
 				>
-					<span className="truncate">{getVerificationTypeFilterLabel(value)}</span>
+					<span className="truncate">
+						{getVerificationTypeFilterLabel(value)}
+					</span>
 					<CaretDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground" />
 				</button>
 			</DropdownMenuTrigger>
@@ -70,7 +72,7 @@ function VerificationTypeFilterMenu({
 					All Types
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
-				{REPORTS_VERIFICATION_TYPE_GROUPS.map((group) => {
+				{getReportsVerificationTypeGroups().map((group) => {
 					if (group.types.length === 0) {
 						return (
 							<DropdownMenuItem
@@ -89,7 +91,9 @@ function VerificationTypeFilterMenu({
 
 					return (
 						<DropdownMenuSub key={group.value}>
-							<DropdownMenuSubTrigger className={cn(isGroupActive && selectedClass)}>
+							<DropdownMenuSubTrigger
+								className={cn(isGroupActive && selectedClass)}
+							>
 								{group.label}
 							</DropdownMenuSubTrigger>
 							<DropdownMenuSubContent className="max-h-80 overflow-y-auto">
@@ -226,7 +230,11 @@ export function ReportsFiltersForm({
 									<SelectContent>
 										<SelectItem value="all">All Statuses</SelectItem>
 										{statuses.map((status) => (
-											<SelectItem key={status} value={status} data-keep-colors="">
+											<SelectItem
+												key={status}
+												value={status}
+												data-keep-colors=""
+											>
 												<VerificationStatusBadge status={status} />
 											</SelectItem>
 										))}
@@ -251,7 +259,7 @@ export function ReportsFiltersForm({
 										</SelectTrigger>
 										<SelectContent>
 											<SelectItem value="all">All Countries</SelectItem>
-											{REPORTS_COUNTRY_OPTIONS.map((country) => (
+											{getReportsCountryOptions().map((country) => (
 												<SelectItem key={country.value} value={country.value}>
 													<CountryOptionLabel
 														name={country.name}
