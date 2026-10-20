@@ -39,9 +39,9 @@ const riskAssessmentFormSchema = z.object({
 });
 
 const HOW_IT_WORKS = [
-	"We create a Shufti-hosted questionnaire link for your customer.",
-	"The customer answers the questions for the selected profile. Shufti may also ask for a quick face check.",
-	"Shufti scores the answers, and the report shows the risk range, score breakdown and every answer.",
+	"We create a hosted questionnaire link for your customer.",
+	"The customer answers the questions for the selected profile and may also be asked for a quick face check.",
+	"The answers are scored, and the report shows the risk range, score breakdown and every answer.",
 ];
 
 export function RiskAssessmentForm() {
@@ -106,7 +106,7 @@ export function RiskAssessmentForm() {
 							</p>
 							<p className="text-sm text-pretty text-muted-foreground">
 								The risk score is built from the customer's own answers, so
-								there is no direct mode. Shufti hosts the questionnaire.
+								there is no direct mode. The questionnaire is hosted for you.
 							</p>
 							<ol className="flex list-decimal flex-col gap-1 pl-4 text-sm text-pretty text-muted-foreground">
 								{HOW_IT_WORKS.map((step) => (
@@ -167,7 +167,7 @@ export function RiskAssessmentForm() {
 								</div>
 								<FieldDescription>
 									{isTestEnvironment
-										? "This environment uses Shufti test credentials, so only test profiles are available."
+										? "This is the test environment, so only test profiles are available."
 										: "Each profile asks industry-specific questions and has its own scoring thresholds."}
 								</FieldDescription>
 								<RadioGroup

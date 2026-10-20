@@ -62,7 +62,7 @@ function _PendingQuestionnaire() {
 				</p>
 				<p className="text-sm text-pretty text-muted-foreground">
 					Share the verification link above with the customer. The risk range,
-					scores and answers appear here once they finish the Shufti
+					scores and answers appear here once they finish the
 					questionnaire and any face check it asks for.
 				</p>
 			</div>
@@ -169,9 +169,9 @@ export function RiskAssessmentReport({
 				) : null}
 				{isUnknownProfile ? (
 					<p className="text-sm text-pretty text-muted-foreground">
-						The selected risk profile does not exist on the Shufti account that
-						processed this request. Test credentials only accept test profiles,
-						and live credentials only accept live profiles.
+						The selected risk profile is not available in the environment that
+						processed this request. The test environment only accepts test
+						profiles, and production only accepts live profiles.
 					</p>
 				) : null}
 				<_RiskLevelSummary sections={sections} />

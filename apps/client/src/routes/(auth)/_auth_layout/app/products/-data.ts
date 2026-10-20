@@ -109,7 +109,7 @@ export const PRODUCTS: Product[] = [
 		slug: PRODUCT_SLUG.RISK_ASSESSMENT,
 		title: "Risk Assessment",
 		description:
-			"Send customers a Shufti-hosted questionnaire and score their answers against an industry risk profile.",
+			"Send customers a hosted questionnaire and score their answers against an industry risk profile.",
 		icon: ChartBarIcon,
 		iconWeight: PRODUCT_ICON_WEIGHT,
 	},

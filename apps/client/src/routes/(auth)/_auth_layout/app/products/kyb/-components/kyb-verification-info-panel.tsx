@@ -38,8 +38,8 @@ export function KybVerificationInfoPanel() {
 					<h2 className="text-sm font-semibold">Coverage</h2>
 					<p className="text-sm leading-relaxed text-muted-foreground">
 						Search identifiers, document types, and purchase documents are
-						filtered by jurisdiction. The API rejects combinations Shufti does
-						not support, and unsupported fields are not forwarded.
+						filtered by jurisdiction. The API rejects unsupported combinations,
+						and unsupported fields are not forwarded.
 					</p>
 				</section>
 			</CardContent>
