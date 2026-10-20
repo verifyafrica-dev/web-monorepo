@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import type { SupportedCountry } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
@@ -92,12 +92,19 @@ export function GlobalCountriesTab() {
 	);
 }
 
-export function ProductCountriesTab() {
+export function ProductCountriesTab({
+	product: selectedProduct,
+	onProductChange,
+}: {
+	product?: string;
+	onProductChange: (product: string) => void;
+}) {
 	const { supportedCountries, availability, isLoading, isError, isSaving, save } =
 		useCountryAvailabilityEditor();
 	const products = availability?.products ?? [];
-	const [selectedProduct, setSelectedProduct] = useState<string>();
-	const product = selectedProduct ?? products[0]?.slug ?? "";
+	const product = products.some((item) => item.slug === selectedProduct)
+		? (selectedProduct as string)
+		: (products[0]?.slug ?? "");
 
 	const globallyDisabled = useMemo(
 		() => new Set(availability?.global_disabled ?? []),
@@ -132,7 +139,7 @@ export function ProductCountriesTab() {
 					<Label htmlFor="country-availability-product">Product</Label>
 					<Select
 						value={product}
-						onValueChange={setSelectedProduct}
+						onValueChange={onProductChange}
 						disabled={isLoading || isSaving}
 					>
 						<SelectTrigger id="country-availability-product" className="w-[260px]">

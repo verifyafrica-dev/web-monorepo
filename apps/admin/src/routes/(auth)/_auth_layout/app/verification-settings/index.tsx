@@ -6,9 +6,10 @@ import {
 	SlidersIcon,
 	StackIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
 	useAllVerificationPricesV2Query,
@@ -41,9 +42,26 @@ import {
 	VerificationSettingsTableSkeleton,
 } from "./-components/verification-settings-table";
 
+const VERIFICATION_SETTINGS_TABS = [
+	"pricing",
+	"global-countries",
+	"product-countries",
+	"global-products",
+	"product-variants",
+] as const;
+
+type VerificationSettingsTab = (typeof VERIFICATION_SETTINGS_TABS)[number];
+
+const verificationSettingsSearchSchema = z.object({
+	tab: z.enum(VERIFICATION_SETTINGS_TABS).catch("pricing"),
+	/** Selected product on the Product Countries and Product Variants tabs. */
+	product: z.string().optional().catch(undefined),
+});
+
 export const Route = createFileRoute(
 	"/(auth)/_auth_layout/app/verification-settings/",
 )({
+	validateSearch: verificationSettingsSearchSchema,
 	head: () => ({
 		meta: [
 			{ title: "Verification Settings | VerifyAfrica" },
@@ -72,7 +90,21 @@ function VerificationSettingsPage() {
 	const hasChanges = Object.keys(drafts).length > 0;
 	const isSaving = updatePriceMutation.isPending;
 
-	const [tab, setTab] = useState("pricing");
+	const { tab, product } = Route.useSearch();
+	const navigate = useNavigate({ from: Route.fullPath });
+
+	const handleTabChange = (nextTab: string) => {
+		void navigate({
+			search: { tab: nextTab as VerificationSettingsTab },
+		});
+	};
+
+	const handleProductChange = (nextProduct: string) => {
+		void navigate({
+			search: (current) => ({ ...current, product: nextProduct }),
+			replace: true,
+		});
+	};
 
 	const pricingContent = (
 		<PricingContent
@@ -140,7 +172,7 @@ function VerificationSettingsPage() {
 
 			<Tabs
 				value={tab}
-				onValueChange={setTab}
+				onValueChange={handleTabChange}
 				className="min-w-0"
 			>
 				<div className="w-full min-w-0 overflow-x-auto no-scrollbar">
@@ -188,13 +220,19 @@ function VerificationSettingsPage() {
 					<GlobalCountriesTab />
 				</TabsContent>
 				<TabsContent value="product-countries">
-					<ProductCountriesTab />
+					<ProductCountriesTab
+						product={product}
+						onProductChange={handleProductChange}
+					/>
 				</TabsContent>
 				<TabsContent value="global-products">
 					<GlobalProductsTab />
 				</TabsContent>
 				<TabsContent value="product-variants">
-					<ProductVariantsTab />
+					<ProductVariantsTab
+						product={product}
+						onProductChange={handleProductChange}
+					/>
 				</TabsContent>
 			</Tabs>
 		</div>

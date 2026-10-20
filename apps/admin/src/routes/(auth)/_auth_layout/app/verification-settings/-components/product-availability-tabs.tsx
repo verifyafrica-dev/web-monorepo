@@ -481,7 +481,13 @@ function VariantCountryAccordion({
 	);
 }
 
-export function ProductVariantsTab() {
+export function ProductVariantsTab({
+	product: selectedProduct,
+	onProductChange,
+}: {
+	product?: string;
+	onProductChange: (product: string) => void;
+}) {
 	const { availability, isLoading, isError, isSaving, save } =
 		useProductAvailabilityEditor();
 	const variantProducts = useMemo(
@@ -491,8 +497,9 @@ export function ProductVariantsTab() {
 			),
 		[availability?.products, availability?.variants],
 	);
-	const [selectedProduct, setSelectedProduct] = useState<string>();
-	const product = selectedProduct ?? variantProducts[0]?.slug ?? "";
+	const product = variantProducts.some((item) => item.slug === selectedProduct)
+		? (selectedProduct as string)
+		: (variantProducts[0]?.slug ?? "");
 	const variants = useMemo<ProductAvailabilityVariant[]>(
 		() => availability?.variants?.[product] ?? [],
 		[availability?.variants, product],
@@ -528,7 +535,7 @@ export function ProductVariantsTab() {
 					<Label htmlFor="product-availability-product">Product</Label>
 					<Select
 						value={product}
-						onValueChange={setSelectedProduct}
+						onValueChange={onProductChange}
 						disabled={isLoading || isSaving || variantProducts.length === 0}
 					>
 						<SelectTrigger
