@@ -2,8 +2,9 @@ import { z } from "zod";
 
 import {
 	VERIFICATION_STATUS_OPTIONS,
-	VERIFICATION_TYPE_OPTIONS,
+	VERIFICATION_TYPES_BY_PRODUCT,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
 import type {
 	VerificationBatchListQuery,
 	VerificationListQuery,
@@ -138,15 +139,83 @@ export function buildReportsListQuery(
 
 	query.has_batch = false;
 	appendOptionalString(query, "status", filters.status);
-	appendOptionalString(query, "verification_type", filters.verificationType);
+	appendOptionalString(
+		query,
+		"verification_type",
+		resolveVerificationTypeFilter(filters.verificationType),
+	);
 	appendOptionalString(query, "country", filters.country);
 
 	return query as VerificationListQuery;
 }
 
-export const REPORTS_VERIFICATION_TYPES = VERIFICATION_TYPE_OPTIONS;
 export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS
 
 export function formatVerificationTypeLabel(type: string) {
 	return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+const VERIFICATION_TYPE_GROUP_PREFIX = "group:";
+
+const VERIFICATION_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+	Object.values(VERIFICATION_TYPES).map((type) => [type.value, type.label]),
+);
+
+export type ReportsVerificationTypeGroup = {
+	/** Filter value: a `group:<slug>` key for multi-type products, otherwise the single type. */
+	value: string;
+	label: string;
+	/** Selectable types under the group; empty for single-type products. */
+	types: { value: string; label: string }[];
+	verificationTypes: readonly string[];
+};
+
+function slugify(label: string) {
+	return label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "");
+}
+
+export const REPORTS_VERIFICATION_TYPE_GROUPS: ReportsVerificationTypeGroup[] =
+	Object.entries(VERIFICATION_TYPES_BY_PRODUCT).map(([label, types]) => {
+		const isMultiType = types.length > 1;
+		return {
+			value: isMultiType
+				? `${VERIFICATION_TYPE_GROUP_PREFIX}${slugify(label)}`
+				: types[0],
+			label,
+			types: isMultiType
+				? types.map((type) => ({
+						value: type,
+						label: VERIFICATION_TYPE_LABELS[type] ?? formatVerificationTypeLabel(type),
+					}))
+				: [],
+			verificationTypes: types,
+		};
+	});
+
+export function getVerificationTypeFilterLabel(value: string) {
+	if (!value || value === "all") {
+		return "All Types";
+	}
+	for (const group of REPORTS_VERIFICATION_TYPE_GROUPS) {
+		if (group.value === value) {
+			return group.types.length > 0 ? `All ${group.label}` : group.label;
+		}
+		const type = group.types.find((item) => item.value === value);
+		if (type) {
+			return type.label;
+		}
+	}
+	return formatVerificationTypeLabel(value);
+}
+
+/** Expand a selected group into the comma-separated types the list API accepts. */
+export function resolveVerificationTypeFilter(value: string) {
+	if (!value.startsWith(VERIFICATION_TYPE_GROUP_PREFIX)) {
+		return value;
+	}
+	const group = REPORTS_VERIFICATION_TYPE_GROUPS.find((item) => item.value === value);
+	return group ? group.verificationTypes.join(",") : "all";
 }

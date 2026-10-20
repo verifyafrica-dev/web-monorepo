@@ -25,7 +25,6 @@ import {
 	buildReportsListQuery,
 	getBatchFiltersFromSearch,
 	REPORTS_VERIFICATION_STATUSES,
-	REPORTS_VERIFICATION_TYPES,
 	type ReportsFiltersFormValues,
 	type ReportsSearchParams,
 } from "../-filter-utils";
@@ -145,7 +144,6 @@ export function BatchVerificationsTab({
 			<ReportsFiltersForm
 				scope="batches"
 				values={filters}
-				verificationTypes={REPORTS_VERIFICATION_TYPES}
 				statuses={REPORTS_VERIFICATION_STATUSES}
 				countries={countries}
 				totalCount={total}
