@@ -10,6 +10,7 @@ import {
 	getResponsePayload,
 	type UnknownRecord,
 } from "../../-utils";
+import { formatLinkTtl } from "../report-builders";
 import { isEmptyReportValue, type ReportField } from "../report-sections";
 
 export type KybRegistry = {
@@ -473,7 +474,6 @@ export function buildKybInputFields(inputData: unknown): ReportField[] {
 	const input = asRecord(inputData) ?? {};
 	const kyb = asRecord(input.kyb) ?? {};
 	const collect = asRecord(input.collect) ?? {};
-	const ttl = Number(input.ttl);
 
 	return withoutEmpty([
 		computed("email", "Email", input.email),
@@ -538,7 +538,7 @@ export function buildKybInputFields(inputData: unknown): ReportField[] {
 		computed(
 			"ttl",
 			"Link Expiry",
-			Number.isFinite(ttl) && ttl > 0 ? `${ttl} minutes` : undefined,
+			formatLinkTtl(input.ttl),
 		),
 		computed("send_email", "Link Emailed to Customer", input.send_email, {
 			format: "yesNo",

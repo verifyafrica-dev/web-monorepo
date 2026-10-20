@@ -13,6 +13,7 @@ export const VERIFICATION_URL_LIMITS = [
 	{ value: "60", label: "60 minutes" },
 	{ value: "120", label: "120 minutes" },
 	{ value: "240", label: "240 minutes" },
+	{ value: "1440", label: "24 hours" },
 ] as const;
 
 export const DEFAULT_VERIFICATION_URL_LIMIT = "60";
