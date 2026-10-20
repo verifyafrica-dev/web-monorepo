@@ -54,14 +54,12 @@ const COLUMNS = [
 type BatchVerificationsTabProps = {
 	tenantId: string;
 	searchParams: ReportsSearchParams;
-	countries: string[];
 	updateSearchParams: (patch: Partial<ReportsSearchParams>) => void;
 };
 
 export function BatchVerificationsTab({
 	tenantId,
 	searchParams,
-	countries,
 	updateSearchParams,
 }: BatchVerificationsTabProps) {
 	const page = searchParams.batch_page ?? 1;
@@ -145,7 +143,6 @@ export function BatchVerificationsTab({
 				scope="batches"
 				values={filters}
 				statuses={REPORTS_VERIFICATION_STATUSES}
-				countries={countries}
 				totalCount={total}
 				filteredCount={total}
 				disabled={verificationBatchesQuery.isPending}

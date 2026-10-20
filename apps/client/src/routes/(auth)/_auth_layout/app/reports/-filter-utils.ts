@@ -5,6 +5,13 @@ import {
 	VERIFICATION_TYPES_BY_PRODUCT,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { VERIFICATION_TYPES } from "@verifyafrica/ui/lib/constants";
+import {
+	getCountryCode,
+	getCountrySelectOptions,
+} from "@verifyafrica/ui/lib/country-state-city";
+
+/** Every country from country-state-city; the filter value is the ISO alpha-2 code. */
+export const REPORTS_COUNTRY_OPTIONS = getCountrySelectOptions();
 import type {
 	VerificationBatchListQuery,
 	VerificationListQuery,
@@ -105,7 +112,8 @@ export function getIndividualFiltersFromSearch(
 		search: searchDraft,
 		verificationType: search.verification_type ?? "all",
 		status: search.status ?? "all",
-		country: search.country ?? "all",
+		// Older links stored the country name ("Nigeria"); the select is keyed by ISO code.
+		country: (search.country && getCountryCode(search.country)) || "all",
 	};
 }
 

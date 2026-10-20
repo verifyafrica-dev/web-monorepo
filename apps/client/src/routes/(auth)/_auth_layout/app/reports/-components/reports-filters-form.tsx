@@ -29,10 +29,12 @@ import {
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	getVerificationTypeFilterLabel,
+	REPORTS_COUNTRY_OPTIONS,
 	REPORTS_VERIFICATION_TYPE_GROUPS,
 	type ReportsFiltersFormValues,
 	type ReportsListFilterScope,
 } from "../-filter-utils";
+import { VerificationStatusBadge } from "./verification-badges";
 
 function VerificationTypeFilterMenu({
 	value,
@@ -124,7 +126,6 @@ type ReportsFiltersFormProps = {
 	scope: ReportsListFilterScope;
 	values: ReportsFiltersFormValues;
 	statuses: string[];
-	countries: string[];
 	totalCount: number;
 	filteredCount: number;
 	disabled?: boolean;
@@ -135,7 +136,6 @@ export function ReportsFiltersForm({
 	scope,
 	values,
 	statuses,
-	countries,
 	totalCount: _totalCount,
 	filteredCount: _filteredCount,
 	disabled = false,
@@ -226,8 +226,8 @@ export function ReportsFiltersForm({
 									<SelectContent>
 										<SelectItem value="all">All Statuses</SelectItem>
 										{statuses.map((status) => (
-											<SelectItem key={status} value={status}>
-												{status}
+											<SelectItem key={status} value={status} data-keep-colors="">
+												<VerificationStatusBadge status={status} />
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -251,9 +251,12 @@ export function ReportsFiltersForm({
 										</SelectTrigger>
 										<SelectContent>
 											<SelectItem value="all">All Countries</SelectItem>
-											{countries.map((country) => (
-												<SelectItem key={country} value={country}>
-													<CountryOptionLabel name={country} />
+											{REPORTS_COUNTRY_OPTIONS.map((country) => (
+												<SelectItem key={country.value} value={country.value}>
+													<CountryOptionLabel
+														name={country.name}
+														countryCode={country.isoCode}
+													/>
 												</SelectItem>
 											))}
 										</SelectContent>

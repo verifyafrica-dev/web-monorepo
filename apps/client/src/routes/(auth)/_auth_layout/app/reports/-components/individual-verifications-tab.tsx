@@ -53,14 +53,12 @@ const COLUMNS = [
 type IndividualVerificationsTabProps = {
 	tenantId: string;
 	searchParams: ReportsSearchParams;
-	countries: string[];
 	updateSearchParams: (patch: Partial<ReportsSearchParams>) => void;
 };
 
 export function IndividualVerificationsTab({
 	tenantId,
 	searchParams,
-	countries,
 	updateSearchParams,
 }: IndividualVerificationsTabProps) {
 	const page = searchParams.page ?? 1;
@@ -147,7 +145,6 @@ export function IndividualVerificationsTab({
 				scope="requests"
 				values={filters}
 				statuses={REPORTS_VERIFICATION_STATUSES}
-				countries={countries}
 				totalCount={total}
 				filteredCount={total}
 				disabled={verificationRequestsQuery.isPending}

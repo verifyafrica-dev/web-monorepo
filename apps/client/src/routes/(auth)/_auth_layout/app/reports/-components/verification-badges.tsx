@@ -18,6 +18,10 @@ export function getVerificationStatusBadgeClassName(status: string) {
 		return cn(baseClasses, "bg-amber-100 text-amber-800");
 	}
 
+	if (normalized === "partial") {
+		return cn(baseClasses, "bg-orange-100 text-orange-800");
+	}
+
 	return cn(baseClasses, "bg-muted text-muted-foreground");
 }
 
