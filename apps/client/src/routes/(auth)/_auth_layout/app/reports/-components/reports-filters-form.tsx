@@ -179,7 +179,7 @@ export function ReportsFiltersForm({
 										id={`reports-search-${scope}`}
 										placeholder={
 											scope === "requests"
-												? "Search by name or ID..."
+												? "Search by name, ID, or type..."
 												: "Search by batch ID..."
 										}
 										value={field.state.value}
