@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, EyeIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, EyeIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -19,6 +19,7 @@ import {
 } from "@verifyafrica/ui/components/ui/table";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { CustomVerificationDialog } from "../../../products/mixed-verifications/-components/custom-verification-dialog";
 import { useCurrentTenant } from "../../../team/-data";
 import {
 	type BatchVerificationReport,
@@ -86,8 +87,9 @@ function CustomVerificationReportsPage() {
 	const { templateId } = Route.useParams();
 	const searchParams = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
-	const { tenantId } = useCurrentTenant();
+	const { tenantId, isTenantAdmin } = useCurrentTenant();
 	const page = searchParams.batch_page ?? 1;
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
 
 	const [searchDraft, setSearchDraft] = useState(
 		searchParams.batch_search ?? "",
@@ -97,6 +99,9 @@ function CustomVerificationReportsPage() {
 	const templateQuery = useMixedVerificationDetailV2Query(
 		templateId,
 		Boolean(templateId),
+	);
+	const canEditTemplate = Boolean(
+		isTenantAdmin && tenantId && templateQuery.data?.is_custom,
 	);
 
 	const updateSearchParams = useCallback(
@@ -200,17 +205,31 @@ function CustomVerificationReportsPage() {
 						Back to Custom Verifications
 					</Link>
 				</Button>
-				<div className="space-y-1">
-					<h1 className="text-2xl font-semibold tracking-tight">
-						{templateName}
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						Batch verifications started from this custom verification.
-					</p>
-					{templateId ? (
-						<p className="font-mono text-xs text-muted-foreground">
-							{templateId}
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div className="space-y-1">
+						<h1 className="text-2xl font-semibold tracking-tight">
+							{templateName}
+						</h1>
+						<p className="text-sm text-muted-foreground">
+							Batch verifications started from this custom verification.
 						</p>
+						{templateId ? (
+							<p className="font-mono text-xs text-muted-foreground">
+								{templateId}
+							</p>
+						) : null}
+					</div>
+					{canEditTemplate ? (
+						<Button
+							type="button"
+							variant="outline"
+							className="cursor-pointer tracking-wide"
+							onClick={() => setEditDialogOpen(true)}
+							disabled={!templateQuery.data}
+						>
+							<PencilSimpleIcon className="size-4" />
+							Edit Template
+						</Button>
 					) : null}
 				</div>
 			</div>
@@ -297,6 +316,15 @@ function CustomVerificationReportsPage() {
 					)}
 				</div>
 			)}
+
+			{tenantId && canEditTemplate ? (
+				<CustomVerificationDialog
+					open={editDialogOpen}
+					onOpenChange={setEditDialogOpen}
+					tenantId={tenantId}
+					template={templateQuery.data ?? null}
+				/>
+			) : null}
 		</div>
 	);
 }

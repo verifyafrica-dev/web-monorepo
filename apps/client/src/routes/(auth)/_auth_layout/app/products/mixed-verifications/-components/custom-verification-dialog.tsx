@@ -110,9 +110,9 @@ function isPortaledOverlayTarget(target: EventTarget | null) {
 	}
 	return Boolean(
 		target.closest('[data-slot="combobox-content"]') ||
-			target.closest('[data-slot="select-content"]') ||
-			target.closest('[data-slot="dropdown-menu-content"]') ||
-			target.closest('[data-slot="dropdown-menu-sub-content"]'),
+		target.closest('[data-slot="select-content"]') ||
+		target.closest('[data-slot="dropdown-menu-content"]') ||
+		target.closest('[data-slot="dropdown-menu-sub-content"]'),
 	);
 }
 
@@ -131,8 +131,14 @@ function SortableStepCard({
 	onChange: (next: MixedStepFormValue) => void;
 	countries: Array<{ code: string; name: string }>;
 }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-		useSortable({ id: step.id });
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: step.id });
 
 	const showDocumentConfig = step.type === "id_document";
 	const showAddressConfig = step.type === "address_verification";
@@ -152,7 +158,10 @@ function SortableStepCard({
 		showAmlConfig ||
 		showGrcConfig;
 
-	function toggleDocumentType(type: ShuftiDocumentSupportedType, checked: boolean) {
+	function toggleDocumentType(
+		type: ShuftiDocumentSupportedType,
+		checked: boolean,
+	) {
 		const next = checked
 			? [...step.config.documentTypes, type]
 			: step.config.documentTypes.filter((item) => item !== type);
@@ -183,558 +192,575 @@ function SortableStepCard({
 			ref={setNodeRef}
 			value={step.id}
 			style={{
-				transform: CSS.Transform.toString(transform),
+				transform: [
+					CSS.Transform.toString(transform),
+					isDragging ? "rotate(3deg)" : null,
+				]
+					.filter(Boolean)
+					.join(" "),
 				transition,
 			}}
 			className={cn(
-				"rounded-lg border bg-background px-0",
+				"rounded-lg border bg-background px-0 flex-1",
 				isDragging && "z-10 opacity-90 shadow-md",
 			)}
 		>
-				<div className="flex items-center gap-3 px-2">
-					<button
-						type="button"
-						className="cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground active:cursor-grabbing"
-						aria-label={`Reorder ${formatVerificationTypeLabel(step.type)}`}
-						disabled={disabled}
-						{...attributes}
-						{...listeners}
-					>
-						<DotsSixVerticalIcon className="size-5" weight="bold" />
-					</button>
-					<AccordionTrigger className="flex flex-1 items-center justify-between gap-3 py-3 hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
-						<span className="flex items-center gap-2 text-left">
-							<span className="text-xs font-medium tabular-nums text-muted-foreground">
-								{index + 1}.
-							</span>
-							<span className="text-sm font-medium">
-								{formatVerificationTypeLabel(step.type)}
-							</span>
+			<div className="flex items-center gap-3 px-2">
+				<button
+					type="button"
+					className="cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground active:cursor-grabbing"
+					aria-label={`Reorder ${formatVerificationTypeLabel(step.type)}`}
+					disabled={disabled}
+					{...attributes}
+					{...listeners}
+				>
+					<DotsSixVerticalIcon
+						className="size-5"
+						weight="bold"
+					/>
+				</button>
+				<AccordionTrigger className="flex flex-1 items-center justify-between gap-3 py-3 hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
+					<span className="flex items-center gap-2 text-left">
+						<span className="text-xs font-medium tabular-nums text-muted-foreground">
+							{index + 1}.
 						</span>
-						<span className="flex items-center gap-3">
-							<CaretDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground group-aria-expanded/accordion-trigger:hidden" />
-							<CaretUpIcon className="pointer-events-none hidden size-4 shrink-0 text-muted-foreground group-aria-expanded/accordion-trigger:inline" />
-							<Button
-								type="button"
-								variant="ghost"
-								size="sm"
-								className="cursor-pointer text-destructive"
-								disabled={disabled}
-								onClick={(event) => {
-									event.preventDefault();
-									event.stopPropagation();
-									onRemove();
-								}}
-							>
-								Remove
-							</Button>
+						<span className="text-sm font-medium">
+							{formatVerificationTypeLabel(step.type)}
 						</span>
-					</AccordionTrigger>
-				</div>
+					</span>
+					<span className="flex items-center gap-3">
+						<CaretDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground group-aria-expanded/accordion-trigger:hidden" />
+						<CaretUpIcon className="pointer-events-none hidden size-4 shrink-0 text-muted-foreground group-aria-expanded/accordion-trigger:inline" />
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="cursor-pointer text-destructive"
+							disabled={disabled}
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
+								onRemove();
+							}}
+						>
+							Remove
+						</Button>
+					</span>
+				</AccordionTrigger>
+			</div>
 
-				<AccordionContent className="px-3 pb-3">
-					<div className="space-y-3 border-t pt-3">
-						{showCountry ? (
+			<AccordionContent className="px-3 pb-3">
+				<div className="space-y-3 border-t pt-3">
+					{showCountry ? (
+						<Field className="gap-1.5">
+							<FieldLabel htmlFor={`mixed-step-country-${step.id}`}>
+								Country
+							</FieldLabel>
+							<Select
+								value={
+									step.config.country
+										? step.config.country.toUpperCase()
+										: undefined
+								}
+								onValueChange={(value) =>
+									onChange({
+										...step,
+										config: {
+											...step.config,
+											country: (value ?? "").toUpperCase(),
+										},
+									})
+								}
+								disabled={disabled}
+							>
+								<SelectTrigger
+									id={`mixed-step-country-${step.id}`}
+									className="w-full"
+								>
+									<SelectValue placeholder="Optional default country" />
+								</SelectTrigger>
+								<SelectContent className="z-200">
+									{countries.map((country) => {
+										const code = country.code.trim().toUpperCase();
+										return (
+											<SelectItem
+												key={code}
+												value={code}
+											>
+												<CountryOptionLabel
+													name={country.name}
+													countryCode={code}
+												/>
+											</SelectItem>
+										);
+									})}
+								</SelectContent>
+							</Select>
+							<FieldDescription>
+								Optional. Used as the default country for this step.
+							</FieldDescription>
+						</Field>
+					) : null}
+
+					{showDocumentConfig ? (
+						<>
 							<Field className="gap-1.5">
-								<FieldLabel htmlFor={`mixed-step-country-${step.id}`}>
-									Country
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0 space-y-1">
+										<Label
+											htmlFor={`mixed-step-allow-file-upload-${step.id}`}
+											className="text-sm font-medium"
+										>
+											Allow file upload
+										</Label>
+										<FieldDescription>
+											Overrides the product file-upload setting for this step.
+											When off, customers must use the camera only.
+										</FieldDescription>
+									</div>
+									<Switch
+										id={`mixed-step-allow-file-upload-${step.id}`}
+										checked={step.config.allowFileUpload}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													allowFileUpload: checked === true,
+												},
+											})
+										}
+										className="shrink-0"
+									/>
+								</div>
+							</Field>
+							<Field className="gap-2">
+								<FieldLabel>Allowed document types</FieldLabel>
+								<div className="grid gap-2 sm:grid-cols-3">
+									{SHUFTI_DOCUMENT_SUPPORTED_TYPES.map((type) => {
+										const checkboxId = `mixed-step-doc-${type}-${step.id}`;
+										const checked = step.config.documentTypes.includes(type);
+										return (
+											<div
+												key={type}
+												className="flex items-center gap-2"
+											>
+												<Checkbox
+													id={checkboxId}
+													checked={checked}
+													disabled={disabled}
+													onCheckedChange={(next) =>
+														toggleDocumentType(type, next === true)
+													}
+												/>
+												<Label
+													htmlFor={checkboxId}
+													className="text-sm font-normal"
+												>
+													{formatShuftiDocumentTypeLabel(type)}
+												</Label>
+											</div>
+										);
+									})}
+								</div>
+								<FieldDescription>
+									Leave all unchecked to allow every ID document type.
+								</FieldDescription>
+							</Field>
+							<Field className="gap-2">
+								<FieldLabel>Collect additional fields</FieldLabel>
+								<div className="grid gap-2 sm:grid-cols-2">
+									{(
+										[
+											["dob", "Date of birth"],
+											["age", "Age"],
+											["gender", "Gender"],
+											["backsideProofRequired", "Require backside"],
+										] as const
+									).map(([key, label]) => (
+										<div
+											key={key}
+											className="flex items-center gap-2"
+										>
+											<Checkbox
+												id={`mixed-step-${key}-${step.id}`}
+												checked={step.config[key]}
+												disabled={disabled}
+												onCheckedChange={(checked) =>
+													onChange({
+														...step,
+														config: {
+															...step.config,
+															[key]: checked === true,
+														},
+													})
+												}
+											/>
+											<Label
+												htmlFor={`mixed-step-${key}-${step.id}`}
+												className="text-sm font-normal"
+											>
+												{label}
+											</Label>
+										</div>
+									))}
+								</div>
+							</Field>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-instructions-${step.id}`}>
+									Verification instructions
+								</FieldLabel>
+								<Textarea
+									id={`mixed-step-instructions-${step.id}`}
+									rows={2}
+									value={step.config.verificationInstructions}
+									disabled={disabled}
+									onChange={(event) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												verificationInstructions: event.target.value,
+											},
+										})
+									}
+								/>
+							</Field>
+						</>
+					) : null}
+
+					{showAddressConfig ? (
+						<>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-addr-types-${step.id}`}>
+									Allowed address document types
+								</FieldLabel>
+								<AddressDocumentTypesMultiCombobox
+									id={`mixed-step-addr-types-${step.id}`}
+									value={step.config.addressDocumentTypes}
+									disabled={disabled}
+									onValueChange={(next) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												addressDocumentTypes:
+													next as ShuftiAddressSupportedType[],
+											},
+										})
+									}
+								/>
+								<FieldDescription>
+									Leave empty to allow all address document types. Full address
+									is collected when starting the session.
+								</FieldDescription>
+							</Field>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-addr-instructions-${step.id}`}>
+									Verification instructions
+								</FieldLabel>
+								<Textarea
+									id={`mixed-step-addr-instructions-${step.id}`}
+									rows={2}
+									value={step.config.verificationInstructions}
+									disabled={disabled}
+									onChange={(event) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												verificationInstructions: event.target.value,
+											},
+										})
+									}
+								/>
+							</Field>
+						</>
+					) : null}
+
+					{showFaceConfig ? (
+						<>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-face-mode-${step.id}`}>
+									Verification mode
 								</FieldLabel>
 								<Select
-									value={
-										step.config.country
-											? step.config.country.toUpperCase()
-											: undefined
-									}
+									value={step.config.faceVerificationMode}
 									onValueChange={(value) =>
 										onChange({
 											...step,
 											config: {
 												...step.config,
-												country: (value ?? "").toUpperCase(),
+												faceVerificationMode:
+													(value as FaceVerificationMode) ?? "image",
 											},
 										})
 									}
 									disabled={disabled}
 								>
 									<SelectTrigger
-										id={`mixed-step-country-${step.id}`}
+										id={`mixed-step-face-mode-${step.id}`}
 										className="w-full"
 									>
-										<SelectValue placeholder="Optional default country" />
+										<SelectValue />
 									</SelectTrigger>
 									<SelectContent className="z-200">
-										{countries.map((country) => {
-											const code = country.code.trim().toUpperCase();
-											return (
-												<SelectItem key={code} value={code}>
-													<CountryOptionLabel
-														name={country.name}
-														countryCode={code}
-													/>
-												</SelectItem>
-											);
-										})}
+										{FACE_VERIFICATION_MODES.map((mode) => (
+											<SelectItem
+												key={mode.value}
+												value={mode.value}
+											>
+												{mode.label}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
-								<FieldDescription>
-									Optional. Used as the default country for this step.
-								</FieldDescription>
 							</Field>
-						) : null}
-
-						{showDocumentConfig ? (
-							<>
-								<Field className="gap-1.5">
-									<div className="flex items-center justify-between gap-3">
-										<div className="min-w-0 space-y-1">
-											<Label
-												htmlFor={`mixed-step-allow-file-upload-${step.id}`}
-												className="text-sm font-medium"
-											>
-												Allow file upload
-											</Label>
-											<FieldDescription>
-												Overrides the product file-upload setting for this
-												step. When off, customers must use the camera only.
-											</FieldDescription>
-										</div>
-										<Switch
-											id={`mixed-step-allow-file-upload-${step.id}`}
-											checked={step.config.allowFileUpload}
-											disabled={disabled}
-											onCheckedChange={(checked) =>
-												onChange({
-													...step,
-													config: {
-														...step.config,
-														allowFileUpload: checked === true,
-													},
-												})
-											}
-											className="shrink-0"
-										/>
-									</div>
-								</Field>
-								<Field className="gap-2">
-									<FieldLabel>Allowed document types</FieldLabel>
-									<div className="grid gap-2 sm:grid-cols-3">
-										{SHUFTI_DOCUMENT_SUPPORTED_TYPES.map((type) => {
-											const checkboxId = `mixed-step-doc-${type}-${step.id}`;
-											const checked = step.config.documentTypes.includes(type);
-											return (
-												<div
-													key={type}
-													className="flex items-center gap-2"
-												>
-													<Checkbox
-														id={checkboxId}
-														checked={checked}
-														disabled={disabled}
-														onCheckedChange={(next) =>
-															toggleDocumentType(type, next === true)
-														}
-													/>
-													<Label
-														htmlFor={checkboxId}
-														className="text-sm font-normal"
-													>
-														{formatShuftiDocumentTypeLabel(type)}
-													</Label>
-												</div>
-											);
-										})}
-									</div>
-									<FieldDescription>
-										Leave all unchecked to allow every ID document type.
-									</FieldDescription>
-								</Field>
-								<Field className="gap-2">
-									<FieldLabel>Collect additional fields</FieldLabel>
-									<div className="grid gap-2 sm:grid-cols-2">
-										{(
-											[
-												["dob", "Date of birth"],
-												["age", "Age"],
-												["gender", "Gender"],
-												["backsideProofRequired", "Require backside"],
-											] as const
-										).map(([key, label]) => (
-											<div key={key} className="flex items-center gap-2">
-												<Checkbox
-													id={`mixed-step-${key}-${step.id}`}
-													checked={step.config[key]}
-													disabled={disabled}
-													onCheckedChange={(checked) =>
-														onChange({
-															...step,
-															config: {
-																...step.config,
-																[key]: checked === true,
-															},
-														})
-													}
-												/>
-												<Label
-													htmlFor={`mixed-step-${key}-${step.id}`}
-													className="text-sm font-normal"
-												>
-													{label}
-												</Label>
-											</div>
-										))}
-									</div>
-								</Field>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-instructions-${step.id}`}>
-										Verification instructions
-									</FieldLabel>
-									<Textarea
-										id={`mixed-step-instructions-${step.id}`}
-										rows={2}
-										value={step.config.verificationInstructions}
-										disabled={disabled}
-										onChange={(event) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													verificationInstructions: event.target.value,
-												},
-											})
-										}
-									/>
-								</Field>
-							</>
-						) : null}
-
-						{showAddressConfig ? (
-							<>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-addr-types-${step.id}`}>
-										Allowed address document types
-									</FieldLabel>
-									<AddressDocumentTypesMultiCombobox
-										id={`mixed-step-addr-types-${step.id}`}
-										value={step.config.addressDocumentTypes}
-										disabled={disabled}
-										onValueChange={(next) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													addressDocumentTypes:
-														next as ShuftiAddressSupportedType[],
-												},
-											})
-										}
-									/>
-									<FieldDescription>
-										Leave empty to allow all address document types. Full
-										address is collected when starting the session.
-									</FieldDescription>
-								</Field>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-addr-instructions-${step.id}`}>
-										Verification instructions
-									</FieldLabel>
-									<Textarea
-										id={`mixed-step-addr-instructions-${step.id}`}
-										rows={2}
-										value={step.config.verificationInstructions}
-										disabled={disabled}
-										onChange={(event) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													verificationInstructions: event.target.value,
-												},
-											})
-										}
-									/>
-								</Field>
-							</>
-						) : null}
-
-						{showFaceConfig ? (
-							<>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-face-mode-${step.id}`}>
-										Verification mode
-									</FieldLabel>
-									<Select
-										value={step.config.faceVerificationMode}
-										onValueChange={(value) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													faceVerificationMode:
-														(value as FaceVerificationMode) ?? "image",
-												},
-											})
-										}
-										disabled={disabled}
-									>
-										<SelectTrigger
-											id={`mixed-step-face-mode-${step.id}`}
-											className="w-full"
-										>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent className="z-200">
-											{FACE_VERIFICATION_MODES.map((mode) => (
-												<SelectItem key={mode.value} value={mode.value}>
-													{mode.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-								<div className="flex items-center gap-2">
-									<Checkbox
-										id={`mixed-step-face-dup-${step.id}`}
-										checked={step.config.checkForDuplicates}
-										disabled={disabled}
-										onCheckedChange={(checked) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													checkForDuplicates: checked === true,
-												},
-											})
-										}
-									/>
-									<Label
-										htmlFor={`mixed-step-face-dup-${step.id}`}
-										className="text-sm font-normal"
-									>
-										Check for duplicate requests
-									</Label>
-								</div>
-								<div className="grid gap-3 sm:grid-cols-2">
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor={`mixed-step-face-age-min-${step.id}`}>
-											Minimum age
-										</FieldLabel>
-										<Input
-											id={`mixed-step-face-age-min-${step.id}`}
-											type="number"
-											min={16}
-											value={step.config.faceAgeMin}
-											disabled={disabled}
-											onChange={(event) =>
-												onChange({
-													...step,
-													config: {
-														...step.config,
-														faceAgeMin: event.target.value,
-													},
-												})
-											}
-										/>
-									</Field>
-									<Field className="gap-1.5">
-										<FieldLabel htmlFor={`mixed-step-face-age-max-${step.id}`}>
-											Maximum age
-										</FieldLabel>
-										<Input
-											id={`mixed-step-face-age-max-${step.id}`}
-											type="number"
-											min={16}
-											value={step.config.faceAgeMax}
-											disabled={disabled}
-											onChange={(event) =>
-												onChange({
-													...step,
-													config: {
-														...step.config,
-														faceAgeMax: event.target.value,
-													},
-												})
-											}
-										/>
-									</Field>
-								</div>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-face-instructions-${step.id}`}>
-										Verification instructions
-									</FieldLabel>
-									<Textarea
-										id={`mixed-step-face-instructions-${step.id}`}
-										rows={2}
-										value={step.config.verificationInstructions}
-										disabled={disabled}
-										onChange={(event) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													verificationInstructions: event.target.value,
-												},
-											})
-										}
-									/>
-								</Field>
-							</>
-						) : null}
-
-						{showAmlConfig ? (
-							<>
-								<Field className="gap-2">
-									<FieldLabel>Screening filters</FieldLabel>
-									<div className="grid gap-2 sm:grid-cols-2">
-										{AML_SCREENING_FILTERS.map((filter) => {
-											const checkboxId = `mixed-step-aml-${filter.key}-${step.id}`;
-											return (
-												<div
-													key={filter.key}
-													className="flex items-center gap-2"
-												>
-													<Checkbox
-														id={checkboxId}
-														checked={step.config.amlFilters[filter.key]}
-														disabled={disabled}
-														onCheckedChange={(checked) =>
-															toggleAmlFilter(filter.key, checked === true)
-														}
-													/>
-													<Label
-														htmlFor={checkboxId}
-														className="text-sm font-normal"
-													>
-														{filter.label}
-													</Label>
-												</div>
-											);
-										})}
-									</div>
-								</Field>
-								<Field className="gap-2">
-									<FieldLabel htmlFor={`mixed-step-match-score-${step.id}`}>
-										Match score ({step.config.matchScore})
-									</FieldLabel>
-									<Slider
-										id={`mixed-step-match-score-${step.id}`}
-										min={0}
-										max={100}
-										step={1}
-										value={[step.config.matchScore]}
-										disabled={disabled}
-										onValueChange={(value) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													matchScore: value[0] ?? step.config.matchScore,
-												},
-											})
-										}
-									/>
-									<FieldDescription>
-										Minimum similarity score required for a match.
-									</FieldDescription>
-								</Field>
-								<div className="flex items-center gap-2">
-									<Checkbox
-										id={`mixed-step-rca-${step.id}`}
-										checked={step.config.rcaSearch}
-										disabled={disabled}
-										onCheckedChange={(checked) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													rcaSearch: checked === true,
-												},
-											})
-										}
-									/>
-									<Label
-										htmlFor={`mixed-step-rca-${step.id}`}
-										className="text-sm font-normal"
-									>
-										RCA search
-									</Label>
-								</div>
-								<div className="flex items-center gap-2">
-									<Checkbox
-										id={`mixed-step-alias-${step.id}`}
-										checked={step.config.aliasSearch}
-										disabled={disabled}
-										onCheckedChange={(checked) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													aliasSearch: checked === true,
-												},
-											})
-										}
-									/>
-									<Label
-										htmlFor={`mixed-step-alias-${step.id}`}
-										className="text-sm font-normal"
-									>
-										Alias search
-									</Label>
-								</div>
-								<Field className="gap-1.5">
-									<FieldLabel htmlFor={`mixed-step-aml-context-${step.id}`}>
-										Context (optional)
-									</FieldLabel>
-									<Textarea
-										id={`mixed-step-aml-context-${step.id}`}
-										rows={2}
-										value={step.config.amlContext}
-										disabled={disabled}
-										onChange={(event) =>
-											onChange({
-												...step,
-												config: {
-													...step.config,
-													amlContext: event.target.value,
-												},
-											})
-										}
-									/>
-								</Field>
-							</>
-						) : null}
-
-						{showGrcConfig ? (
 							<div className="flex items-center gap-2">
 								<Checkbox
-									id={`mixed-step-require-selfie-${step.id}`}
-									checked={step.config.requireSelfie}
+									id={`mixed-step-face-dup-${step.id}`}
+									checked={step.config.checkForDuplicates}
 									disabled={disabled}
 									onCheckedChange={(checked) =>
 										onChange({
 											...step,
 											config: {
 												...step.config,
-												requireSelfie: checked === true,
+												checkForDuplicates: checked === true,
 											},
 										})
 									}
 								/>
 								<Label
-									htmlFor={`mixed-step-require-selfie-${step.id}`}
+									htmlFor={`mixed-step-face-dup-${step.id}`}
 									className="text-sm font-normal"
 								>
-									Require selfie on hosted link
+									Check for duplicate requests
 								</Label>
 							</div>
-						) : null}
+							<div className="grid gap-3 sm:grid-cols-2">
+								<Field className="gap-1.5">
+									<FieldLabel htmlFor={`mixed-step-face-age-min-${step.id}`}>
+										Minimum age
+									</FieldLabel>
+									<Input
+										id={`mixed-step-face-age-min-${step.id}`}
+										type="number"
+										min={16}
+										value={step.config.faceAgeMin}
+										disabled={disabled}
+										onChange={(event) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													faceAgeMin: event.target.value,
+												},
+											})
+										}
+									/>
+								</Field>
+								<Field className="gap-1.5">
+									<FieldLabel htmlFor={`mixed-step-face-age-max-${step.id}`}>
+										Maximum age
+									</FieldLabel>
+									<Input
+										id={`mixed-step-face-age-max-${step.id}`}
+										type="number"
+										min={16}
+										value={step.config.faceAgeMax}
+										disabled={disabled}
+										onChange={(event) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													faceAgeMax: event.target.value,
+												},
+											})
+										}
+									/>
+								</Field>
+							</div>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-face-instructions-${step.id}`}>
+									Verification instructions
+								</FieldLabel>
+								<Textarea
+									id={`mixed-step-face-instructions-${step.id}`}
+									rows={2}
+									value={step.config.verificationInstructions}
+									disabled={disabled}
+									onChange={(event) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												verificationInstructions: event.target.value,
+											},
+										})
+									}
+								/>
+							</Field>
+						</>
+					) : null}
 
-						{!hasExtraConfig ? (
-							<p className="text-xs text-muted-foreground">
-								No extra configuration for this verification type.
-							</p>
-						) : null}
-					</div>
-				</AccordionContent>
+					{showAmlConfig ? (
+						<>
+							<Field className="gap-2">
+								<FieldLabel>Screening filters</FieldLabel>
+								<div className="grid gap-2 sm:grid-cols-2">
+									{AML_SCREENING_FILTERS.map((filter) => {
+										const checkboxId = `mixed-step-aml-${filter.key}-${step.id}`;
+										return (
+											<div
+												key={filter.key}
+												className="flex items-center gap-2"
+											>
+												<Checkbox
+													id={checkboxId}
+													checked={step.config.amlFilters[filter.key]}
+													disabled={disabled}
+													onCheckedChange={(checked) =>
+														toggleAmlFilter(filter.key, checked === true)
+													}
+												/>
+												<Label
+													htmlFor={checkboxId}
+													className="text-sm font-normal"
+												>
+													{filter.label}
+												</Label>
+											</div>
+										);
+									})}
+								</div>
+							</Field>
+							<Field className="gap-2">
+								<FieldLabel htmlFor={`mixed-step-match-score-${step.id}`}>
+									Match score ({step.config.matchScore})
+								</FieldLabel>
+								<Slider
+									id={`mixed-step-match-score-${step.id}`}
+									min={0}
+									max={100}
+									step={1}
+									value={[step.config.matchScore]}
+									disabled={disabled}
+									onValueChange={(value) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												matchScore: value[0] ?? step.config.matchScore,
+											},
+										})
+									}
+								/>
+								<FieldDescription>
+									Minimum similarity score required for a match.
+								</FieldDescription>
+							</Field>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id={`mixed-step-rca-${step.id}`}
+									checked={step.config.rcaSearch}
+									disabled={disabled}
+									onCheckedChange={(checked) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												rcaSearch: checked === true,
+											},
+										})
+									}
+								/>
+								<Label
+									htmlFor={`mixed-step-rca-${step.id}`}
+									className="text-sm font-normal"
+								>
+									RCA search
+								</Label>
+							</div>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id={`mixed-step-alias-${step.id}`}
+									checked={step.config.aliasSearch}
+									disabled={disabled}
+									onCheckedChange={(checked) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												aliasSearch: checked === true,
+											},
+										})
+									}
+								/>
+								<Label
+									htmlFor={`mixed-step-alias-${step.id}`}
+									className="text-sm font-normal"
+								>
+									Alias search
+								</Label>
+							</div>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-aml-context-${step.id}`}>
+									Context (optional)
+								</FieldLabel>
+								<Textarea
+									id={`mixed-step-aml-context-${step.id}`}
+									rows={2}
+									value={step.config.amlContext}
+									disabled={disabled}
+									onChange={(event) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												amlContext: event.target.value,
+											},
+										})
+									}
+								/>
+							</Field>
+						</>
+					) : null}
+
+					{showGrcConfig ? (
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id={`mixed-step-require-selfie-${step.id}`}
+								checked={step.config.requireSelfie}
+								disabled={disabled}
+								onCheckedChange={(checked) =>
+									onChange({
+										...step,
+										config: {
+											...step.config,
+											requireSelfie: checked === true,
+										},
+									})
+								}
+							/>
+							<Label
+								htmlFor={`mixed-step-require-selfie-${step.id}`}
+								className="text-sm font-normal"
+							>
+								Require selfie on hosted link
+							</Label>
+						</div>
+					) : null}
+
+					{!hasExtraConfig ? (
+						<p className="text-xs text-muted-foreground">
+							No extra configuration for this verification type.
+						</p>
+					) : null}
+				</div>
+			</AccordionContent>
 		</AccordionItem>
 	);
 }
@@ -819,7 +845,10 @@ export function CustomVerificationDialog({
 	);
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog
+			open={open}
+			onOpenChange={onOpenChange}
+		>
 			<DialogContent
 				className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
 				onPointerDownOutside={(event) => {
@@ -845,8 +874,8 @@ export function CustomVerificationDialog({
 							: "Create Custom Verification"}
 					</DialogTitle>
 					<DialogDescription>
-						Add verification steps, configure each one, and drag to set the order
-						customers complete them in.
+						Add verification steps, configure each one, and drag to set the
+						order customers complete them in.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -933,8 +962,8 @@ export function CustomVerificationDialog({
 										<div>
 											<p className="text-sm font-medium">Verification steps</p>
 											<p className="mt-1 text-xs text-muted-foreground">
-												You can add the same type more than once. Configure
-												each step independently.
+												You can add the same type more than once. Configure each
+												step independently.
 											</p>
 										</div>
 
@@ -946,7 +975,10 @@ export function CustomVerificationDialog({
 													className="w-fit cursor-pointer tracking-wide"
 													disabled={isSaving}
 												>
-													<PlusIcon className="size-4" weight="bold" />
+													<PlusIcon
+														className="size-4"
+														weight="bold"
+													/>
 													Add verification
 												</Button>
 											</DropdownMenuTrigger>
@@ -978,9 +1010,7 @@ export function CustomVerificationDialog({
 																		<DropdownMenuItem
 																			key={item.value}
 																			className="cursor-pointer"
-																			onSelect={() =>
-																				handleAddStep(item.value)
-																			}
+																			onSelect={() => handleAddStep(item.value)}
 																		>
 																			{item.label}
 																		</DropdownMenuItem>
