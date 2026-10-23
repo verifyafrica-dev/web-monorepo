@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import {
 	useAcceptInvitationV2Mutation,
 	useCreateUserFromInvitationV2Mutation,
+	useMeV2Query,
 	useUserV2LookupQuery,
 } from "#/api/http/v2/users/users.hooks";
 import {
@@ -36,6 +37,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import { buildInviteAcceptPath } from "@verifyafrica/ui/lib/redirect";
 import { AuthPageShell } from "../-components";
 import { PasswordField } from "../-components/password-field";
 
@@ -60,6 +62,7 @@ function AcceptInvitationPage() {
 	const verifyQuery = useVerifyInvitationV2Query(token, Boolean(token));
 	const email = verifyQuery.data?.email;
 	const tenantName = verifyQuery.data?.tenant.name;
+	const tenantId = verifyQuery.data?.tenant.id;
 
 	const lookupQuery = useUserV2LookupQuery(
 		{ email: email ?? "" },
@@ -166,6 +169,7 @@ function AcceptInvitationPage() {
 		<ExistingUserInvitationPrompt
 			email={email}
 			token={token}
+			tenantId={tenantId}
 			tenantName={tenantName}
 		/>
 	);
@@ -183,6 +187,7 @@ function NewUserInvitationForm({
 	const navigate = useNavigate();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 	const createUserMutation = useCreateUserFromInvitationV2Mutation();
+	const invitePath = buildInviteAcceptPath(token);
 
 	const form = useForm({
 		defaultValues: {
@@ -200,7 +205,10 @@ function NewUserInvitationForm({
 			await createUserMutation.mutateAsync(value, {
 				onSuccess: () => {
 					toast.success("Account created. You can now sign in.");
-					navigate({ to: "/login" });
+					navigate({
+						to: "/login",
+						search: { redirect_to: invitePath },
+					});
 				},
 				onError: (error) => {
 					const axiosError = error as V2AxiosError;
@@ -237,6 +245,7 @@ function NewUserInvitationForm({
 					Already have an account?{" "}
 					<Link
 						to="/login"
+						search={{ redirect_to: invitePath }}
 						className="font-semibold text-foreground hover:underline"
 					>
 						Sign in here
@@ -366,23 +375,29 @@ function NewUserInvitationForm({
 function ExistingUserInvitationPrompt({
 	email,
 	token,
+	tenantId,
 	tenantName,
 }: {
 	email: string;
 	token: string;
+	tenantId?: string;
 	tenantName?: string;
 }) {
 	const navigate = useNavigate();
-	const user = useAuthStore((state) => state.user);
 	const accessToken = useAuthStore((state) => state.access_token);
+	const setSelectedTenantId = useAuthStore((state) => state.setSelectedTenantId);
+	const meQuery = useMeV2Query(Boolean(accessToken));
+	const user = useAuthStore((state) => state.user) ?? meQuery.data ?? null;
+	const isAuthLoading = Boolean(accessToken) && meQuery.isLoading && !user;
 	const isAuthenticated = Boolean(accessToken && user);
 	const emailMatches =
 		isAuthenticated && user?.email.toLowerCase() === email.toLowerCase();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 	const acceptInvitationMutation = useAcceptInvitationV2Mutation();
+	const invitePath = buildInviteAcceptPath(token);
 
 	function handleDecline() {
-		navigate({ to: "/login" });
+		navigate({ to: isAuthenticated ? "/app" : "/login" });
 	}
 
 	async function handleAccept() {
@@ -390,7 +405,10 @@ function ExistingUserInvitationPrompt({
 
 		if (!isAuthenticated) {
 			toast.message("Sign in to accept your invitation");
-			navigate({ to: "/login" });
+			navigate({
+				to: "/login",
+				search: { redirect_to: invitePath },
+			});
 			return;
 		}
 
@@ -408,6 +426,9 @@ function ExistingUserInvitationPrompt({
 			{ token },
 			{
 				onSuccess: () => {
+					if (tenantId) {
+						setSelectedTenantId(tenantId);
+					}
 					toast.success("Invitation accepted successfully");
 					navigate({ to: "/app" });
 				},
@@ -433,6 +454,19 @@ function ExistingUserInvitationPrompt({
 		);
 	}
 
+	if (isAuthLoading) {
+		return (
+			<AuthPageShell
+				title="Loading invitation"
+				subtitle="Please wait while we verify your session"
+			>
+				<div className="flex justify-center py-8">
+					<Spinner className="size-8 text-primary" />
+				</div>
+			</AuthPageShell>
+		);
+	}
+
 	return (
 		<AuthPageShell
 			title="You're invited"
@@ -447,6 +481,7 @@ function ExistingUserInvitationPrompt({
 				<p className="mt-6 text-center text-sm text-muted-foreground">
 					<Link
 						to="/login"
+						search={{ redirect_to: invitePath }}
 						className="font-semibold text-foreground hover:underline"
 					>
 						Go to sign in

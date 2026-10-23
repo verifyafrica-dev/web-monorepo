@@ -182,10 +182,19 @@ export const useUserV2ResetPasswordMutation = () =>
 		mutationFn: USERS_V2_API.RESET_PASSWORD,
 	});
 
-export const useAcceptInvitationV2Mutation = () =>
-	useMutation<string, UserApiErrorResponse, InvitationAcceptPayload>({
+export const useAcceptInvitationV2Mutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation<string, UserApiErrorResponse, InvitationAcceptPayload>({
 		mutationFn: USERS_V2_API.ACCEPT_INVITATION,
+		onSuccess: async () => {
+			const user = await USERS_V2_API.ME();
+			useAuthStore.setState({ user: toAuthStoreUser(user) });
+			queryClient.setQueryData(USER_V2_QUERY_KEYS.me, user);
+			await queryClient.invalidateQueries({ queryKey: USER_V2_QUERY_KEYS.me });
+		},
 	});
+};
 
 export const useCreateUserFromInvitationV2Mutation = () =>
 	useMutation<string, UserApiErrorResponse, InvitationCreateUserPayload>({

@@ -7,7 +7,9 @@ import {
 } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
+	useTenantInvitationsV2Query,
 	useTenantUsersV2Query,
 	useTenantV2DetailQuery,
 } from "#/api/http/v2/tenants/tenants.hooks";
@@ -140,6 +142,13 @@ function ActiveUsersPage() {
 		userListQuery,
 		Boolean(tenantId),
 	);
+	const pendingInvitationsQuery = useTenantInvitationsV2Query(
+		tenantId,
+		{ page: 1, per_page: 1, status: "pending" },
+		Boolean(tenantId) && isTenantAdmin,
+	);
+	const pendingInvitationCount =
+		pendingInvitationsQuery.data?.meta.pagination.total ?? 0;
 
 	useEffect(() => {
 		setPage(1);
@@ -208,6 +217,25 @@ function ActiveUsersPage() {
 			</div>
 
 			{showOnboarding && <DashboardOnboarding />}
+
+			{isTenantAdmin && pendingInvitationCount > 0 ? (
+				<div className="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+					<p>
+						You have{" "}
+						<span className="font-semibold">{pendingInvitationCount}</span>{" "}
+						pending invitation{pendingInvitationCount === 1 ? "" : "s"}. Resend
+						or cancel them from the invitations page.
+					</p>
+					<Button
+						variant="outline"
+						size="sm"
+						className="w-fit border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+						asChild
+					>
+						<Link to="/app/team/invitations">Manage invitations</Link>
+					</Button>
+				</div>
+			) : null}
 
 			<Card className="gap-0 py-4 sm:py-6">
 				<CardHeader className="border-b">

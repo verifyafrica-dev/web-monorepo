@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useTenantBillingInformationV2Query } from "#/api/http/v2/billing/billing.hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	useSupportedCountriesV2Query,
 	useTenantUsersV2Query,
@@ -108,6 +109,7 @@ function TenantDetailPage() {
 	const { tenantId } = Route.useParams();
 	const { tab, compliance_tab: complianceTab } = Route.useSearch();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
@@ -346,6 +348,9 @@ function TenantDetailPage() {
 				onOpenChange={setInviteUserOpen}
 				onSuccess={() => {
 					void usersCountQuery.refetch();
+					void queryClient.invalidateQueries({
+						queryKey: ["tenants-v2", "invitations", tenantId],
+					});
 				}}
 			/>
 			<DeleteTenantDialog

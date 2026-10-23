@@ -9,6 +9,13 @@ const AUTH_PATHS_WITHOUT_REDIRECT = new Set([
 	"/activate-account",
 ]);
 
+function getPathnameOnly(path: string): string {
+	const pathname = path.split("?")[0]?.split("#")[0] ?? path;
+	return pathname.endsWith("/") && pathname.length > 1
+		? pathname.slice(0, -1)
+		: pathname;
+}
+
 export function getSafeRedirectPath(
 	redirectTo: string | undefined,
 ): string | undefined {
@@ -36,7 +43,10 @@ export function getPostLoginPath(redirectTo: string | undefined): string {
 export function buildLoginRedirectUrl(pathname: string): string {
 	const safePath = getSafeRedirectPath(pathname);
 
-	if (!safePath || AUTH_PATHS_WITHOUT_REDIRECT.has(safePath)) {
+	if (
+		!safePath ||
+		AUTH_PATHS_WITHOUT_REDIRECT.has(getPathnameOnly(safePath))
+	) {
 		return LOGIN_PATH;
 	}
 
@@ -44,4 +54,8 @@ export function buildLoginRedirectUrl(pathname: string): string {
 	searchParams.set("redirect_to", safePath);
 
 	return `${LOGIN_PATH}?${searchParams.toString()}`;
+}
+
+export function buildInviteAcceptPath(token: string): string {
+	return `/invite?token=${encodeURIComponent(token)}`;
 }

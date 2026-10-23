@@ -54,6 +54,7 @@ import { getUserInitials } from "#/lib/user.ts";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { getTenantAvatarColor } from "../../-data";
 import { formatTenantDate } from "../-data";
+import { PendingInvitationsCard } from "./pending-invitations-card";
 
 const PAGE_SIZE = 10;
 const USERS_FETCH_SIZE = 100;
@@ -180,7 +181,7 @@ export function UsersTab({
 	};
 
 	return (
-		<>
+		<div className="flex flex-col gap-6">
 			<Card>
 				<CardHeader className="gap-4 border-b">
 					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -370,7 +371,9 @@ export function UsersTab({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</>
+
+			<PendingInvitationsCard tenantId={tenantId} />
+		</div>
 	);
 }
 

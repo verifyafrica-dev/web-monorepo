@@ -60,7 +60,7 @@ export function DeleteUserDialog({
 		try {
 			if (isInvitation) {
 				await deleteInvitationMutation.mutateAsync(deleteTarget.id);
-				toast.success("Invitation deleted successfully");
+				toast.success("Invitation canceled successfully");
 			} else {
 				await removeUserMutation.mutateAsync(deleteTarget.id);
 				toast.success("User removed successfully");
@@ -71,7 +71,7 @@ export function DeleteUserDialog({
 		} catch {
 			toast.error(
 				isInvitation
-					? "Failed to delete invitation. Please try again."
+					? "Failed to cancel invitation. Please try again."
 					: "Failed to remove user. Please try again.",
 			);
 		}
@@ -82,16 +82,16 @@ export function DeleteUserDialog({
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>
-						{isInvitation ? "Delete invitation?" : "Delete user?"}
+						{isInvitation ? "Cancel invitation?" : "Delete user?"}
 					</AlertDialogTitle>
 					<AlertDialogDescription>
 						{isInvitation ? (
 							<>
-								This will permanently remove the invitation sent to{" "}
+								This cancels the invitation sent to{" "}
 								<span className="font-medium text-foreground">
 									{target.email}
 								</span>
-								. This action cannot be undone.
+								. They will no longer be able to join with this invite link.
 							</>
 						) : (
 							<>
@@ -106,7 +106,9 @@ export function DeleteUserDialog({
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+					<AlertDialogCancel disabled={isDeleting}>
+						{isInvitation ? "Keep invitation" : "Cancel"}
+					</AlertDialogCancel>
 					<AlertDialogAction
 						variant="destructive"
 						disabled={isDeleting || !tenantId}
@@ -115,7 +117,13 @@ export function DeleteUserDialog({
 							void handleConfirm();
 						}}
 					>
-						{isDeleting ? "Deleting..." : "Delete"}
+						{isDeleting
+							? isInvitation
+								? "Canceling..."
+								: "Deleting..."
+							: isInvitation
+								? "Cancel invitation"
+								: "Delete"}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

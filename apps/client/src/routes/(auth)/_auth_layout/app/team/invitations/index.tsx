@@ -103,7 +103,7 @@ function InvitationsPage() {
 		useState<UserInvitation | null>(null);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<InvitationStatus | "all">(
-		"all",
+		"pending",
 	);
 	const [roleFilter, setRoleFilter] = useState<TenantUserRole | "all">("all");
 	const [page, setPage] = useState(1);
@@ -149,7 +149,7 @@ function InvitationsPage() {
 
 	useEffect(() => {
 		setPage(1);
-	}, []);
+	}, [debouncedSearch, statusFilter, roleFilter]);
 
 	const invitations = useMemo(
 		() => mapInvitationsToUserInvitations(invitationsQuery.data?.items ?? []),
@@ -385,7 +385,7 @@ function InvitationsPage() {
 																/>
 															)}
 															<TeamIconActionButton
-																label="Delete invitation"
+																label="Cancel invitation"
 																icon={TrashIcon}
 																variant="destructive"
 																onClick={(event) => {

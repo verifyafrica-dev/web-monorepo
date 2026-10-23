@@ -21,6 +21,7 @@ const { http, getAccessTokenKey, setAccessToken, setTokens } = createHttpClient(
 		"/v2/users/reset-password/",
 		"/v2/users/refresh-token/",
 		"/v2/users/resend-activation-code/",
+		"/v2/tenants/verify-invitation/",
 		"/v2/tenants/invitations/create-user/",
 		"/v2/verifications/links/",
 		"/v2/public/verifications/supported-countries/",

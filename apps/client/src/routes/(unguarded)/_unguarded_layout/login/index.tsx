@@ -1,6 +1,11 @@
 import { ArrowRightIcon, LockIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	Link,
+	Navigate,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -45,8 +50,14 @@ export const Route = createFileRoute("/(unguarded)/_unguarded_layout/login/")({
 function LoginPage() {
 	const { redirect_to } = Route.useSearch();
 	const navigate = useNavigate();
+	const accessToken = useAuthStore((state) => state.access_token);
+	const user = useAuthStore((state) => state.user);
 	const userLoginMutation = useUserV2LoginMutation();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
+	const isAlreadyAuthenticated =
+		Boolean(accessToken) &&
+		Boolean(user?.is_active) &&
+		!user?.must_change_password;
 
 	const form = useForm({
 		defaultValues: {
@@ -82,8 +93,11 @@ function LoginPage() {
 							return;
 						}
 
+						const postLoginPath = getPostLoginPath(redirect_to);
+						const isInviteRedirect = postLoginPath.startsWith("/invite");
 						const tenants = normalizeUserTenants(user.tenants);
-						if (tenants.length === 0) {
+
+						if (tenants.length === 0 && !isInviteRedirect) {
 							toast.message("Membership deactivated", {
 								description: `Your organization access is no longer active. Contact ${SUPPORT_EMAIL} or create your own organization to continue.`,
 								descriptionClassName: "!text-foreground",
@@ -94,7 +108,7 @@ function LoginPage() {
 						}
 
 						toast.success("Login successful");
-						navigate({ href: getPostLoginPath(redirect_to) });
+						navigate({ href: postLoginPath });
 					},
 					onError: (error) => {
 						const axiosError = error as V2AxiosError;
@@ -118,6 +132,10 @@ function LoginPage() {
 			);
 		},
 	});
+
+	if (isAlreadyAuthenticated) {
+		return <Navigate href={getPostLoginPath(redirect_to)} replace />;
+	}
 
 	return (
 		<AuthPageShell
