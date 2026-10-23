@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -167,12 +167,6 @@ export function KybScreeningVerification({
 		},
 	});
 
-	const selectedCountry = form.state.values.country;
-	const identifiers = useMemo(() => {
-		const country = countries.find((item) => item.code === selectedCountry);
-		return country?.identifiers ?? session.identifiers ?? [];
-	}, [countries, selectedCountry, session.identifiers]);
-
 	if (submitted) {
 		return (
 			<VerificationSubmittedDialog description="We've received your company details. You can close this page now." />
@@ -224,166 +218,215 @@ export function KybScreeningVerification({
 				</form.Field>
 			)}
 
-			{kybBase === "search" ? (
-				<>
-					{searchByLocked ? null : identifiers.length > 0 ? (
-						<form.Field name="searchBy">
-							{(field) => (
+			<form.Subscribe selector={(state) => state.values.country}>
+				{(selectedCountry) => {
+					const resolvedCountry =
+						selectedCountry ||
+						(jurisdictionLocked
+							? session.prefilled?.jurisdiction_code ||
+								session.prefilled?.country ||
+								""
+							: "");
+					const identifiers =
+						countries.find((item) => item.code === resolvedCountry)
+							?.identifiers ??
+						session.identifiers ??
+						[];
+					const showCompanyName = identifiers.includes("company_name");
+					const showRegistration = identifiers.includes(
+						"registration_number",
+					);
+					const otherIdentifiers = identifiers.filter(
+						(id) =>
+							id !== "company_name" && id !== "registration_number",
+					);
+
+					return (
+						<>
+							{kybBase === "search" ? (
+								<>
+									{searchByLocked || otherIdentifiers.length === 0 ? null : (
+										<form.Field name="searchBy">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="kyb-search-by">
+														Search identifier
+													</FieldLabel>
+													<Select
+														value={field.state.value || undefined}
+														onValueChange={field.handleChange}
+													>
+														<SelectTrigger
+															id="kyb-search-by"
+															className="w-full"
+														>
+															<SelectValue placeholder="Select an identifier" />
+														</SelectTrigger>
+														<SelectContent>
+															{otherIdentifiers.map((identifier) => (
+																<SelectItem
+																	key={identifier}
+																	value={identifier}
+																>
+																	{IDENTIFIER_LABELS[identifier] ??
+																		titleCaseLabel(identifier)}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												</Field>
+											)}
+										</form.Field>
+									)}
+									{showCompanyName || identifiers.length === 0 ? (
+										<form.Field name="companyName">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="kyb-company-name">
+														Company name
+													</FieldLabel>
+													<Input
+														id="kyb-company-name"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+													/>
+												</Field>
+											)}
+										</form.Field>
+									) : null}
+									{showRegistration || identifiers.length === 0 ? (
+										<form.Field name="companyRegistrationNumber">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="kyb-registration">
+														Company registration number
+													</FieldLabel>
+													<Input
+														id="kyb-registration"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+													/>
+												</Field>
+											)}
+										</form.Field>
+									) : null}
+									{searchByLocked || otherIdentifiers.length === 0 ? null : (
+										<form.Field name="searchWord">
+											{(field) => (
+												<Field className="gap-1.5">
+													<FieldLabel htmlFor="kyb-search-word">
+														Other identifier value
+													</FieldLabel>
+													<Input
+														id="kyb-search-word"
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+													/>
+													<FieldDescription>
+														Use this when searching by VAT, TRN, IBAN, or
+														another supported identifier.
+													</FieldDescription>
+												</Field>
+											)}
+										</form.Field>
+									)}
+								</>
+							) : null}
+
+							{kybBase === "document" ? (
 								<Field className="gap-1.5">
-									<FieldLabel htmlFor="kyb-search-by">
-										Search identifier
+									<FieldLabel htmlFor="kyb-document-file">
+										Business document
 									</FieldLabel>
-									<Select
-										value={field.state.value || undefined}
-										onValueChange={field.handleChange}
-									>
-										<SelectTrigger
-											id="kyb-search-by"
-											className="w-full"
-										>
-											<SelectValue placeholder="Select an identifier" />
-										</SelectTrigger>
-										<SelectContent>
-											{identifiers.map((identifier) => (
-												<SelectItem
-													key={identifier}
-													value={identifier}
-												>
-													{IDENTIFIER_LABELS[identifier] ??
-														titleCaseLabel(identifier)}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<Input
+										id="kyb-document-file"
+										type="file"
+										accept="image/jpeg,image/png,application/pdf"
+										onChange={(event) =>
+											setProofFile(event.target.files?.[0] ?? null)
+										}
+									/>
 								</Field>
-							)}
-						</form.Field>
-					) : null}
-					<form.Field name="companyName">
-						{(field) => (
-							<Field className="gap-1.5">
-								<FieldLabel htmlFor="kyb-company-name">Company name</FieldLabel>
-								<Input
-									id="kyb-company-name"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-								/>
-							</Field>
-						)}
-					</form.Field>
-					<form.Field name="companyRegistrationNumber">
-						{(field) => (
-							<Field className="gap-1.5">
-								<FieldLabel htmlFor="kyb-registration">
-									Company registration number
-								</FieldLabel>
-								<Input
-									id="kyb-registration"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-								/>
-							</Field>
-						)}
-					</form.Field>
-					<form.Field name="searchWord">
-						{(field) => (
-							<Field className="gap-1.5">
-								<FieldLabel htmlFor="kyb-search-word">
-									Other identifier value
-								</FieldLabel>
-								<Input
-									id="kyb-search-word"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-								/>
-								<FieldDescription>
-									Use this when searching by VAT, TRN, IBAN, or another
-									supported identifier.
-								</FieldDescription>
-							</Field>
-						)}
-					</form.Field>
-				</>
-			) : null}
+							) : null}
 
-			{kybBase === "document" ? (
-				<Field className="gap-1.5">
-					<FieldLabel htmlFor="kyb-document-file">Business document</FieldLabel>
-					<Input
-						id="kyb-document-file"
-						type="file"
-						accept="image/jpeg,image/png,application/pdf"
-						onChange={(event) => setProofFile(event.target.files?.[0] ?? null)}
-					/>
-				</Field>
-			) : null}
-
-			{kybBase === "document_purchase" ? (
-				<>
-					<form.Field name="companyRegistrationNumber">
-						{(field) => (
-							<Field className="gap-1.5">
-								<FieldLabel htmlFor="kyb-registration">
-									Company registration number
-								</FieldLabel>
-								<Input
-									id="kyb-registration"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-								/>
-							</Field>
-						)}
-					</form.Field>
-					<form.Field name="requiredDocuments">
-						{(field) => {
-							const labels = documentLabels(
-								session,
-								form.state.values.country ||
-									session.prefilled?.jurisdiction_code ||
-									"",
-							);
-							if (labels.length === 0) {
-								return null;
-							}
-							return (
-								<Field className="gap-2">
-									<FieldLabel>Documents to retrieve</FieldLabel>
-									{labels.map((label) => (
-										<div
-											key={label}
-											className="flex items-center gap-2"
-										>
-											<Checkbox
-												id={`kyb-req-${label}`}
-												checked={field.state.value.includes(label)}
-												onCheckedChange={(checked) => {
-													const next = new Set(field.state.value);
-													if (checked === true) {
-														next.add(label);
-													} else {
-														next.delete(label);
+							{kybBase === "document_purchase" ? (
+								<>
+									<form.Field name="companyRegistrationNumber">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="kyb-registration">
+													Company registration number
+												</FieldLabel>
+												<Input
+													id="kyb-registration"
+													value={field.state.value}
+													onBlur={field.handleBlur}
+													onChange={(event) =>
+														field.handleChange(event.target.value)
 													}
-													field.handleChange([...next]);
-												}}
-											/>
-											<Label
-												htmlFor={`kyb-req-${label}`}
-												className="font-normal"
-											>
-												{titleCaseLabel(label)}
-											</Label>
-										</div>
-									))}
-								</Field>
-							);
-						}}
-					</form.Field>
-				</>
-			) : null}
+												/>
+											</Field>
+										)}
+									</form.Field>
+									<form.Field name="requiredDocuments">
+										{(field) => {
+											const labels = documentLabels(
+												session,
+												resolvedCountry ||
+													session.prefilled?.jurisdiction_code ||
+													"",
+											);
+											if (labels.length === 0) {
+												return null;
+											}
+											return (
+												<Field className="gap-2">
+													<FieldLabel>Documents to retrieve</FieldLabel>
+													{labels.map((label) => (
+														<div
+															key={label}
+															className="flex items-center gap-2"
+														>
+															<Checkbox
+																id={`kyb-req-${label}`}
+																checked={field.state.value.includes(label)}
+																onCheckedChange={(checked) => {
+																	const next = new Set(field.state.value);
+																	if (checked === true) {
+																		next.add(label);
+																	} else {
+																		next.delete(label);
+																	}
+																	field.handleChange([...next]);
+																}}
+															/>
+															<Label
+																htmlFor={`kyb-req-${label}`}
+																className="font-normal"
+															>
+																{titleCaseLabel(label)}
+															</Label>
+														</div>
+													))}
+												</Field>
+											);
+										}}
+									</form.Field>
+								</>
+							) : null}
+						</>
+					);
+				}}
+			</form.Subscribe>
 
 			<Button
 				type="submit"

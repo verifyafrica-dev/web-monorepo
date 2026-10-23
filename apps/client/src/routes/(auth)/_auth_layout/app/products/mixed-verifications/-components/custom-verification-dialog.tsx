@@ -284,6 +284,37 @@ function SortableStepCard({
 
 						{showDocumentConfig ? (
 							<>
+								<Field className="gap-1.5">
+									<div className="flex items-center justify-between gap-3">
+										<div className="min-w-0 space-y-1">
+											<Label
+												htmlFor={`mixed-step-allow-file-upload-${step.id}`}
+												className="text-sm font-medium"
+											>
+												Allow file upload
+											</Label>
+											<FieldDescription>
+												Overrides the product file-upload setting for this
+												step. When off, customers must use the camera only.
+											</FieldDescription>
+										</div>
+										<Switch
+											id={`mixed-step-allow-file-upload-${step.id}`}
+											checked={step.config.allowFileUpload}
+											disabled={disabled}
+											onCheckedChange={(checked) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														allowFileUpload: checked === true,
+													},
+												})
+											}
+											className="shrink-0"
+										/>
+									</div>
+								</Field>
 								<Field className="gap-2">
 									<FieldLabel>Allowed document types</FieldLabel>
 									<div className="grid gap-2 sm:grid-cols-3">

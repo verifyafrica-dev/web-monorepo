@@ -138,11 +138,33 @@ function MixedStepProgress({ session }: { session: NewVerifySession }) {
 	);
 }
 
+function consentStorageKey(token: string) {
+	return `new-verify-consent:${token}`;
+}
+
+function readStoredConsent(token: string) {
+	try {
+		return sessionStorage.getItem(consentStorageKey(token)) === "1";
+	} catch {
+		return false;
+	}
+}
+
+function storeConsent(token: string) {
+	try {
+		sessionStorage.setItem(consentStorageKey(token), "1");
+	} catch {
+		// Ignore quota / private-mode failures; in-memory state still covers the flow.
+	}
+}
+
 export function NewVerifySessionView({
 	session,
 	onMixedContinue,
 }: NewVerifySessionViewProps) {
-	const [hasConsented, setHasConsented] = useState(false);
+	const [hasConsented, setHasConsented] = useState(() =>
+		readStoredConsent(session.token),
+	);
 	const VerificationComponent = isGovernmentRegistrySession(session)
 		? GovernmentRegistryVerification
 		: NEW_VERIFY_VERIFICATION_COMPONENTS[
@@ -169,6 +191,8 @@ export function NewVerifySessionView({
 				}
 			: null;
 
+	const stepKey = `${session.current_step_id ?? "single"}-${session.verification_type}`;
+
 	return (
 		<MixedContinueProvider value={mixedContinueValue}>
 			<NewVerifyChrome
@@ -177,10 +201,17 @@ export function NewVerifySessionView({
 				verificationTitle={titleForVerificationType(session.verification_type)}
 			>
 				<MixedStepProgress session={session} />
-				<NewVerifyConsent onConsented={() => setHasConsented(true)} />
+				{hasConsented ? null : (
+					<NewVerifyConsent
+						onConsented={() => {
+							storeConsent(session.token);
+							setHasConsented(true);
+						}}
+					/>
+				)}
 				{hasConsented ? (
 					VerificationComponent ? (
-						<VerificationComponent session={session} />
+						<VerificationComponent key={stepKey} session={session} />
 					) : (
 						<div className="flex flex-1 items-center justify-center px-6 text-center">
 							<p className="text-sm text-muted-foreground">

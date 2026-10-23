@@ -191,6 +191,8 @@ export const MixedStepConfigSchema = z.object({
 	faceAgeMin: z.string(),
 	faceAgeMax: z.string(),
 	requireSelfie: z.boolean(),
+	/** ID document: overrides tenant product setting when starting a session. */
+	allowFileUpload: z.boolean(),
 });
 
 export type MixedStepConfig = z.infer<typeof MixedStepConfigSchema>;
@@ -249,6 +251,7 @@ export const emptyMixedStepConfig = (): MixedStepConfig => ({
 	faceAgeMin: "16",
 	faceAgeMax: "",
 	requireSelfie: false,
+	allowFileUpload: true,
 });
 
 export function createMixedStep(
@@ -341,6 +344,9 @@ function configFromStepRecord(
 				typeof item === "string" &&
 				(SHUFTI_DOCUMENT_SUPPORTED_TYPES as readonly string[]).includes(item),
 		);
+	}
+	if (typeof config.allow_file_upload === "boolean") {
+		base.allowFileUpload = config.allow_file_upload;
 	}
 
 	const address =
@@ -540,6 +546,7 @@ function buildStepConfigPayload(
 			backside_proof_required: config.backsideProofRequired,
 			verification_instructions: config.verificationInstructions.trim(),
 		};
+		payload.allow_file_upload = config.allowFileUpload;
 	}
 
 	if (type === "address_verification") {
