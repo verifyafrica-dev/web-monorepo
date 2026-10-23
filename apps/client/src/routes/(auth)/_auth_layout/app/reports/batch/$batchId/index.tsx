@@ -283,7 +283,7 @@ function BatchVerificationReportDetailPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle className="text-base font-semibold">
-								Batch Verifications
+								Verifications
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-6">

@@ -15,7 +15,6 @@ import { KybScreeningVerification } from "./verifications/kyb-screening-verifica
 import { MixedContinueProvider } from "./mixed-continue-context";
 import { NewVerifyChrome } from "./new-verify-chrome";
 import { NewVerifyConsent } from "./new-verify-consent";
-import { NewVerifySessionTimer } from "./new-verify-session-timer";
 
 const GOVERNMENT_REGISTRY_TYPES = new Set<string>(
 	VERIFICATION_TYPES_BY_PRODUCT["Government Registry Checks"],
@@ -70,12 +69,9 @@ function MixedStepProgress({ session }: { session: NewVerifySession }) {
 
 	return (
 		<div className="border-b border-border px-4 py-4 md:px-6">
-			<div className="mb-3 flex items-center justify-between gap-3">
-				<p className="text-xs text-muted-foreground">
-					Step {Math.min(completedCount + 1, steps.length)} of {steps.length}
-				</p>
-				<NewVerifySessionTimer expiresAt={session.expires_at} />
-			</div>
+			<p className="mb-3 text-xs text-muted-foreground">
+				Step {Math.min(completedCount + 1, steps.length)} of {steps.length}
+			</p>
 			<ol className="m-0 flex list-none items-start justify-between gap-1 p-0">
 				{steps.map((step, index) => {
 					const isCurrent = step.step_id === session.current_step_id;
@@ -179,7 +175,6 @@ export function NewVerifySessionView({
 				token={session.token}
 				contactEmail={session.email ?? ""}
 				verificationTitle={titleForVerificationType(session.verification_type)}
-				expiresAt={session.is_mixed ? undefined : session.expires_at}
 			>
 				<MixedStepProgress session={session} />
 				<NewVerifyConsent onConsented={() => setHasConsented(true)} />
