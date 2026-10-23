@@ -26,6 +26,8 @@ import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
 import { buildNewVerifyUrl } from "@verifyafrica/api-client/lib/verification-links";
 import { cn } from "@verifyafrica/ui/lib/utils";
 
+import { NewVerifySessionTimer } from "./new-verify-session-timer";
+
 export const NEW_VERIFY_SUPPORT_EMAIL = "support@verifyafrica.io";
 
 type NewVerifyChromeProps = {
@@ -33,6 +35,8 @@ type NewVerifyChromeProps = {
 	token: string;
 	contactEmail?: string;
 	verificationTitle?: string;
+	/** When set, shows a countdown in the header (single-step sessions). */
+	expiresAt?: string | null;
 };
 
 export function NewVerifyBrandingFooter() {
@@ -61,6 +65,7 @@ export function NewVerifyChrome({
 	token,
 	contactEmail = "",
 	verificationTitle,
+	expiresAt,
 }: NewVerifyChromeProps) {
 	const [isHelpOpen, setIsHelpOpen] = useState(false);
 	const [isContinueOnPhoneOpen, setIsContinueOnPhoneOpen] = useState(false);
@@ -159,11 +164,21 @@ export function NewVerifyChrome({
 					</div>
 				</header>
 
-				{verificationTitle ? (
-					<div className="px-6 pb-2">
-						<h1 className="text-lg font-semibold tracking-tight">
-							{verificationTitle}
-						</h1>
+				{verificationTitle || expiresAt ? (
+					<div className="flex items-start justify-between gap-3 px-6 pb-2">
+						{verificationTitle ? (
+							<h1 className="text-lg font-semibold tracking-tight">
+								{verificationTitle}
+							</h1>
+						) : (
+							<span />
+						)}
+						{expiresAt ? (
+							<NewVerifySessionTimer
+								expiresAt={expiresAt}
+								className="shrink-0"
+							/>
+						) : null}
 					</div>
 				) : null}
 

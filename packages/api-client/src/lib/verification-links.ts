@@ -93,8 +93,8 @@ export function buildMixedSessionLinkResult(
 					inner_link: "",
 					verification_reference: session?.reference ?? "",
 					provider: "sf",
-					ttl_minutes: null,
-					expires_at: null,
+					ttl_minutes: session?.ttl_minutes ?? null,
+					expires_at: session?.expires_at ?? null,
 					used_at: null,
 					created_at: session?.created_at ?? "",
 				}

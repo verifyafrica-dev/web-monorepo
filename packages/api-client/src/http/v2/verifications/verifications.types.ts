@@ -215,6 +215,8 @@ export const MixedVerificationStartSchema = z.object({
 	full_address: z.string().optional(),
 	reference: z.string().optional(),
 	notification_email: z.string().email().optional(),
+	/** Hosted link lifetime in minutes (15, 30, 60, 120, 240, or 1440). */
+	ttl: z.number().int().positive().optional(),
 });
 
 export type MixedVerificationStartPayload = z.infer<
@@ -268,6 +270,8 @@ export interface MixedVerificationSession {
 	steps: MixedVerificationSessionStep[];
 	link: string | null;
 	verification_url: string | null;
+	ttl_minutes?: number | null;
+	expires_at?: string | null;
 	template_id: string | null;
 	metadata: Record<string, unknown>;
 	created_at: string | null;

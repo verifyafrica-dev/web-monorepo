@@ -15,6 +15,7 @@ import { KybScreeningVerification } from "./verifications/kyb-screening-verifica
 import { MixedContinueProvider } from "./mixed-continue-context";
 import { NewVerifyChrome } from "./new-verify-chrome";
 import { NewVerifyConsent } from "./new-verify-consent";
+import { NewVerifySessionTimer } from "./new-verify-session-timer";
 
 const GOVERNMENT_REGISTRY_TYPES = new Set<string>(
 	VERIFICATION_TYPES_BY_PRODUCT["Government Registry Checks"],
@@ -39,6 +40,14 @@ function titleForVerificationType(verificationType: string) {
 	return verificationType.replaceAll("_", " ");
 }
 
+function shortLabelForVerificationType(verificationType: string) {
+	const title = titleForVerificationType(verificationType);
+	if (title.length <= 18) {
+		return title;
+	}
+	return title.split(" ")[0] ?? title;
+}
+
 function isGovernmentRegistrySession(session: NewVerifySession) {
 	return (
 		Boolean(session.registry_fields) ||
@@ -57,37 +66,74 @@ function MixedStepProgress({ session }: { session: NewVerifySession }) {
 		return null;
 	}
 
+	const completedCount = steps.filter((step) => step.submitted).length;
+
 	return (
-		<div className="border-b border-border px-4 py-3 md:px-6">
-			<p className="mb-2 text-xs text-muted-foreground">
-				Complete each step in order. You can only move forward.
-			</p>
-			<ol className="m-0 flex list-none flex-wrap gap-3 p-0">
-				{steps.map((step) => {
+		<div className="border-b border-border px-4 py-4 md:px-6">
+			<div className="mb-3 flex items-center justify-between gap-3">
+				<p className="text-xs text-muted-foreground">
+					Step {Math.min(completedCount + 1, steps.length)} of {steps.length}
+				</p>
+				<NewVerifySessionTimer expiresAt={session.expires_at} />
+			</div>
+			<ol className="m-0 flex list-none items-start justify-between gap-1 p-0">
+				{steps.map((step, index) => {
 					const isCurrent = step.step_id === session.current_step_id;
 					const isDone = step.submitted;
+					const isUpcoming = !isDone && !isCurrent;
+					const showConnector = index < steps.length - 1;
+
 					return (
 						<li
 							key={step.step_id}
-							className={cn(
-								"flex items-center gap-1.5 text-xs",
-								isCurrent
-									? "font-semibold text-foreground"
-									: "text-muted-foreground",
-							)}
+							className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5"
 						>
-							{isDone ? (
-								<CheckCircleIcon className="size-4 text-primary" weight="fill" />
-							) : (
-								<CircleIcon
+							{showConnector ? (
+								<span
+									aria-hidden
 									className={cn(
-										"size-4",
-										isCurrent ? "text-primary" : "text-muted-foreground",
+										"absolute top-3 left-[calc(50%+0.75rem)] right-[calc(-50%+0.75rem)] h-0.5",
+										isDone ? "bg-primary" : "bg-border",
 									)}
-									weight={isCurrent ? "fill" : "regular"}
 								/>
-							)}
-							<span>{titleForVerificationType(step.type)}</span>
+							) : null}
+							<span
+								className={cn(
+									"relative z-10 flex size-6 items-center justify-center rounded-full",
+									isDone && "bg-primary/10",
+									isCurrent && "bg-primary/10 ring-2 ring-primary/30",
+									isUpcoming && "bg-muted",
+								)}
+								aria-current={isCurrent ? "step" : undefined}
+							>
+								{isDone ? (
+									<CheckCircleIcon
+										className="size-5 text-primary"
+										weight="fill"
+									/>
+								) : (
+									<CircleIcon
+										className={cn(
+											"size-4",
+											isCurrent ? "text-primary" : "text-muted-foreground",
+										)}
+										weight={isCurrent ? "fill" : "regular"}
+									/>
+								)}
+							</span>
+							<span
+								className={cn(
+									"max-w-full truncate text-center text-[10px] leading-tight sm:text-xs",
+									isCurrent
+										? "font-semibold text-foreground"
+										: isDone
+											? "font-medium text-foreground"
+											: "text-muted-foreground",
+								)}
+								title={titleForVerificationType(step.type)}
+							>
+								{shortLabelForVerificationType(step.type)}
+							</span>
 						</li>
 					);
 				})}
@@ -133,6 +179,7 @@ export function NewVerifySessionView({
 				token={session.token}
 				contactEmail={session.email ?? ""}
 				verificationTitle={titleForVerificationType(session.verification_type)}
+				expiresAt={session.is_mixed ? undefined : session.expires_at}
 			>
 				<MixedStepProgress session={session} />
 				<NewVerifyConsent onConsented={() => setHasConsented(true)} />

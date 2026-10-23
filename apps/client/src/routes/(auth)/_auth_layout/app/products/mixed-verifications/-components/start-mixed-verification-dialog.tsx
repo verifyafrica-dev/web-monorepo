@@ -17,8 +17,19 @@ import {
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@verifyafrica/ui/components/ui/select";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { Textarea } from "@verifyafrica/ui/components/ui/textarea";
+import {
+	DEFAULT_VERIFICATION_URL_LIMIT,
+	VERIFICATION_URL_LIMITS,
+} from "../../../-components/VerificationConsentCheckbox/data";
 import { PRODUCT_SLUG } from "../../-data";
 import {
 	ProductDisabledNotice,
@@ -47,6 +58,7 @@ export function StartMixedVerificationDialog({
 	);
 	const [email, setEmail] = useState("");
 	const [fullAddress, setFullAddress] = useState("");
+	const [urlLimit, setUrlLimit] = useState(DEFAULT_VERIFICATION_URL_LIMIT);
 	const requiresAddress = template
 		? mixedVerificationRequiresAddress(template)
 		: false;
@@ -55,6 +67,7 @@ export function StartMixedVerificationDialog({
 		if (!open) {
 			setEmail("");
 			setFullAddress("");
+			setUrlLimit(DEFAULT_VERIFICATION_URL_LIMIT);
 		}
 	}, [open]);
 
@@ -81,6 +94,7 @@ export function StartMixedVerificationDialog({
 					is_mixed: true,
 					verification_id: template.id,
 					full_address: requiresAddress ? fullAddress.trim() : undefined,
+					ttl: Number(urlLimit),
 				},
 			});
 			onStarted(session, email.trim());
@@ -108,6 +122,10 @@ export function StartMixedVerificationDialog({
 							<Skeleton className="h-10 w-full" />
 							<Skeleton className="h-3 w-4/5" />
 						</div>
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-36" />
+							<Skeleton className="h-10 w-full" />
+						</div>
 						{requiresAddress ? (
 							<div className="space-y-2">
 								<Skeleton className="h-4 w-24" />
@@ -128,6 +146,30 @@ export function StartMixedVerificationDialog({
 							/>
 							<p className="text-xs text-muted-foreground">
 								The hosted verification link will be issued for this recipient.
+							</p>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="mixed-verification-url-limit">
+								Verification URL Limit
+							</Label>
+							<Select value={urlLimit} onValueChange={setUrlLimit}>
+								<SelectTrigger
+									id="mixed-verification-url-limit"
+									className="w-full"
+								>
+									<SelectValue placeholder="Select duration" />
+								</SelectTrigger>
+								<SelectContent>
+									{VERIFICATION_URL_LIMITS.map((option) => (
+										<SelectItem key={option.value} value={option.value}>
+											{option.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<p className="text-xs text-muted-foreground">
+								All steps must be completed before the link expires.
 							</p>
 						</div>
 
