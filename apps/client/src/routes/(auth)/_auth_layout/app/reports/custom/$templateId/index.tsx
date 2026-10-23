@@ -62,7 +62,6 @@ const COLUMNS = [
 	"Total Count",
 	"Success",
 	"Failed",
-	"Success Rate",
 	"Created At",
 	"Actions",
 ];
@@ -169,6 +168,17 @@ function CustomVerificationReportsPage() {
 		Boolean(tenantId) && Boolean(templateId),
 	);
 
+	// Unfiltered sample for template-level success rate (not per batch row).
+	const templateStatsQuery = useTenantVerificationBatchesV2Query(
+		tenantId,
+		{
+			page: 1,
+			per_page: 100,
+			template_id: templateId,
+		},
+		Boolean(tenantId) && Boolean(templateId),
+	);
+
 	const batches = useMemo(
 		() => mapVerificationBatchesToReports(batchesQuery.data?.items ?? []),
 		[batchesQuery.data?.items],
@@ -177,6 +187,17 @@ function CustomVerificationReportsPage() {
 	const total = batchesQuery.data?.meta.pagination.total ?? 0;
 	const templateName =
 		templateQuery.data?.name?.trim() || "Custom verification";
+
+	const templateSuccessRate = useMemo(() => {
+		const items = templateStatsQuery.data?.items ?? [];
+		if (items.length === 0) {
+			return null;
+		}
+		const successSessions = items.filter(
+			(batch) => batch.status === "SUCCESS",
+		).length;
+		return ((successSessions / items.length) * 100).toFixed(1);
+	}, [templateStatsQuery.data?.items]);
 
 	const handleFiltersChange = useCallback(
 		(values: ReportsFiltersFormValues) => {
@@ -217,6 +238,29 @@ function CustomVerificationReportsPage() {
 							<p className="font-mono text-xs text-muted-foreground">
 								{templateId}
 							</p>
+						) : null}
+						{templateSuccessRate !== null ? (
+							<div className="flex items-center gap-2 pt-1">
+								<span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+									Success rate
+								</span>
+								<span className="text-sm font-semibold tabular-nums">
+									{templateSuccessRate}%
+								</span>
+								<div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+									<div
+										className={cn(
+											"h-full rounded-full",
+											Number(templateSuccessRate) >= 80
+												? "bg-emerald-500"
+												: Number(templateSuccessRate) >= 50
+													? "bg-amber-500"
+													: "bg-red-500",
+										)}
+										style={{ width: `${templateSuccessRate}%` }}
+									/>
+								</div>
+							</div>
 						) : null}
 					</div>
 					{canEditTemplate ? (
@@ -294,11 +338,7 @@ function CustomVerificationReportsPage() {
 											</TableRow>
 										) : (
 											batches.map((batch) => (
-												<TemplateBatchRow
-													key={batch.id}
-													batch={batch}
-													templateId={templateId}
-												/>
+												<TemplateBatchRow key={batch.id} batch={batch} />
 											))
 										)}
 									</TableBody>
@@ -329,18 +369,7 @@ function CustomVerificationReportsPage() {
 	);
 }
 
-function TemplateBatchRow({
-	batch,
-	templateId,
-}: {
-	batch: BatchVerificationReport;
-	templateId: string;
-}) {
-	const successRate =
-		batch.total_count > 0
-			? ((batch.success_count / batch.total_count) * 100).toFixed(1)
-			: "0";
-	const displayId = batch.template_id || templateId;
+function TemplateBatchRow({ batch }: { batch: BatchVerificationReport }) {
 	const displayName = batch.name?.trim() || "Mixed verification";
 
 	return (
@@ -352,9 +381,9 @@ function TemplateBatchRow({
 						params={{ batchId: batch.id }}
 						className="block max-w-[15ch] truncate font-mono text-xs hover:underline"
 					>
-						{displayId}
+						{batch.id}
 					</Link>
-					<p className="truncate text-sm font-medium">{displayName}</p>
+					<p className="hidden truncate text-sm font-medium">{displayName}</p>
 				</div>
 			</TableCell>
 			<TableCell>
@@ -374,26 +403,6 @@ function TemplateBatchRow({
 					count={batch.failed_count}
 					variant="error"
 				/>
-			</TableCell>
-			<TableCell>
-				<div className="flex items-center gap-2 whitespace-nowrap">
-					<span className="text-sm font-medium tabular-nums">
-						{successRate}%
-					</span>
-					<div className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
-						<div
-							className={cn(
-								"h-full rounded-full",
-								Number(successRate) >= 80
-									? "bg-emerald-500"
-									: Number(successRate) >= 50
-										? "bg-amber-500"
-										: "bg-red-500",
-							)}
-							style={{ width: `${successRate}%` }}
-						/>
-					</div>
-				</div>
 			</TableCell>
 			<TableCell className="text-sm text-muted-foreground">
 				{formatReportDate(batch.created_at)}
