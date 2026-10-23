@@ -4,7 +4,7 @@ import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import { useStartMixedVerificationV2Mutation } from "#/api/http/v2/verifications/verifications.hooks";
 import type {
 	MixedVerification,
-	VerificationRequest,
+	MixedVerificationSession,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -31,7 +31,7 @@ type StartMixedVerificationDialogProps = {
 	onOpenChange: (open: boolean) => void;
 	template: MixedVerification | null;
 	tenantId: string;
-	onStarted: (verification: VerificationRequest, email: string) => void;
+	onStarted: (session: MixedVerificationSession, email: string) => void;
 };
 
 export function StartMixedVerificationDialog({
@@ -74,7 +74,7 @@ export function StartMixedVerificationDialog({
 		}
 
 		try {
-			const verification = await startMutation.mutateAsync({
+			const session = await startMutation.mutateAsync({
 				tenantId,
 				payload: {
 					email: email.trim(),
@@ -83,7 +83,7 @@ export function StartMixedVerificationDialog({
 					full_address: requiresAddress ? fullAddress.trim() : undefined,
 				},
 			});
-			onStarted(verification, email.trim());
+			onStarted(session, email.trim());
 			onOpenChange(false);
 		} catch (error) {
 			const message = (error as V2AxiosError).response?.data?.message;

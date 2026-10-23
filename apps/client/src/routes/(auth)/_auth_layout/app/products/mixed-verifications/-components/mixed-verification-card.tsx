@@ -2,7 +2,6 @@ import {
 	PencilSimpleIcon,
 	PlayIcon,
 	StackIcon,
-	TrashIcon,
 } from "@phosphor-icons/react";
 
 import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
@@ -22,7 +21,6 @@ type MixedVerificationCardProps = {
 	canManageCustom: boolean;
 	onStart: (template: MixedVerification) => void;
 	onEdit?: (template: MixedVerification) => void;
-	onDelete?: (template: MixedVerification) => void;
 };
 
 export function MixedVerificationCard({
@@ -30,7 +28,6 @@ export function MixedVerificationCard({
 	canManageCustom,
 	onStart,
 	onEdit,
-	onDelete,
 }: MixedVerificationCardProps) {
 	const isCustom = template.is_custom;
 
@@ -80,28 +77,16 @@ export function MixedVerificationCard({
 
 			<CardFooter className="mt-auto flex items-center justify-between gap-3 border-t pt-4">
 				{isCustom && canManageCustom ? (
-					<div className="flex items-center gap-1">
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="cursor-pointer text-muted-foreground"
-							onClick={() => onEdit?.(template)}
-						>
-							<PencilSimpleIcon className="size-4" />
-							Edit
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="cursor-pointer text-destructive hover:text-destructive"
-							onClick={() => onDelete?.(template)}
-						>
-							<TrashIcon className="size-4" />
-							Delete
-						</Button>
-					</div>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className="cursor-pointer text-muted-foreground"
+						onClick={() => onEdit?.(template)}
+					>
+						<PencilSimpleIcon className="size-4" />
+						Edit
+					</Button>
 				) : (
 					<span />
 				)}

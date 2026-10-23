@@ -18,6 +18,10 @@ import type { HostedLinkResult } from "@verifyafrica/api-client/lib/verification
 import { buildLinkResult } from "@verifyafrica/api-client/lib/verification-links";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import {
+	DocumentTypeCombobox,
+	DocumentTypesMultiCombobox,
+} from "@verifyafrica/ui/components/ui-extended/document-types-combobox";
+import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
@@ -39,6 +43,10 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@verifyafrica/ui/components/ui/toggle-group";
+import {
+	SHUFTI_DOCUMENT_SUPPORTED_TYPES,
+	type ShuftiDocumentSupportedType,
+} from "@verifyafrica/ui/lib/constants";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	Field,
@@ -97,9 +105,12 @@ const LINK_COLLECT_FIELDS = (
 	label: LINK_COLLECT_FIELD_LABELS[name],
 }));
 
+const documentTypeSchema = z.enum(SHUFTI_DOCUMENT_SUPPORTED_TYPES);
+
 const linkFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	urlLimit: z.string().min(1, "Select a verification URL limit"),
+	documentTypes: z.array(documentTypeSchema),
 	consent: verificationConsentSchema,
 	...linkCollectFieldsSchema.shape,
 	verificationInstructions: z.string(),
@@ -113,6 +124,7 @@ const GENDER_OPTIONS = [
 const directFormSchema = z.object({
 	email: z.email("Enter a valid email address"),
 	country: z.string().min(1, "Select a country"),
+	documentType: documentTypeSchema,
 	firstName: z.string().trim().min(1, "First name is required"),
 	lastName: z.string().trim().min(1, "Last name is required"),
 	dob: z.string(),
@@ -206,6 +218,7 @@ export function DocumentVerificationForm() {
 		defaultValues: {
 			email: "",
 			urlLimit: DEFAULT_VERIFICATION_URL_LIMIT,
+			documentTypes: [] as ShuftiDocumentSupportedType[],
 			consent: false,
 			dob: false,
 			age: false,
@@ -230,6 +243,7 @@ export function DocumentVerificationForm() {
 		defaultValues: {
 			email: "",
 			country: "",
+			documentType: "" as ShuftiDocumentSupportedType | "",
 			firstName: "",
 			lastName: "",
 			dob: "",
@@ -255,7 +269,7 @@ export function DocumentVerificationForm() {
 
 			await submitVerification(
 				buildDocumentVerificationDirectPayload(
-					value,
+					value as z.infer<typeof directFormSchema>,
 					documentProofUrl,
 					value.requireBackside ? backsideProofUrl : null,
 				),
@@ -416,6 +430,30 @@ export function DocumentVerificationForm() {
 
 							{mode === "link" ? (
 								<>
+									<linkForm.Field name="documentTypes">
+										{(field) => (
+											<Field className="gap-1.5">
+												<FieldLabel htmlFor="document-verification-link-document-types">
+													Allowed document types
+												</FieldLabel>
+												<DocumentTypesMultiCombobox
+													id="document-verification-link-document-types"
+													value={field.state.value}
+													onValueChange={(next) =>
+														field.handleChange(
+															next as ShuftiDocumentSupportedType[],
+														)
+													}
+												/>
+												<FieldDescription>
+													Leave empty to allow passport, ID card, and driving
+													license. Otherwise customers can only upload the
+													types you select.
+												</FieldDescription>
+											</Field>
+										)}
+									</linkForm.Field>
+
 									<Field className="gap-3">
 										<FieldLabel>Collect additional fields</FieldLabel>
 										<FieldDescription>
@@ -489,6 +527,29 @@ export function DocumentVerificationForm() {
 												field.handleChange(event.target.value)
 											}
 										/>
+									</Field>
+								)}
+							</directForm.Field>
+
+							<directForm.Field name="documentType">
+								{(field) => (
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor="document-verification-direct-document-type">
+											Document type
+										</FieldLabel>
+										<DocumentTypeCombobox
+											id="document-verification-direct-document-type"
+											value={field.state.value}
+											onValueChange={(next) =>
+												field.handleChange(
+													next as ShuftiDocumentSupportedType | "",
+												)
+											}
+										/>
+										<FieldDescription>
+											The ID document type you are uploading for this
+											verification.
+										</FieldDescription>
 									</Field>
 								)}
 							</directForm.Field>

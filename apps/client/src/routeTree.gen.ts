@@ -45,6 +45,7 @@ import { Route as authAuth_layoutAppReportsIdIndexRouteImport } from './routes/(
 import { Route as authAuth_layoutAppTeamActiveUsersIndexRouteImport } from './routes/(auth)/_auth_layout/app/team/active-users/index'
 import { Route as authAuth_layoutAppTeamInvitationsIndexRouteImport } from './routes/(auth)/_auth_layout/app/team/invitations/index'
 import { Route as authAuth_layoutAppReportsBatchBatchIdIndexRouteImport } from './routes/(auth)/_auth_layout/app/reports/batch/$batchId/index'
+import { Route as authAuth_layoutAppReportsCustomTemplateIdIndexRouteImport } from './routes/(auth)/_auth_layout/app/reports/custom/$templateId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -256,6 +257,12 @@ const authAuth_layoutAppReportsBatchBatchIdIndexRoute =
     path: '/app/reports/batch/$batchId/',
     getParentRoute: () => authAuth_layoutRoute,
   } as any)
+const authAuth_layoutAppReportsCustomTemplateIdIndexRoute =
+  authAuth_layoutAppReportsCustomTemplateIdIndexRouteImport.update({
+    id: '/app/reports/custom/$templateId/',
+    path: '/app/reports/custom/$templateId/',
+    getParentRoute: () => authAuth_layoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/app/team/active-users/': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/app/team/invitations/': typeof authAuth_layoutAppTeamInvitationsIndexRoute
   '/app/reports/batch/$batchId/': typeof authAuth_layoutAppReportsBatchBatchIdIndexRoute
+  '/app/reports/custom/$templateId/': typeof authAuth_layoutAppReportsCustomTemplateIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -328,6 +336,7 @@ export interface FileRoutesByTo {
   '/app/team/active-users': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/app/team/invitations': typeof authAuth_layoutAppTeamInvitationsIndexRoute
   '/app/reports/batch/$batchId': typeof authAuth_layoutAppReportsBatchBatchIdIndexRoute
+  '/app/reports/custom/$templateId': typeof authAuth_layoutAppReportsCustomTemplateIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -367,6 +376,7 @@ export interface FileRoutesById {
   '/(auth)/_auth_layout/app/team/active-users/': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/(auth)/_auth_layout/app/team/invitations/': typeof authAuth_layoutAppTeamInvitationsIndexRoute
   '/(auth)/_auth_layout/app/reports/batch/$batchId/': typeof authAuth_layoutAppReportsBatchBatchIdIndexRoute
+  '/(auth)/_auth_layout/app/reports/custom/$templateId/': typeof authAuth_layoutAppReportsCustomTemplateIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/app/team/active-users/'
     | '/app/team/invitations/'
     | '/app/reports/batch/$batchId/'
+    | '/app/reports/custom/$templateId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -441,6 +452,7 @@ export interface FileRouteTypes {
     | '/app/team/active-users'
     | '/app/team/invitations'
     | '/app/reports/batch/$batchId'
+    | '/app/reports/custom/$templateId'
   id:
     | '__root__'
     | '/'
@@ -479,6 +491,7 @@ export interface FileRouteTypes {
     | '/(auth)/_auth_layout/app/team/active-users/'
     | '/(auth)/_auth_layout/app/team/invitations/'
     | '/(auth)/_auth_layout/app/reports/batch/$batchId/'
+    | '/(auth)/_auth_layout/app/reports/custom/$templateId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -742,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuth_layoutAppReportsBatchBatchIdIndexRouteImport
       parentRoute: typeof authAuth_layoutRoute
     }
+    '/(auth)/_auth_layout/app/reports/custom/$templateId/': {
+      id: '/(auth)/_auth_layout/app/reports/custom/$templateId/'
+      path: '/app/reports/custom/$templateId'
+      fullPath: '/app/reports/custom/$templateId/'
+      preLoaderRoute: typeof authAuth_layoutAppReportsCustomTemplateIdIndexRouteImport
+      parentRoute: typeof authAuth_layoutRoute
+    }
   }
 }
 
@@ -769,6 +789,7 @@ interface authAuth_layoutRouteChildren {
   authAuth_layoutAppTeamActiveUsersIndexRoute: typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   authAuth_layoutAppTeamInvitationsIndexRoute: typeof authAuth_layoutAppTeamInvitationsIndexRoute
   authAuth_layoutAppReportsBatchBatchIdIndexRoute: typeof authAuth_layoutAppReportsBatchBatchIdIndexRoute
+  authAuth_layoutAppReportsCustomTemplateIdIndexRoute: typeof authAuth_layoutAppReportsCustomTemplateIdIndexRoute
 }
 
 const authAuth_layoutRouteChildren: authAuth_layoutRouteChildren = {
@@ -808,6 +829,8 @@ const authAuth_layoutRouteChildren: authAuth_layoutRouteChildren = {
     authAuth_layoutAppTeamInvitationsIndexRoute,
   authAuth_layoutAppReportsBatchBatchIdIndexRoute:
     authAuth_layoutAppReportsBatchBatchIdIndexRoute,
+  authAuth_layoutAppReportsCustomTemplateIdIndexRoute:
+    authAuth_layoutAppReportsCustomTemplateIdIndexRoute,
 }
 
 const authAuth_layoutRouteWithChildren = authAuth_layoutRoute._addFileChildren(

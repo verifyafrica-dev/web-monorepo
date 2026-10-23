@@ -1,16 +1,23 @@
-import { ArrowLeftIcon, EyeIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, EyeIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { type ReactNode, useMemo, useState } from "react";
 
 import {
+	useMixedVerificationDetailV2Query,
 	useTenantVerificationRequestsV2Query,
 	useVerificationBatchDetailV2Query,
 } from "#/api/http/v2/verifications/verifications.hooks";
+import type { VerificationBatch } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
-import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
-import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { TypeBadge } from "@verifyafrica/ui/components/ui-extended/type-badge";
+import { Button } from "@verifyafrica/ui/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
+import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -19,9 +26,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { CustomVerificationDialog } from "../../../products/mixed-verifications/-components/custom-verification-dialog";
 import { useCurrentTenant } from "../../../team/-data";
+import { ReportDetailField } from "../../-components/report-detail-field";
 import { ReportsTableShell } from "../../-components/reports-table-shell";
 import {
 	BatchCountBadge,
@@ -32,9 +41,11 @@ import {
 	formatVerificationType,
 	mapVerificationRequestsToReports,
 	REPORTS_PAGE_SIZE,
+	type VerificationReport,
 } from "../../-data";
 
 const VERIFICATION_COLUMNS = [
+	"Step",
 	"ID",
 	"Type",
 	"Status",
@@ -42,6 +53,11 @@ const VERIFICATION_COLUMNS = [
 	"Date",
 	"Actions",
 ];
+
+type OrderedVerificationRow = VerificationReport & {
+	step: number | null;
+	canView: boolean;
+};
 
 export const Route = createFileRoute(
 	"/(auth)/_auth_layout/app/reports/batch/$batchId/",
@@ -60,35 +76,109 @@ export const Route = createFileRoute(
 
 function BatchVerificationReportDetailPage() {
 	const { batchId } = Route.useParams();
-	const { tenantId } = useCurrentTenant();
+	const { tenantId, isTenantAdmin } = useCurrentTenant();
 	const [page, setPage] = useState(1);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
 
 	const batchQuery = useVerificationBatchDetailV2Query(
 		batchId,
 		Boolean(batchId),
 	);
 	const batch = batchQuery.data;
+	const isMixedBatch = batch?.kind === "mixed";
+	const templateId = batch?.template_id ?? undefined;
+	const canEditTemplate =
+		Boolean(isTenantAdmin && tenantId && isMixedBatch && batch?.template_is_custom && templateId);
+
+	const templateQuery = useMixedVerificationDetailV2Query(
+		templateId,
+		canEditTemplate || Boolean(isMixedBatch && templateId),
+	);
+
+	const stepCount = batch?.steps?.length ?? 0;
+	const requestsPerPage =
+		isMixedBatch && stepCount > 0
+			? Math.max(stepCount, batch?.total_count ?? REPORTS_PAGE_SIZE, REPORTS_PAGE_SIZE)
+			: REPORTS_PAGE_SIZE;
 
 	const requestsQuery = useTenantVerificationRequestsV2Query(
 		tenantId,
 		{
-			page,
-			per_page: REPORTS_PAGE_SIZE,
+			page: isMixedBatch && stepCount > 0 ? 1 : page,
+			per_page: requestsPerPage,
 			batch_id: batchId,
 		},
 		Boolean(tenantId) && Boolean(batchId),
 	);
 
-	const verifications = useMemo(
-		() => mapVerificationRequestsToReports(requestsQuery.data?.items ?? []),
-		[requestsQuery.data?.items],
-	);
+	const orderedVerifications = useMemo((): OrderedVerificationRow[] => {
+		const reports = mapVerificationRequestsToReports(
+			requestsQuery.data?.items ?? [],
+		);
+		const steps = batch?.steps ?? [];
+
+		if (steps.length === 0) {
+			return reports.map((report, index) => ({
+				...report,
+				step: (page - 1) * REPORTS_PAGE_SIZE + index + 1,
+				canView: true,
+			}));
+		}
+
+		const reportById = new Map(reports.map((report) => [report.id, report]));
+		const orderedSteps = steps.slice().sort((a, b) => a.order - b.order);
+		const rows: OrderedVerificationRow[] = [];
+
+		for (const step of orderedSteps) {
+			const report = step.verification_id
+				? reportById.get(step.verification_id)
+				: undefined;
+			if (report) {
+				rows.push({ ...report, step: step.order, canView: true });
+				reportById.delete(report.id);
+				continue;
+			}
+			rows.push({
+				id: step.verification_id ?? step.step_id,
+				batch_id: batchId,
+				verification_type: step.type,
+				status: step.status,
+				name: "—",
+				created_at: "",
+				currency: "",
+				cost_charged: "",
+				step: step.order,
+				canView: Boolean(step.verification_id),
+			});
+		}
+
+		for (const leftover of reportById.values()) {
+			rows.push({ ...leftover, step: null, canView: true });
+		}
+
+		return rows;
+	}, [batch?.steps, batchId, page, requestsQuery.data?.items]);
 
 	const total = requestsQuery.data?.meta.pagination.total ?? 0;
+	const pagedVerifications = useMemo(() => {
+		if (!(isMixedBatch && stepCount > 0)) {
+			return orderedVerifications;
+		}
+		const start = (page - 1) * REPORTS_PAGE_SIZE;
+		return orderedVerifications.slice(start, start + REPORTS_PAGE_SIZE);
+	}, [isMixedBatch, orderedVerifications, page, stepCount]);
+	const tableTotal =
+		isMixedBatch && stepCount > 0 ? orderedVerifications.length : total;
 	const successRate =
 		batch && batch.total_count > 0
 			? ((batch.success_count / batch.total_count) * 100).toFixed(1)
 			: "0";
+
+	const title = batch?.name?.trim()
+		? batch.name
+		: isMixedBatch
+			? "Mixed Verification Batch"
+			: "Batch Verification Report";
 
 	return (
 		<div className="flex min-w-0 flex-col gap-6">
@@ -98,21 +188,43 @@ function BatchVerificationReportDetailPage() {
 					className="w-fit px-4"
 					asChild
 				>
-					<Link
-						to="/app/reports"
-						search={{ tab: "batch" }}
-					>
-						<ArrowLeftIcon />
-						Back to Reports
-					</Link>
+					{templateId ? (
+						<Link
+							to="/app/reports/custom/$templateId"
+							params={{ templateId }}
+						>
+							<ArrowLeftIcon />
+							Back to Custom Verification
+						</Link>
+					) : (
+						<Link
+							to="/app/reports"
+							search={{ tab: "batch" }}
+						>
+							<ArrowLeftIcon />
+							Back to Reports
+						</Link>
+					)}
 				</Button>
-				<div className="space-y-1">
-					<h1 className="text-2xl font-semibold tracking-tight">
-						Batch Verification Report
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						Review batch progress and open individual verification reports.
-					</p>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div className="space-y-1">
+						<h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+						<p className="text-sm text-muted-foreground">
+							Review batch progress and open individual verification reports.
+						</p>
+					</div>
+					{canEditTemplate ? (
+						<Button
+							type="button"
+							variant="outline"
+							className="cursor-pointer tracking-wide"
+							onClick={() => setEditDialogOpen(true)}
+							disabled={!templateQuery.data}
+						>
+							<PencilSimpleIcon className="size-4" />
+							Edit Template
+						</Button>
+					) : null}
 				</div>
 			</div>
 
@@ -166,6 +278,8 @@ function BatchVerificationReportDetailPage() {
 						</StatCard>
 					</div>
 
+					<BatchOverviewCard batch={batch} />
+
 					<Card>
 						<CardHeader>
 							<CardTitle className="text-base font-semibold">
@@ -201,7 +315,7 @@ function BatchVerificationReportDetailPage() {
 												</TableRow>
 											</TableHeader>
 											<TableBody>
-												{verifications.length === 0 ? (
+												{pagedVerifications.length === 0 ? (
 													<TableRow>
 														<TableCell
 															colSpan={VERIFICATION_COLUMNS.length}
@@ -211,9 +325,12 @@ function BatchVerificationReportDetailPage() {
 														</TableCell>
 													</TableRow>
 												) : (
-													verifications.map((verification) => (
-														<TableRow key={verification.id}>
-															<TableCell className="pl-4 font-mono text-xs sm:pl-6">
+													pagedVerifications.map((verification) => (
+														<TableRow key={`${verification.step}-${verification.id}`}>
+															<TableCell className="pl-4 text-sm font-medium tabular-nums text-muted-foreground sm:pl-6">
+																{verification.step ?? "—"}
+															</TableCell>
+															<TableCell className="font-mono text-xs">
 																<p className="max-w-[15ch] truncate">
 																	{verification.id}
 																</p>
@@ -232,24 +349,32 @@ function BatchVerificationReportDetailPage() {
 																{verification.name}
 															</TableCell>
 															<TableCell className="text-sm text-muted-foreground">
-																{formatReportDate(verification.created_at)}
+																{verification.created_at
+																	? formatReportDate(verification.created_at)
+																	: "—"}
 															</TableCell>
 															<TableCell className="pr-4 text-center sm:pr-6">
-																<Button
-																	type="button"
-																	variant="outline"
-																	size="sm"
-																	className="cursor-pointer tracking-wide"
-																	asChild
-																>
-																	<Link
-																		to="/app/reports/$id"
-																		params={{ id: verification.id }}
+																{verification.canView ? (
+																	<Button
+																		type="button"
+																		variant="outline"
+																		size="sm"
+																		className="cursor-pointer tracking-wide"
+																		asChild
 																	>
-																		<EyeIcon className="size-4" />
-																		View
-																	</Link>
-																</Button>
+																		<Link
+																			to="/app/reports/$id"
+																			params={{ id: verification.id }}
+																		>
+																			<EyeIcon className="size-4" />
+																			View
+																		</Link>
+																	</Button>
+																) : (
+																	<span className="text-xs text-muted-foreground">
+																		—
+																	</span>
+																)}
 															</TableCell>
 														</TableRow>
 													))
@@ -260,7 +385,7 @@ function BatchVerificationReportDetailPage() {
 									<TablePagination
 										page={page}
 										pageSize={REPORTS_PAGE_SIZE}
-										total={total}
+										total={tableTotal}
 										onPageChange={setPage}
 									/>
 								</>
@@ -269,7 +394,105 @@ function BatchVerificationReportDetailPage() {
 					</Card>
 				</>
 			)}
+
+			{tenantId && canEditTemplate ? (
+				<CustomVerificationDialog
+					open={editDialogOpen}
+					onOpenChange={setEditDialogOpen}
+					tenantId={tenantId}
+					template={templateQuery.data ?? null}
+				/>
+			) : null}
 		</div>
+	);
+}
+
+function BatchOverviewCard({ batch }: { batch: VerificationBatch }) {
+	const isMixed = batch.kind === "mixed";
+
+	return (
+		<Card className="bg-muted/20">
+			<CardHeader>
+				<CardTitle className="text-base font-semibold">Batch Overview</CardTitle>
+			</CardHeader>
+			<CardContent className="grid gap-4 pt-0 sm:grid-cols-2 lg:grid-cols-3">
+				{isMixed && batch.template_id ? (
+					<ReportDetailField
+						label="ID"
+						value={batch.template_id}
+						mono
+					/>
+				) : (
+					<ReportDetailField
+						label="Batch ID"
+						value={batch.id}
+						mono
+					/>
+				)}
+				{batch.name ? (
+					<ReportDetailField
+						label="Name"
+						value={batch.name}
+					/>
+				) : null}
+				<ReportDetailField
+					label="Kind"
+					value={isMixed ? "Mixed verification" : "Bulk verification"}
+				/>
+				<ReportDetailField
+					label="Status"
+					value={<VerificationStatusBadge status={batch.status} />}
+				/>
+				{batch.email ? (
+					<ReportDetailField
+						label="Email"
+						value={batch.email}
+					/>
+				) : null}
+				{batch.reference ? (
+					<ReportDetailField
+						label="Reference"
+						value={batch.reference}
+						mono
+					/>
+				) : null}
+				<ReportDetailField
+					label="Created At"
+					value={formatReportDate(batch.created_at)}
+				/>
+				{batch.completed_at ? (
+					<ReportDetailField
+						label="Completed At"
+						value={formatReportDate(batch.completed_at)}
+					/>
+				) : null}
+				<ReportDetailField
+					label="Failed"
+					value={
+						<BatchCountBadge
+							count={batch.failed_count}
+							variant="error"
+						/>
+					}
+				/>
+				{batch.verification_url ? (
+					<ReportDetailField
+						label="Verification Link"
+						value={
+							<a
+								href={batch.verification_url}
+								target="_blank"
+								rel="noreferrer"
+								className="break-all text-primary hover:underline"
+							>
+								{batch.verification_url}
+							</a>
+						}
+						className="sm:col-span-2 lg:col-span-3"
+					/>
+				) : null}
+			</CardContent>
+		</Card>
 	);
 }
 

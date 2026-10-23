@@ -431,9 +431,12 @@ export const useStartMixedVerificationV2Mutation = () => {
 			tenantId: string;
 			payload: MixedVerificationStartPayload;
 		}) => VERIFICATIONS_V2_API.START_MIXED_VERIFICATION(tenantId, payload),
-		onSuccess: (_data: VerificationRequest, { tenantId }) => {
+		onSuccess: (_data, { tenantId }) => {
 			queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantRequests(tenantId),
+			});
+			queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantBatches(tenantId),
 			});
 		},
 	});

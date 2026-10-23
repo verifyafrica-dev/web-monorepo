@@ -2,7 +2,6 @@ import {
 	PencilSimpleIcon,
 	PlusIcon,
 	PowerIcon,
-	TrashIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -32,7 +31,6 @@ import {
 } from "@verifyafrica/ui/components/ui/tooltip";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
-import { DeleteMixedVerificationDialog } from "./-components/delete-mixed-verification-dialog";
 import { MixedVerificationFormDialog } from "./-components/mixed-verification-form-dialog";
 import {
 	formatMixedVerificationPrice,
@@ -55,8 +53,6 @@ export const Route = createFileRoute(
 function MixedVerificationsPage() {
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingTemplate, setEditingTemplate] =
-		useState<MixedVerification | null>(null);
-	const [templateToDelete, setTemplateToDelete] =
 		useState<MixedVerification | null>(null);
 
 	const templatesQuery = useAllMixedVerificationsV2Query({
@@ -253,23 +249,6 @@ function MixedVerificationsPage() {
 																: "Enable template"}
 														</TooltipContent>
 													</Tooltip>
-													<Tooltip>
-														<TooltipTrigger asChild>
-															<span className="inline-flex">
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																	className="text-destructive hover:text-destructive"
-																	onClick={() => setTemplateToDelete(template)}
-																>
-																	<TrashIcon className="size-4" />
-																</Button>
-															</span>
-														</TooltipTrigger>
-														<TooltipContent side="top">
-															Delete template
-														</TooltipContent>
-													</Tooltip>
 												</div>
 											</TableCell>
 										</TableRow>
@@ -289,18 +268,6 @@ function MixedVerificationsPage() {
 				}}
 			/>
 
-			<DeleteMixedVerificationDialog
-				open={Boolean(templateToDelete)}
-				template={templateToDelete}
-				onOpenChange={(nextOpen) => {
-					if (!nextOpen) {
-						setTemplateToDelete(null);
-					}
-				}}
-				onSuccess={() => {
-					setTemplateToDelete(null);
-				}}
-			/>
 		</div>
 	);
 }

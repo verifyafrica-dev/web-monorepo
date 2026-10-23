@@ -1,12 +1,16 @@
 import type { VerificationRequestCreatePayload } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type { VerificationType } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
-import { SHUFTI_CHOICES } from "@verifyafrica/ui/lib/constants";
+import {
+	SHUFTI_CHOICES,
+	type ShuftiDocumentSupportedType,
+} from "@verifyafrica/ui/lib/constants";
 
 const DOCUMENT_VERIFICATION_TYPE = "id_document" satisfies VerificationType;
 
 type LinkFormValues = {
 	email: string;
 	urlLimit: string;
+	documentTypes: ShuftiDocumentSupportedType[];
 	dob: boolean;
 	age: boolean;
 	gender: boolean;
@@ -17,6 +21,7 @@ type LinkFormValues = {
 type DirectFormValues = {
 	email: string;
 	country: string;
+	documentType: ShuftiDocumentSupportedType;
 	firstName: string;
 	lastName: string;
 	dob: string;
@@ -29,6 +34,7 @@ function buildDocumentBlock(direct?: {
 	firstName: string;
 	lastName: string;
 	proof: string;
+	documentType: ShuftiDocumentSupportedType;
 	dob?: string;
 	age?: string;
 	gender?: string;
@@ -50,6 +56,7 @@ function buildDocumentBlock(direct?: {
 			fuzzy_match: SHUFTI_CHOICES.YES,
 		};
 		document.proof = direct.proof;
+		document.supported_types = [direct.documentType];
 		if (direct.requireBackside) {
 			document.backside_proof_required = SHUFTI_CHOICES.YES;
 			if (direct.backsideProof) {
@@ -73,6 +80,18 @@ function buildDocumentBlock(direct?: {
 export function buildDocumentVerificationLinkPayload(
 	values: LinkFormValues,
 ): VerificationRequestCreatePayload {
+	const document = {
+		...buildDocumentBlock(),
+		backside_proof_required: values.backsideProofRequired
+			? SHUFTI_CHOICES.YES
+			: SHUFTI_CHOICES.NO,
+	} as Record<string, unknown>;
+
+	// Empty selection = all types allowed (backend expands).
+	if (values.documentTypes.length > 0) {
+		document.supported_types = values.documentTypes;
+	}
+
 	return {
 		verification_type: DOCUMENT_VERIFICATION_TYPE,
 		method_type: "verify_link",
@@ -80,12 +99,7 @@ export function buildDocumentVerificationLinkPayload(
 			language: "EN",
 			email: values.email.trim(),
 			ttl: Number(values.urlLimit),
-			document: {
-				...buildDocumentBlock(),
-				backside_proof_required: values.backsideProofRequired
-					? SHUFTI_CHOICES.YES
-					: SHUFTI_CHOICES.NO,
-			},
+			document,
 			collect: {
 				dob: values.dob,
 				age: values.age,
@@ -113,6 +127,7 @@ export function buildDocumentVerificationDirectPayload(
 				firstName: values.firstName.trim(),
 				lastName: values.lastName.trim(),
 				proof,
+				documentType: values.documentType,
 				dob: values.dob.trim() || undefined,
 				age: values.age.trim() || undefined,
 				gender: values.gender.trim() || undefined,

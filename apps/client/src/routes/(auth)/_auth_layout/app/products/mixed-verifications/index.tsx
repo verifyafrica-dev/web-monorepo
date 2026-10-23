@@ -5,20 +5,19 @@ import { useMemo, useState } from "react";
 import { useTenantMixedVerificationsV2Query } from "#/api/http/v2/verifications/verifications.hooks";
 import type {
 	MixedVerification,
-	VerificationRequest,
+	MixedVerificationSession,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
-	buildLinkResult,
+	buildMixedSessionLinkResult,
 	type HostedLinkResult,
 } from "@verifyafrica/api-client/lib/verification-links";
 import { useCurrentTenant } from "../../team/-data";
 import { VerificationResultDialog } from "../-components/verification-result-dialog";
 import { getProduct } from "../-data";
 import { CustomVerificationDialog } from "./-components/custom-verification-dialog";
-import { DeleteCustomVerificationDialog } from "./-components/delete-custom-verification-dialog";
 import { MixedVerificationCard } from "./-components/mixed-verification-card";
 import { StartMixedVerificationDialog } from "./-components/start-mixed-verification-dialog";
 import {
@@ -66,7 +65,6 @@ function MixedVerificationSection({
 	canManageCustom,
 	onStart,
 	onEdit,
-	onDelete,
 }: {
 	title: string;
 	description: string;
@@ -75,7 +73,6 @@ function MixedVerificationSection({
 	canManageCustom: boolean;
 	onStart: (template: MixedVerification) => void;
 	onEdit: (template: MixedVerification) => void;
-	onDelete: (template: MixedVerification) => void;
 }) {
 	return (
 		<section className="space-y-4">
@@ -99,7 +96,6 @@ function MixedVerificationSection({
 							canManageCustom={canManageCustom}
 							onStart={onStart}
 							onEdit={onEdit}
-							onDelete={onDelete}
 						/>
 					))}
 				</div>
@@ -119,12 +115,9 @@ function MixedVerificationsPage() {
 
 	const [customDialogOpen, setCustomDialogOpen] = useState(false);
 	const [startDialogOpen, setStartDialogOpen] = useState(false);
-	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [editingTemplate, setEditingTemplate] =
 		useState<MixedVerification | null>(null);
 	const [startingTemplate, setStartingTemplate] =
-		useState<MixedVerification | null>(null);
-	const [deletingTemplate, setDeletingTemplate] =
 		useState<MixedVerification | null>(null);
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
@@ -153,16 +146,11 @@ function MixedVerificationsPage() {
 		setStartDialogOpen(true);
 	}
 
-	function openDeleteDialog(template: MixedVerification) {
-		setDeletingTemplate(template);
-		setDeleteDialogOpen(true);
-	}
-
 	function handleMixedVerificationStarted(
-		verification: VerificationRequest,
+		session: MixedVerificationSession,
 		email: string,
 	) {
-		setLinkResult(buildLinkResult(verification, email));
+		setLinkResult(buildMixedSessionLinkResult(session, email));
 		setIsResultDialogOpen(true);
 	}
 
@@ -228,7 +216,6 @@ function MixedVerificationsPage() {
 						canManageCustom={isTenantAdmin}
 						onStart={openStartDialog}
 						onEdit={openEditDialog}
-						onDelete={openDeleteDialog}
 					/>
 
 					<MixedVerificationSection
@@ -243,7 +230,6 @@ function MixedVerificationsPage() {
 						canManageCustom={isTenantAdmin}
 						onStart={openStartDialog}
 						onEdit={openEditDialog}
-						onDelete={openDeleteDialog}
 					/>
 				</div>
 			)}
@@ -270,11 +256,6 @@ function MixedVerificationsPage() {
 						verification={null}
 						onStartNew={handleStartNewMixedVerification}
 						description="Your mixed verification request was created successfully."
-					/>
-					<DeleteCustomVerificationDialog
-						open={deleteDialogOpen}
-						template={deletingTemplate}
-						onOpenChange={setDeleteDialogOpen}
 					/>
 				</>
 			)}

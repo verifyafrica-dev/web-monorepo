@@ -101,6 +101,11 @@ function ReportsPage() {
 			}
 
 			await queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantMixedVerifications(
+					tenantId,
+				),
+			});
+			await queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantBatches(tenantId),
 			});
 		} finally {
@@ -157,7 +162,7 @@ function ReportsPage() {
 							</TabsTrigger>
 							<TabsTrigger value="batch">
 								<StackIcon />
-								Batch Verifications
+								Custom Verifications
 							</TabsTrigger>
 						</TabsList>
 

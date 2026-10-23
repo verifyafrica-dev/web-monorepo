@@ -55,5 +55,13 @@ function NewVerifyTokenPage() {
 
 	const session = sessionQuery.data;
 
-	return <NewVerifySessionView session={session} />;
+	return (
+		<NewVerifySessionView
+			key={`${session.current_step_id ?? "single"}-${session.verification_type}`}
+			session={session}
+			onMixedContinue={() => {
+				void sessionQuery.refetch();
+			}}
+		/>
+	);
 }

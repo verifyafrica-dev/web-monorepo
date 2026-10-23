@@ -184,7 +184,7 @@ export function ReportsFiltersForm({
 										placeholder={
 											scope === "requests"
 												? "Search by name, ID, or type..."
-												: "Search by batch ID..."
+												: "Search by ID, email, or reference..."
 										}
 										value={field.state.value}
 										onBlur={field.handleBlur}

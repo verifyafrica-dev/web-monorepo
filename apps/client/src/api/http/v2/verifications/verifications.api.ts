@@ -10,6 +10,7 @@ import type {
 	BulkVerificationCreatePayload,
 	MixedVerification,
 	MixedVerificationListQuery,
+	MixedVerificationSession,
 	MixedVerificationStartPayload,
 	MixedVerificationUpsertPayload,
 	PaginatedMixedVerificationListResult,
@@ -216,14 +217,14 @@ export const VERIFICATIONS_V2_API = {
 	START_MIXED_VERIFICATION: async (
 		tenantId: string,
 		data: MixedVerificationStartPayload,
-	): Promise<VerificationRequest> =>
+	): Promise<MixedVerificationSession> =>
 		await $http
 			.post(
 				VERIFICATIONS_V2_ENDPOINTS.mixedVerificationStart,
 				data,
 				withTenantHeader(tenantId),
 			)
-			.then((res) => unwrapV2Data<VerificationRequest>(res)),
+			.then((res) => unwrapV2Data<MixedVerificationSession>(res)),
 
 	ALL_BATCHES: async (
 		params?: VerificationBatchListQuery,
