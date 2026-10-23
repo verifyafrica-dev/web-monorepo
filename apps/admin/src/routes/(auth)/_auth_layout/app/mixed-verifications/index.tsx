@@ -141,9 +141,6 @@ function MixedVerificationsPage() {
 											Included Verifications
 										</TableHead>
 										<TableHead className="text-xs font-medium tracking-wide uppercase">
-											Journey ID
-										</TableHead>
-										<TableHead className="text-xs font-medium tracking-wide uppercase">
 											Price
 										</TableHead>
 										<TableHead className="text-xs font-medium tracking-wide uppercase">
@@ -191,9 +188,6 @@ function MixedVerificationsPage() {
 														</Badge>
 													))}
 												</div>
-											</TableCell>
-											<TableCell className="whitespace-nowrap font-mono text-sm">
-												{template.journey_id || "—"}
 											</TableCell>
 											<TableCell className="whitespace-nowrap tabular-nums">
 												{formatMixedVerificationPrice(template.price)}

@@ -136,6 +136,14 @@ const AML_FILTER_KEYS = AML_SCREENING_FILTERS.map(
 
 const AmlFiltersSchema = z.record(z.enum(AML_FILTER_KEYS), z.boolean());
 
+export const KYB_MIXED_BASES = [
+	"search",
+	"document",
+	"document_purchase",
+] as const;
+
+export type KybMixedBase = (typeof KYB_MIXED_BASES)[number];
+
 export const MixedStepConfigSchema = z.object({
 	country: z.string(),
 	documentTypes: z.array(z.enum(SHUFTI_DOCUMENT_SUPPORTED_TYPES)),
@@ -150,13 +158,23 @@ export const MixedStepConfigSchema = z.object({
 	rcaSearch: z.boolean(),
 	aliasSearch: z.boolean(),
 	amlContext: z.string(),
+	/** AML link prefill / lock. */
+	amlDateOfBirth: z.string(),
+	/** Business AML link prefill. */
+	businessName: z.string(),
+	incorporationDate: z.string(),
 	faceVerificationMode: z.enum(["image", "video"]),
 	checkForDuplicates: z.boolean(),
 	faceAgeMin: z.string(),
 	faceAgeMax: z.string(),
 	requireSelfie: z.boolean(),
-	/** ID document: overrides tenant product setting when starting a session. */
+	/** Overrides tenant product setting when starting a session. */
 	allowFileUpload: z.boolean(),
+	kybBase: z.enum(KYB_MIXED_BASES),
+	kybSearchType: z.string(),
+	kybAdvancedSearch: z.boolean(),
+	kybAiInsights: z.boolean(),
+	kybValidateDocument: z.boolean(),
 });
 
 export type MixedStepConfig = z.infer<typeof MixedStepConfigSchema>;
@@ -202,12 +220,20 @@ export const emptyMixedStepConfig = (): MixedStepConfig => ({
 	rcaSearch: true,
 	aliasSearch: true,
 	amlContext: "",
+	amlDateOfBirth: "",
+	businessName: "",
+	incorporationDate: "",
 	faceVerificationMode: DEFAULT_FACE_VERIFICATION_MODE,
 	checkForDuplicates: false,
 	faceAgeMin: String(FACE_AGE_MIN_YEARS),
 	faceAgeMax: "",
 	requireSelfie: false,
 	allowFileUpload: true,
+	kybBase: "search",
+	kybSearchType: "fuzzy",
+	kybAdvancedSearch: true,
+	kybAiInsights: false,
+	kybValidateDocument: false,
 });
 
 export function createMixedStep(
@@ -366,6 +392,46 @@ function configFromStepRecord(
 	if (contextSource && typeof contextSource.context === "string") {
 		base.amlContext = contextSource.context;
 	}
+	if (backgroundChecks && typeof backgroundChecks.dob === "string") {
+		base.amlDateOfBirth = backgroundChecks.dob;
+	}
+	if (businessAml) {
+		if (typeof businessAml.business_name === "string") {
+			base.businessName = businessAml.business_name;
+		}
+		if (typeof businessAml.business_incorporation_date === "string") {
+			base.incorporationDate = businessAml.business_incorporation_date;
+		}
+	}
+
+	const kyb =
+		config.kyb && typeof config.kyb === "object"
+			? (config.kyb as Record<string, unknown>)
+			: null;
+	if (kyb) {
+		if (
+			kyb.base === "search" ||
+			kyb.base === "document" ||
+			kyb.base === "document_purchase"
+		) {
+			base.kybBase = kyb.base;
+		}
+		if (typeof kyb.search_type === "string") {
+			base.kybSearchType = kyb.search_type;
+		}
+		base.kybAdvancedSearch =
+			kyb.advanced_search === true ||
+			kyb.advanced_search === "1" ||
+			kyb.advanced_search === SHUFTI_CHOICES.YES;
+		base.kybAiInsights =
+			kyb.ai_business_insights === true ||
+			kyb.ai_business_insights === "1" ||
+			kyb.ai_business_insights === SHUFTI_CHOICES.YES;
+		base.kybValidateDocument =
+			kyb.validate_document === true ||
+			kyb.validate_document === "1" ||
+			kyb.validate_document === SHUFTI_CHOICES.YES;
+	}
 
 	const face =
 		config.face && typeof config.face === "object"
@@ -517,6 +583,7 @@ function buildStepConfigPayload(
 			};
 		}
 		payload.face = face;
+		payload.allow_file_upload = config.allowFileUpload;
 		if (config.verificationInstructions.trim()) {
 			payload.collect = {
 				verification_instructions: config.verificationInstructions.trim(),
@@ -533,21 +600,57 @@ function buildStepConfigPayload(
 			rca_search: config.rcaSearch,
 			alias_search: config.aliasSearch,
 		};
-		if (config.amlContext.trim()) {
-			if (type === "business_aml_screening") {
-				payload.aml_for_businesses = {
-					context: config.amlContext.trim(),
-				};
-			} else {
-				payload.background_checks = {
-					context: config.amlContext.trim(),
-				};
+		payload.allow_file_upload = config.allowFileUpload;
+		if (type === "business_aml_screening") {
+			const section: Record<string, unknown> = {};
+			if (config.amlContext.trim()) {
+				section.context = config.amlContext.trim();
+			}
+			if (config.businessName.trim()) {
+				section.business_name = config.businessName.trim();
+			}
+			if (config.incorporationDate.trim()) {
+				section.business_incorporation_date = config.incorporationDate.trim();
+			}
+			if (Object.keys(section).length > 0) {
+				payload.aml_for_businesses = section;
+			}
+		} else {
+			const section: Record<string, unknown> = {};
+			if (config.amlContext.trim()) {
+				section.context = config.amlContext.trim();
+			}
+			if (config.amlDateOfBirth.trim()) {
+				section.dob = config.amlDateOfBirth.trim();
+			}
+			if (Object.keys(section).length > 0) {
+				payload.background_checks = section;
 			}
 		}
 	}
 
-	if (isGrcMixedStepType(type) && grcStepSupportsSelfie(type)) {
-		payload.require_selfie = config.requireSelfie;
+	if (type === "kyb_screening") {
+		const kyb: Record<string, unknown> = {
+			base: config.kybBase,
+		};
+		if (config.kybBase === "search") {
+			kyb.search_type = config.kybSearchType || "fuzzy";
+			kyb.advanced_search = config.kybAdvancedSearch ? "1" : "0";
+			if (config.kybAiInsights) {
+				kyb.ai_business_insights = "1";
+			}
+		} else if (config.kybBase === "document" && config.kybValidateDocument) {
+			kyb.validate_document = "1";
+		}
+		payload.kyb = kyb;
+		payload.allow_file_upload = config.allowFileUpload;
+	}
+
+	if (isGrcMixedStepType(type)) {
+		if (grcStepSupportsSelfie(type)) {
+			payload.require_selfie = config.requireSelfie;
+			payload.allow_file_upload = config.allowFileUpload;
+		}
 	}
 
 	return Object.keys(payload).length > 0 ? payload : undefined;
@@ -576,6 +679,9 @@ export function buildCustomVerificationPayload(
 }
 
 export function formatVerificationTypeLabel(value: string) {
+	if (value === "face_match") {
+		return "Facial Screening";
+	}
 	const grc = GRC_TYPE_DEFS.find((item) => item.value === value);
 	if (grc) {
 		return grc.label;

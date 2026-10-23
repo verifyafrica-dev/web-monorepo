@@ -18,6 +18,8 @@ type LinkFormValues = {
 
 type DirectFormValues = {
 	email: string;
+	ageMin: string;
+	ageMax: string;
 };
 
 function mapFaceVerificationMode(mode: FaceVerificationMode) {
@@ -106,6 +108,8 @@ export function buildFacialScreeningDirectPayload(
 			face: buildFaceBlock({
 				proof,
 				verificationMode: "image_only",
+				ageMin: values.ageMin,
+				ageMax: values.ageMax,
 			}),
 		},
 	};

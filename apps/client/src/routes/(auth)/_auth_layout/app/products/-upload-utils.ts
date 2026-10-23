@@ -15,6 +15,7 @@ export const PRODUCT_UPLOAD_VERIFICATIONS = {
 	addressVerification: "Address Verification",
 	facialScreening: "Facial Screening",
 	governmentRegistryChecks: "Government Registry Checks",
+	kybScreening: "KYB Screening",
 } as const satisfies Record<string, VerificationStorageName>;
 
 export type ProductUploadVerification =

@@ -168,17 +168,6 @@ function CustomVerificationReportsPage() {
 		Boolean(tenantId) && Boolean(templateId),
 	);
 
-	// Unfiltered sample for template-level success rate (not per batch row).
-	const templateStatsQuery = useTenantVerificationBatchesV2Query(
-		tenantId,
-		{
-			page: 1,
-			per_page: 100,
-			template_id: templateId,
-		},
-		Boolean(tenantId) && Boolean(templateId),
-	);
-
 	const batches = useMemo(
 		() => mapVerificationBatchesToReports(batchesQuery.data?.items ?? []),
 		[batchesQuery.data?.items],
@@ -189,15 +178,12 @@ function CustomVerificationReportsPage() {
 		templateQuery.data?.name?.trim() || "Custom verification";
 
 	const templateSuccessRate = useMemo(() => {
-		const items = templateStatsQuery.data?.items ?? [];
-		if (items.length === 0) {
+		const rate = batchesQuery.data?.meta.success_rate;
+		if (rate === null || rate === undefined) {
 			return null;
 		}
-		const successSessions = items.filter(
-			(batch) => batch.status === "SUCCESS",
-		).length;
-		return ((successSessions / items.length) * 100).toFixed(1);
-	}, [templateStatsQuery.data?.items]);
+		return Number(rate).toFixed(1);
+	}, [batchesQuery.data?.meta.success_rate]);
 
 	const handleFiltersChange = useCallback(
 		(values: ReportsFiltersFormValues) => {

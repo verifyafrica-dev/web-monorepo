@@ -195,9 +195,12 @@ export function mapVerificationBatchesToReports(
 }
 
 export function formatVerificationType(report: VerificationReport) {
-	const formattedType = report.verification_type
-		.replace(/_/g, " ")
-		.replace(/\b\w/g, (char) => char.toUpperCase());
+	const formattedType =
+		report.verification_type === "face_match"
+			? "Facial Screening"
+			: report.verification_type
+					.replace(/_/g, " ")
+					.replace(/\b\w/g, (char) => char.toUpperCase());
 
 	if (
 		report.verification_type === "mixed_verification" &&

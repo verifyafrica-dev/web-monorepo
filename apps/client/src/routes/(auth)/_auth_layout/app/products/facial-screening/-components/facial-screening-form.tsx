@@ -121,10 +121,57 @@ const linkFormSchema = z
 		}
 	});
 
-const directFormSchema = z.object({
-	email: z.email("Enter a valid email address"),
-	consent: verificationConsentSchema,
-});
+const directFormSchema = z
+	.object({
+		email: z.email("Enter a valid email address"),
+		ageMin: optionalAgeSchema,
+		ageMax: optionalAgeSchema,
+		consent: verificationConsentSchema,
+	})
+	.superRefine((value, context) => {
+		const min = value.ageMin.trim();
+		const max = value.ageMax.trim();
+		if (!min && !max) {
+			return;
+		}
+		if (!min || !max) {
+			context.addIssue({
+				code: "custom",
+				path: min ? ["ageMax"] : ["ageMin"],
+				message: "Set both a minimum and maximum age, or leave both empty.",
+			});
+			return;
+		}
+		const minAge = Number(min);
+		const maxAge = Number(max);
+		if (
+			!Number.isInteger(minAge) ||
+			!Number.isInteger(maxAge) ||
+			maxAge < 0
+		) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: "Age bounds must be whole numbers.",
+			});
+			return;
+		}
+		if (minAge < FACE_AGE_MIN_YEARS) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: `Minimum detected age must be ${FACE_AGE_MIN_YEARS} or greater.`,
+			});
+			return;
+		}
+		if (minAge > maxAge) {
+			context.addIssue({
+				code: "custom",
+				path: ["ageMin"],
+				message: "Minimum age cannot be greater than maximum age.",
+			});
+		}
+	});
 
 export function FacialScreeningForm() {
 	const [mode, setMode] = useState<VerificationMode>("link");
@@ -178,6 +225,8 @@ export function FacialScreeningForm() {
 	const directForm = useForm({
 		defaultValues: {
 			email: "",
+			ageMin: "",
+			ageMax: "",
 			consent: false,
 		},
 		validators: {
@@ -467,6 +516,55 @@ export function FacialScreeningForm() {
 									</Field>
 								)}
 							</directForm.Field>
+
+							<div className="grid gap-4 sm:grid-cols-2">
+								<directForm.Field name="ageMin">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="facial-screening-direct-age-min">
+												Minimum detected age
+											</FieldLabel>
+											<Input
+												id="facial-screening-direct-age-min"
+												inputMode="numeric"
+												min={FACE_AGE_MIN_YEARS}
+												placeholder={`${FACE_AGE_MIN_YEARS}+`}
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+											/>
+											<FieldError errors={field.state.meta.errors} />
+										</Field>
+									)}
+								</directForm.Field>
+								<directForm.Field name="ageMax">
+									{(field) => (
+										<Field className="gap-1.5">
+											<FieldLabel htmlFor="facial-screening-direct-age-max">
+												Maximum detected age
+											</FieldLabel>
+											<Input
+												id="facial-screening-direct-age-max"
+												inputMode="numeric"
+												min={FACE_AGE_MIN_YEARS}
+												placeholder="Optional"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+											/>
+											<FieldError errors={field.state.meta.errors} />
+										</Field>
+									)}
+								</directForm.Field>
+							</div>
+							<FieldDescription>
+								Leave both empty to skip the age check. If you set a range,
+								minimum age must be {FACE_AGE_MIN_YEARS} or greater.
+							</FieldDescription>
 
 							<ProductProofUpload
 								label="Face proof"

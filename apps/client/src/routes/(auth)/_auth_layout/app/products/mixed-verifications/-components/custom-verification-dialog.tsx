@@ -91,7 +91,7 @@ import {
 	buildCustomVerificationPayload,
 	CUSTOM_MIXED_BASE_TYPE_OPTIONS,
 	type CustomMixedVerificationType,
-	type FaceVerificationMode,
+	type KybMixedBase,
 	type MixedStepFormValue,
 	createMixedStep,
 	CustomVerificationFormSchema,
@@ -100,9 +100,14 @@ import {
 	grcStepSupportsSelfie,
 	isAmlMixedStepType,
 	isGrcMixedStepType,
+	KYB_MIXED_BASES,
 	MIXED_GRC_MENU_GROUPS,
 } from "../-data";
-import { FACE_VERIFICATION_MODES } from "../../facial-screening/-data";
+import {
+	FACE_VERIFICATION_MODES,
+	type FaceVerificationMode,
+} from "../../facial-screening/-data";
+import { KYB_BASES, KYB_SEARCH_TYPES } from "../../kyb/-data";
 
 function isPortaledOverlayTarget(target: EventTarget | null) {
 	if (!(target instanceof Element)) {
@@ -144,18 +149,25 @@ function SortableStepCard({
 	const showAddressConfig = step.type === "address_verification";
 	const showFaceConfig = step.type === "face_match";
 	const showAmlConfig = isAmlMixedStepType(step.type);
+	const showBusinessAmlFields = step.type === "business_aml_screening";
+	const showIndividualAmlFields = step.type === "aml_screening";
+	const showKybConfig = step.type === "kyb_screening";
 	const showGrcConfig =
 		isGrcMixedStepType(step.type) && grcStepSupportsSelfie(step.type);
 	const showCountry =
 		step.type === "id_document" ||
 		step.type === "address_verification" ||
-		step.type === "face_match";
+		step.type === "face_match" ||
+		step.type === "aml_screening" ||
+		step.type === "business_aml_screening" ||
+		step.type === "kyb_screening";
 	const hasExtraConfig =
 		showDocumentConfig ||
 		showAddressConfig ||
 		showCountry ||
 		showFaceConfig ||
 		showAmlConfig ||
+		showKybConfig ||
 		showGrcConfig;
 
 	function toggleDocumentType(
@@ -482,6 +494,36 @@ function SortableStepCard({
 					{showFaceConfig ? (
 						<>
 							<Field className="gap-1.5">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0 space-y-1">
+										<Label
+											htmlFor={`mixed-step-allow-file-upload-${step.id}`}
+											className="text-sm font-medium"
+										>
+											Allow file upload
+										</Label>
+										<FieldDescription>
+											When off, customers must use the camera only.
+										</FieldDescription>
+									</div>
+									<Switch
+										id={`mixed-step-allow-file-upload-${step.id}`}
+										checked={step.config.allowFileUpload}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													allowFileUpload: checked === true,
+												},
+											})
+										}
+										className="shrink-0"
+									/>
+								</div>
+							</Field>
+							<Field className="gap-1.5">
 								<FieldLabel htmlFor={`mixed-step-face-mode-${step.id}`}>
 									Verification mode
 								</FieldLabel>
@@ -608,6 +650,105 @@ function SortableStepCard({
 
 					{showAmlConfig ? (
 						<>
+							<Field className="gap-1.5">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0 space-y-1">
+										<Label
+											htmlFor={`mixed-step-aml-allow-file-upload-${step.id}`}
+											className="text-sm font-medium"
+										>
+											Allow file upload
+										</Label>
+										<FieldDescription>
+											Overrides the product file-upload setting for this step.
+										</FieldDescription>
+									</div>
+									<Switch
+										id={`mixed-step-aml-allow-file-upload-${step.id}`}
+										checked={step.config.allowFileUpload}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													allowFileUpload: checked === true,
+												},
+											})
+										}
+										className="shrink-0"
+									/>
+								</div>
+							</Field>
+							{showIndividualAmlFields ? (
+								<Field className="gap-1.5">
+									<FieldLabel htmlFor={`mixed-step-aml-dob-${step.id}`}>
+										Date of birth (optional)
+									</FieldLabel>
+									<Input
+										id={`mixed-step-aml-dob-${step.id}`}
+										type="date"
+										value={step.config.amlDateOfBirth}
+										disabled={disabled}
+										onChange={(event) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													amlDateOfBirth: event.target.value,
+												},
+											})
+										}
+									/>
+									<FieldDescription>
+										If set, the customer cannot change date of birth on the
+										hosted link.
+									</FieldDescription>
+								</Field>
+							) : null}
+							{showBusinessAmlFields ? (
+								<div className="grid gap-3 sm:grid-cols-2">
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor={`mixed-step-biz-name-${step.id}`}>
+											Business name (optional)
+										</FieldLabel>
+										<Input
+											id={`mixed-step-biz-name-${step.id}`}
+											value={step.config.businessName}
+											disabled={disabled}
+											onChange={(event) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														businessName: event.target.value,
+													},
+												})
+											}
+										/>
+									</Field>
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor={`mixed-step-biz-date-${step.id}`}>
+											Incorporation date (optional)
+										</FieldLabel>
+										<Input
+											id={`mixed-step-biz-date-${step.id}`}
+											type="date"
+											value={step.config.incorporationDate}
+											disabled={disabled}
+											onChange={(event) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														incorporationDate: event.target.value,
+													},
+												})
+											}
+										/>
+									</Field>
+								</div>
+							) : null}
 							<Field className="gap-2">
 								<FieldLabel>Screening filters</FieldLabel>
 								<div className="grid gap-2 sm:grid-cols-2">
@@ -729,28 +870,235 @@ function SortableStepCard({
 						</>
 					) : null}
 
+					{showKybConfig ? (
+						<>
+							<Field className="gap-1.5">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0 space-y-1">
+										<Label
+											htmlFor={`mixed-step-kyb-allow-file-upload-${step.id}`}
+											className="text-sm font-medium"
+										>
+											Allow file upload
+										</Label>
+										<FieldDescription>
+											For document base, customers can upload a file when on.
+										</FieldDescription>
+									</div>
+									<Switch
+										id={`mixed-step-kyb-allow-file-upload-${step.id}`}
+										checked={step.config.allowFileUpload}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													allowFileUpload: checked === true,
+												},
+											})
+										}
+										className="shrink-0"
+									/>
+								</div>
+							</Field>
+							<Field className="gap-1.5">
+								<FieldLabel htmlFor={`mixed-step-kyb-base-${step.id}`}>
+									KYB base
+								</FieldLabel>
+								<Select
+									value={step.config.kybBase}
+									onValueChange={(value) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												kybBase: (value as KybMixedBase) ?? "search",
+											},
+										})
+									}
+									disabled={disabled}
+								>
+									<SelectTrigger
+										id={`mixed-step-kyb-base-${step.id}`}
+										className="w-full"
+									>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent className="z-200">
+										{KYB_BASES.filter((base) =>
+											(KYB_MIXED_BASES as readonly string[]).includes(
+												base.value,
+											),
+										).map((base) => (
+											<SelectItem key={base.value} value={base.value}>
+												{base.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+							{step.config.kybBase === "search" ? (
+								<>
+									<Field className="gap-1.5">
+										<FieldLabel htmlFor={`mixed-step-kyb-search-type-${step.id}`}>
+											Search type
+										</FieldLabel>
+										<Select
+											value={step.config.kybSearchType}
+											onValueChange={(value) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														kybSearchType: value ?? "fuzzy",
+													},
+												})
+											}
+											disabled={disabled}
+										>
+											<SelectTrigger
+												id={`mixed-step-kyb-search-type-${step.id}`}
+												className="w-full"
+											>
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent className="z-200">
+												{KYB_SEARCH_TYPES.map((option) => (
+													<SelectItem key={option.value} value={option.value}>
+														{option.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+									<div className="flex items-center gap-2">
+										<Checkbox
+											id={`mixed-step-kyb-advanced-${step.id}`}
+											checked={step.config.kybAdvancedSearch}
+											disabled={disabled}
+											onCheckedChange={(checked) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														kybAdvancedSearch: checked === true,
+													},
+												})
+											}
+										/>
+										<Label
+											htmlFor={`mixed-step-kyb-advanced-${step.id}`}
+											className="text-sm font-normal"
+										>
+											Advanced search
+										</Label>
+									</div>
+									<div className="flex items-center gap-2">
+										<Checkbox
+											id={`mixed-step-kyb-ai-${step.id}`}
+											checked={step.config.kybAiInsights}
+											disabled={disabled}
+											onCheckedChange={(checked) =>
+												onChange({
+													...step,
+													config: {
+														...step.config,
+														kybAiInsights: checked === true,
+													},
+												})
+											}
+										/>
+										<Label
+											htmlFor={`mixed-step-kyb-ai-${step.id}`}
+											className="text-sm font-normal"
+										>
+											AI business insights
+										</Label>
+									</div>
+								</>
+							) : null}
+							{step.config.kybBase === "document" ? (
+								<div className="flex items-center gap-2">
+									<Checkbox
+										id={`mixed-step-kyb-validate-${step.id}`}
+										checked={step.config.kybValidateDocument}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													kybValidateDocument: checked === true,
+												},
+											})
+										}
+									/>
+									<Label
+										htmlFor={`mixed-step-kyb-validate-${step.id}`}
+										className="text-sm font-normal"
+									>
+										Validate extracted data against the registry
+									</Label>
+								</div>
+							) : null}
+						</>
+					) : null}
+
 					{showGrcConfig ? (
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id={`mixed-step-require-selfie-${step.id}`}
-								checked={step.config.requireSelfie}
-								disabled={disabled}
-								onCheckedChange={(checked) =>
-									onChange({
-										...step,
-										config: {
-											...step.config,
-											requireSelfie: checked === true,
-										},
-									})
-								}
-							/>
-							<Label
-								htmlFor={`mixed-step-require-selfie-${step.id}`}
-								className="text-sm font-normal"
-							>
-								Require selfie on hosted link
-							</Label>
+						<div className="space-y-3">
+							<Field className="gap-1.5">
+								<div className="flex items-center justify-between gap-3">
+									<div className="min-w-0 space-y-1">
+										<Label
+											htmlFor={`mixed-step-grc-allow-file-upload-${step.id}`}
+											className="text-sm font-medium"
+										>
+											Allow file upload
+										</Label>
+										<FieldDescription>
+											When off, selfie capture is camera-only.
+										</FieldDescription>
+									</div>
+									<Switch
+										id={`mixed-step-grc-allow-file-upload-${step.id}`}
+										checked={step.config.allowFileUpload}
+										disabled={disabled}
+										onCheckedChange={(checked) =>
+											onChange({
+												...step,
+												config: {
+													...step.config,
+													allowFileUpload: checked === true,
+												},
+											})
+										}
+										className="shrink-0"
+									/>
+								</div>
+							</Field>
+							<div className="flex items-center gap-2">
+								<Checkbox
+									id={`mixed-step-require-selfie-${step.id}`}
+									checked={step.config.requireSelfie}
+									disabled={disabled}
+									onCheckedChange={(checked) =>
+										onChange({
+											...step,
+											config: {
+												...step.config,
+												requireSelfie: checked === true,
+											},
+										})
+									}
+								/>
+								<Label
+									htmlFor={`mixed-step-require-selfie-${step.id}`}
+									className="text-sm font-normal"
+								>
+									Require selfie on hosted link
+								</Label>
+							</div>
 						</div>
 					) : null}
 

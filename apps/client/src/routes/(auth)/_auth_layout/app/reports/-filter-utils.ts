@@ -159,6 +159,9 @@ export function buildReportsListQuery(
 export const REPORTS_VERIFICATION_STATUSES = VERIFICATION_STATUS_OPTIONS;
 
 export function formatVerificationTypeLabel(type: string) {
+	if (type === "face_match") {
+		return "Facial Screening";
+	}
 	return type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
