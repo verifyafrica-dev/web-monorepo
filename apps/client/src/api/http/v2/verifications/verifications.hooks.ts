@@ -10,6 +10,7 @@ import { VERIFICATIONS_V2_API } from "./verifications.api";
 import type {
 	BulkVerificationCreatePayload,
 	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
 	MixedVerificationUpsertPayload,
@@ -54,6 +55,8 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 		["verifications-v2", "mixed", tenantId ?? "global", params ?? {}] as const,
 	mixedVerificationDetail: (id: string) =>
 		["verifications-v2", "mixed", "detail", id] as const,
+	mixedVerificationsAvailability: (tenantId: string) =>
+		["verifications-v2", "mixed", "availability", tenantId] as const,
 	allBatches: (params?: VerificationBatchListQuery) =>
 		["verifications-v2", "batches", "all", params ?? {}] as const,
 	tenantBatches: (tenantId: string, params?: VerificationBatchListQuery) =>
@@ -164,6 +167,27 @@ export const useTenantMixedVerificationsV2Query = (
 		queryFn: () =>
 			VERIFICATIONS_V2_API.TENANT_MIXED_VERIFICATIONS(tenantId, params),
 		enabled,
+		staleTime: VERIFICATIONS_V2_STALE_TIME,
+	});
+};
+
+export const useMixedVerificationsAvailabilityV2Query = (
+	tenantId: string | undefined,
+	enabled = true,
+): UseQueryResult<MixedVerificationAvailabilityCatalog> => {
+	return useQuery<MixedVerificationAvailabilityCatalog>({
+		queryKey: useOrganizationQueryKey(
+			VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationsAvailability(
+				tenantId ?? "",
+			),
+		),
+		queryFn: () => {
+			if (!tenantId) {
+				throw new Error("Tenant ID is required");
+			}
+			return VERIFICATIONS_V2_API.MIXED_VERIFICATIONS_AVAILABILITY(tenantId);
+		},
+		enabled: enabled && Boolean(tenantId),
 		staleTime: VERIFICATIONS_V2_STALE_TIME,
 	});
 };

@@ -320,6 +320,35 @@ export interface VerificationTypeDefinition {
 	validation_parameters: string[];
 }
 
+export interface MixedVerificationAvailabilityReason {
+	code: string;
+	message: string;
+	verification_type: string;
+	product?: string;
+	product_label?: string;
+	country?: string;
+}
+
+export interface MixedVerificationStepAvailability {
+	available: boolean;
+	reasons: MixedVerificationAvailabilityReason[];
+}
+
+export interface MixedVerificationAvailabilityCatalog {
+	mixed_product: {
+		product: string;
+		available: boolean;
+		reasons: MixedVerificationAvailabilityReason[];
+	};
+	types: Record<string, MixedVerificationStepAvailability>;
+	unavailable: Array<{
+		verification_type: string;
+		product?: string | null;
+		reasons: MixedVerificationAvailabilityReason[];
+	}>;
+	products: Record<string, string[]>;
+}
+
 export interface MixedVerification {
 	id: string;
 	tenant: string | null;
@@ -329,6 +358,8 @@ export interface MixedVerification {
 	steps?: MixedVerificationSteps | Record<string, unknown>;
 	price: string | null;
 	calculated_price: string | null;
+	available?: boolean;
+	availability_reasons?: MixedVerificationAvailabilityReason[];
 	is_active: boolean;
 	is_custom: boolean;
 	journey_id: string | null;
@@ -336,6 +367,81 @@ export interface MixedVerification {
 	deleted_at: string | null;
 	created_at: string;
 	updated_at: string;
+}
+
+/**
+ * Merge list/detail `available` with the pre-create catalog so platform
+ * (global / variant) disables still badge templates when the list payload is
+ * stale or evaluated without a tenant.
+ */
+export function isMixedStepUnavailable(
+	verificationType: string,
+	template?: Pick<MixedVerification, "availability_reasons"> | null,
+	catalog?: MixedVerificationAvailabilityCatalog | null,
+): boolean {
+	if (
+		(template?.availability_reasons ?? []).some(
+			(reason) => reason.verification_type === verificationType,
+		)
+	) {
+		return true;
+	}
+	return catalog?.types?.[verificationType]?.available === false;
+}
+
+export function resolveMixedTemplateAvailability(
+	template: Pick<
+		MixedVerification,
+		"available" | "availability_reasons" | "verifications"
+	>,
+	catalog?: MixedVerificationAvailabilityCatalog | null,
+): {
+	available: boolean;
+	reasons: MixedVerificationAvailabilityReason[];
+} {
+	const reasons: MixedVerificationAvailabilityReason[] = [
+		...(template.availability_reasons ?? []),
+	];
+	const seen = new Set(
+		reasons.map(
+			(reason) =>
+				`${reason.code}:${reason.verification_type}:${reason.country ?? ""}`,
+		),
+	);
+
+	const pushReason = (reason: MixedVerificationAvailabilityReason) => {
+		const key = `${reason.code}:${reason.verification_type}:${reason.country ?? ""}`;
+		if (seen.has(key)) {
+			return;
+		}
+		seen.add(key);
+		reasons.push(reason);
+	};
+
+	if (catalog?.mixed_product?.available === false) {
+		for (const reason of catalog.mixed_product.reasons ?? []) {
+			pushReason(reason);
+		}
+	}
+
+	for (const verificationType of template.verifications ?? []) {
+		const step = catalog?.types?.[verificationType];
+		if (step?.available === false) {
+			for (const reason of step.reasons ?? []) {
+				pushReason(reason);
+			}
+		}
+	}
+
+	const available =
+		template.available !== false &&
+		catalog?.mixed_product?.available !== false &&
+		!(template.verifications ?? []).some(
+			(verificationType) =>
+				catalog?.types?.[verificationType]?.available === false,
+		);
+
+	return { available, reasons };
 }
 
 export interface VerificationPrice {

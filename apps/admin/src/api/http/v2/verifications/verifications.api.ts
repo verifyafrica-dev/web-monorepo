@@ -11,6 +11,7 @@ import type {
 	ProductAvailability,
 	ProductAvailabilityUpdatePayload,
 	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
 	MixedVerificationUpsertPayload,
@@ -49,6 +50,8 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 		`/v2/verifications/requests/${verificationId}/refresh-status/`,
 	mixedVerifications: "/v2/verifications/mixed-verifications/",
 	mixedVerificationsAll: "/v2/verifications/mixed-verifications/all/",
+	mixedVerificationsAvailability:
+		"/v2/verifications/mixed-verifications/availability/",
 	mixedVerificationDetail: (id: string) =>
 		`/v2/verifications/mixed-verifications/${id}/`,
 	mixedVerificationStart: "/v2/verifications/mixed-verifications/start/",
@@ -179,6 +182,17 @@ export const VERIFICATIONS_V2_API = {
 				},
 			)
 			.then((res) => unwrapV2Paginated<MixedVerification>(res)),
+
+	MIXED_VERIFICATIONS_AVAILABILITY: async (
+		tenantId?: string,
+	): Promise<MixedVerificationAvailabilityCatalog> =>
+		await $http
+			.get(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationsAvailability, {
+				...withOptionalTenantHeader(tenantId),
+			})
+			.then((res) =>
+				unwrapV2Data<MixedVerificationAvailabilityCatalog>(res),
+			),
 
 	CREATE_MIXED_VERIFICATION: async (
 		data: MixedVerificationUpsertPayload,

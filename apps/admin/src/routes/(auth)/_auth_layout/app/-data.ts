@@ -111,8 +111,64 @@ export type AdminDashboardData = {
 	recentAlerts: AdminDashboardAlert[];
 };
 
+function parseIsoDate(date: string) {
+	const [year, month, day] = date.split("-").map(Number);
+	if (!year || !month || !day) {
+		return new Date(date);
+	}
+	return new Date(year, month - 1, day);
+}
+
 function formatChartDate(date: string) {
-	return chartDateFormatter.format(new Date(date));
+	return chartDateFormatter.format(parseIsoDate(date));
+}
+
+/** Zero-filled axis points so empty ranges still render a chart frame. */
+export function buildPlaceholderTimeSeries(
+	range: TimeRange,
+	now = new Date(),
+): TimeSeriesPoint[] {
+	if (range === "all") {
+		return Array.from({ length: 6 }, (_, index) => {
+			const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+			return {
+				label: chartDateFormatter.format(date),
+				value: 0,
+			};
+		});
+	}
+
+	if (range === "90d") {
+		return Array.from({ length: 13 }, (_, index) => {
+			const date = new Date(now);
+			date.setDate(date.getDate() - (12 - index) * 7);
+			return {
+				label: chartDateFormatter.format(date),
+				value: 0,
+			};
+		});
+	}
+
+	const days = TIME_RANGE_DAYS[range];
+	return Array.from({ length: days }, (_, index) => {
+		const date = new Date(now);
+		date.setDate(date.getDate() - (days - 1 - index));
+		return {
+			label: chartDateFormatter.format(date),
+			value: 0,
+		};
+	});
+}
+
+function mapTimeSeriesPoints(
+	points: Array<{ date: string; value: number }>,
+	range: TimeRange,
+): TimeSeriesPoint[] {
+	const mapped = points.map((point) => ({
+		label: formatChartDate(point.date),
+		value: point.value,
+	}));
+	return mapped.length > 0 ? mapped : buildPlaceholderTimeSeries(range);
 }
 
 function formatLabel(value: string) {
@@ -148,6 +204,7 @@ function mapVerificationTypeDistribution(
 
 export function mapPlatformAnalyticsToDashboardData(
 	response: PlatformAnalyticsPayload,
+	timeRange: TimeRange = "30d",
 ): AdminDashboardData {
 	const { summary, users, tenants, verifications, financials } =
 		response.analytics;
@@ -173,18 +230,27 @@ export function mapPlatformAnalyticsToDashboardData(
 			accepted: users.invitations.accepted,
 			topUpsTotal: financials.top_ups.total_amount,
 		},
-		tenantGrowth: tenants.tenant_growth.map((point) => ({
-			label: formatChartDate(point.date),
-			value: point.new_tenants,
-		})),
-		verificationVolume: verifications.verification_volume.map((point) => ({
-			label: formatChartDate(point.date),
-			value: point.count,
-		})),
-		revenueOverTime: financials.revenue_over_time.map((point) => ({
-			label: formatChartDate(point.date),
-			value: point.revenue,
-		})),
+		tenantGrowth: mapTimeSeriesPoints(
+			tenants.tenant_growth.map((point) => ({
+				date: point.date,
+				value: point.new_tenants,
+			})),
+			timeRange,
+		),
+		verificationVolume: mapTimeSeriesPoints(
+			verifications.verification_volume.map((point) => ({
+				date: point.date,
+				value: point.count,
+			})),
+			timeRange,
+		),
+		revenueOverTime: mapTimeSeriesPoints(
+			financials.revenue_over_time.map((point) => ({
+				date: point.date,
+				value: point.revenue,
+			})),
+			timeRange,
+		),
 		verificationTypes: mapVerificationTypeDistribution(
 			verifications.type_distribution,
 		),

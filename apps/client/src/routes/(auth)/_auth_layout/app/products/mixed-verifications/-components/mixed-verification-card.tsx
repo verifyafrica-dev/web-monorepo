@@ -2,9 +2,17 @@ import {
 	PencilSimpleIcon,
 	PlayIcon,
 	StackIcon,
+	WarningCircleIcon,
 } from "@phosphor-icons/react";
 
-import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type {
+	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import {
+	isMixedStepUnavailable,
+	resolveMixedTemplateAvailability,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -19,6 +27,7 @@ import { formatVerificationTypeLabel } from "../-data";
 type MixedVerificationCardProps = {
 	template: MixedVerification;
 	canManageCustom: boolean;
+	availabilityCatalog?: MixedVerificationAvailabilityCatalog | null;
 	onStart: (template: MixedVerification) => void;
 	onEdit?: (template: MixedVerification) => void;
 };
@@ -26,16 +35,23 @@ type MixedVerificationCardProps = {
 export function MixedVerificationCard({
 	template,
 	canManageCustom,
+	availabilityCatalog,
 	onStart,
 	onEdit,
 }: MixedVerificationCardProps) {
 	const isCustom = template.is_custom;
+	const resolved = resolveMixedTemplateAvailability(
+		template,
+		availabilityCatalog,
+	);
+	const isUnavailable = !resolved.available;
+	const canStart = template.is_active && !isUnavailable;
 
 	return (
 		<Card
 			className={cn(
 				"flex h-full flex-col",
-				!template.is_active && "opacity-75",
+				(!template.is_active || isUnavailable) && "opacity-75",
 			)}
 		>
 			<CardHeader className="gap-4 pb-3">
@@ -47,10 +63,27 @@ export function MixedVerificationCard({
 							</h3>
 							<Badge>{isCustom ? "Custom" : "Platform"}</Badge>
 							{!template.is_active && <Badge variant="outline">Disabled</Badge>}
+							{isUnavailable ? (
+								<Badge
+									variant="outline"
+									className="border-amber-300 bg-amber-50 text-amber-800"
+								>
+									<WarningCircleIcon className="size-3.5" />
+									Unavailable
+								</Badge>
+							) : null}
 						</div>
 						<p className="text-sm text-muted-foreground">
 							{template.description?.trim() || "No description provided."}
 						</p>
+						{isUnavailable && resolved.reasons.length > 0 ? (
+							<p className="text-xs text-amber-800">
+								{resolved.reasons[0]?.message}
+								{resolved.reasons.length > 1
+									? ` (+${resolved.reasons.length - 1} more)`
+									: ""}
+							</p>
+						) : null}
 					</div>
 					<div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
 						<StackIcon
@@ -63,15 +96,27 @@ export function MixedVerificationCard({
 
 			<CardContent className="flex-1 pb-3">
 				<div className="flex flex-wrap gap-2">
-					{template.verifications.map((verificationType) => (
-						<Badge
-							key={verificationType}
-							variant="outline"
-							className="border-primary/20 bg-primary/5 text-secondary"
-						>
-							{formatVerificationTypeLabel(verificationType)}
-						</Badge>
-					))}
+					{template.verifications.map((verificationType) => {
+						const stepUnavailable = isMixedStepUnavailable(
+							verificationType,
+							template,
+							availabilityCatalog,
+						);
+						return (
+							<Badge
+								key={verificationType}
+								variant="outline"
+								className={
+									stepUnavailable
+										? "border-amber-300 bg-amber-50 text-amber-800"
+										: "border-primary/20 bg-primary/5 text-secondary"
+								}
+							>
+								{formatVerificationTypeLabel(verificationType)}
+								{stepUnavailable ? " · Unavailable" : ""}
+							</Badge>
+						);
+					})}
 				</div>
 			</CardContent>
 
@@ -95,7 +140,7 @@ export function MixedVerificationCard({
 					type="button"
 					size="sm"
 					className="cursor-pointer tracking-wide"
-					disabled={!template.is_active}
+					disabled={!canStart}
 					onClick={() => onStart(template)}
 				>
 					<PlayIcon

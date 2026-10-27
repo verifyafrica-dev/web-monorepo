@@ -1,11 +1,14 @@
 import { ArrowLeftIcon, EyeIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useMemo, useState } from "react";
 
 import {
 	useMixedVerificationDetailV2Query,
+	useMixedVerificationsAvailabilityV2Query,
 	useTenantVerificationRequestsV2Query,
 	useVerificationBatchDetailV2Query,
+	VERIFICATIONS_V2_QUERY_KEYS,
 } from "#/api/http/v2/verifications/verifications.hooks";
 import type { VerificationBatch } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
@@ -75,6 +78,7 @@ export const Route = createFileRoute(
 });
 
 function BatchVerificationReportDetailPage() {
+	const queryClient = useQueryClient();
 	const { batchId } = Route.useParams();
 	const { tenantId, isTenantAdmin } = useCurrentTenant();
 	const [page, setPage] = useState(1);
@@ -94,6 +98,26 @@ function BatchVerificationReportDetailPage() {
 		templateId,
 		canEditTemplate || Boolean(isMixedBatch && templateId),
 	);
+	const availabilityQuery = useMixedVerificationsAvailabilityV2Query(
+		tenantId,
+		Boolean(tenantId),
+	);
+
+	async function openEditDialog() {
+		setEditDialogOpen(true);
+		if (!tenantId || !templateId) {
+			return;
+		}
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey:
+					VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationsAvailability(tenantId),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationDetail(templateId),
+			}),
+		]);
+	}
 
 	const stepCount = batch?.steps?.length ?? 0;
 	const requestsPerPage =
@@ -218,7 +242,7 @@ function BatchVerificationReportDetailPage() {
 							type="button"
 							variant="outline"
 							className="cursor-pointer tracking-wide"
-							onClick={() => setEditDialogOpen(true)}
+							onClick={() => void openEditDialog()}
 							disabled={!templateQuery.data}
 						>
 							<PencilSimpleIcon className="size-4" />
@@ -401,6 +425,7 @@ function BatchVerificationReportDetailPage() {
 					onOpenChange={setEditDialogOpen}
 					tenantId={tenantId}
 					template={templateQuery.data ?? null}
+					availabilityCatalog={availabilityQuery.data}
 				/>
 			) : null}
 		</div>

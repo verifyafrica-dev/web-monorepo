@@ -9,6 +9,7 @@ import $http from "../../xhr";
 import type {
 	BulkVerificationCreatePayload,
 	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
 	MixedVerificationListQuery,
 	MixedVerificationSession,
 	MixedVerificationStartPayload,
@@ -48,6 +49,8 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 		`/v2/verifications/requests/${verificationId}/refresh-status/`,
 	mixedVerifications: "/v2/verifications/mixed-verifications/",
 	mixedVerificationsAll: "/v2/verifications/mixed-verifications/all/",
+	mixedVerificationsAvailability:
+		"/v2/verifications/mixed-verifications/availability/",
 	mixedVerificationDetail: (id: string) =>
 		`/v2/verifications/mixed-verifications/${id}/`,
 	mixedVerificationStart: "/v2/verifications/mixed-verifications/start/",
@@ -182,6 +185,15 @@ export const VERIFICATIONS_V2_API = {
 				...withOptionalTenantHeader(tenantId),
 			})
 			.then((res) => unwrapV2Paginated(res)),
+
+	MIXED_VERIFICATIONS_AVAILABILITY: async (
+		tenantId: string,
+	): Promise<MixedVerificationAvailabilityCatalog> =>
+		await $http
+			.get(VERIFICATIONS_V2_ENDPOINTS.mixedVerificationsAvailability, {
+				...withTenantHeader(tenantId),
+			})
+			.then((res) => unwrapV2Data<MixedVerificationAvailabilityCatalog>(res)),
 
 	CREATE_MIXED_VERIFICATION: async (
 		data: MixedVerificationUpsertPayload,

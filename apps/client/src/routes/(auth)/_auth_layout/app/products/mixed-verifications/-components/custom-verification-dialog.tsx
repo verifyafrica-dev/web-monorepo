@@ -29,7 +29,11 @@ import {
 	useCreateMixedVerificationV2Mutation,
 	useUpdateMixedVerificationV2Mutation,
 } from "#/api/http/v2/verifications/verifications.hooks";
-import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type {
+	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { AddressDocumentTypesMultiCombobox } from "@verifyafrica/ui/components/ui-extended/address-document-types-combobox";
 import { CountryOptionLabel } from "@verifyafrica/ui/components/ui-extended/country-flag";
 import {
@@ -125,6 +129,8 @@ function SortableStepCard({
 	step,
 	index,
 	disabled,
+	unavailable,
+	unavailableMessage,
 	onRemove,
 	onChange,
 	countries,
@@ -132,6 +138,8 @@ function SortableStepCard({
 	step: MixedStepFormValue;
 	index: number;
 	disabled?: boolean;
+	unavailable?: boolean;
+	unavailableMessage?: string;
 	onRemove: () => void;
 	onChange: (next: MixedStepFormValue) => void;
 	countries: Array<{ code: string; name: string }>;
@@ -232,13 +240,26 @@ function SortableStepCard({
 					/>
 				</button>
 				<AccordionTrigger className="flex flex-1 items-center justify-between gap-3 py-3 hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
-					<span className="flex items-center gap-2 text-left">
-						<span className="text-xs font-medium tabular-nums text-muted-foreground">
-							{index + 1}.
+					<span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+						<span className="flex flex-wrap items-center gap-2">
+							<span className="text-xs font-medium tabular-nums text-muted-foreground">
+								{index + 1}.
+							</span>
+							<span className="text-sm font-medium">
+								{formatVerificationTypeLabel(step.type)}
+							</span>
+							{unavailable ? (
+								<Badge
+									variant="outline"
+									className="border-amber-300 bg-amber-50 text-amber-800"
+								>
+									Unavailable
+								</Badge>
+							) : null}
 						</span>
-						<span className="text-sm font-medium">
-							{formatVerificationTypeLabel(step.type)}
-						</span>
+						{unavailable && unavailableMessage ? (
+							<span className="text-xs text-amber-800">{unavailableMessage}</span>
+						) : null}
 					</span>
 					<span className="flex items-center gap-3">
 						<CaretDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground group-aria-expanded/accordion-trigger:hidden" />
@@ -1118,6 +1139,7 @@ type CustomVerificationDialogProps = {
 	onOpenChange: (open: boolean) => void;
 	tenantId: string;
 	template?: MixedVerification | null;
+	availabilityCatalog?: MixedVerificationAvailabilityCatalog | null;
 };
 
 export function CustomVerificationDialog({
@@ -1125,6 +1147,7 @@ export function CustomVerificationDialog({
 	onOpenChange,
 	tenantId,
 	template,
+	availabilityCatalog,
 }: CustomVerificationDialogProps) {
 	const createMutation = useCreateMixedVerificationV2Mutation();
 	const updateMutation = useUpdateMixedVerificationV2Mutation();
@@ -1334,15 +1357,31 @@ export function CustomVerificationDialog({
 												align="start"
 												className="z-200 w-64"
 											>
-												{CUSTOM_MIXED_BASE_TYPE_OPTIONS.map((type) => (
-													<DropdownMenuItem
-														key={type}
-														className="cursor-pointer"
-														onSelect={() => handleAddStep(type)}
-													>
-														{formatVerificationTypeLabel(type)}
-													</DropdownMenuItem>
-												))}
+												{CUSTOM_MIXED_BASE_TYPE_OPTIONS.map((type) => {
+													const typeAvailability =
+														availabilityCatalog?.types?.[type];
+													const unavailable =
+														typeAvailability?.available === false;
+													return (
+														<DropdownMenuItem
+															key={type}
+															className="cursor-pointer"
+															onSelect={() => handleAddStep(type)}
+														>
+															<span className="flex w-full items-center justify-between gap-2">
+																{formatVerificationTypeLabel(type)}
+																{unavailable ? (
+																	<Badge
+																		variant="outline"
+																		className="border-amber-300 bg-amber-50 text-amber-800"
+																	>
+																		Unavailable
+																	</Badge>
+																) : null}
+															</span>
+														</DropdownMenuItem>
+													);
+												})}
 												<DropdownMenuSub>
 													<DropdownMenuSubTrigger className="cursor-pointer">
 														Government Registry Check
@@ -1354,15 +1393,31 @@ export function CustomVerificationDialog({
 																	{group.countryLabel}
 																</DropdownMenuSubTrigger>
 																<DropdownMenuSubContent className="z-200 w-64">
-																	{group.types.map((item) => (
-																		<DropdownMenuItem
-																			key={item.value}
-																			className="cursor-pointer"
-																			onSelect={() => handleAddStep(item.value)}
-																		>
-																			{item.label}
-																		</DropdownMenuItem>
-																	))}
+																	{group.types.map((item) => {
+																		const typeAvailability =
+																			availabilityCatalog?.types?.[item.value];
+																		const unavailable =
+																			typeAvailability?.available === false;
+																		return (
+																			<DropdownMenuItem
+																				key={item.value}
+																				className="cursor-pointer"
+																				onSelect={() => handleAddStep(item.value)}
+																			>
+																				<span className="flex w-full items-center justify-between gap-2">
+																					{item.label}
+																					{unavailable ? (
+																						<Badge
+																							variant="outline"
+																							className="border-amber-300 bg-amber-50 text-amber-800"
+																						>
+																							Unavailable
+																						</Badge>
+																					) : null}
+																				</span>
+																			</DropdownMenuItem>
+																		);
+																	})}
 																</DropdownMenuSubContent>
 															</DropdownMenuSub>
 														))}
@@ -1393,6 +1448,14 @@ export function CustomVerificationDialog({
 																step={step}
 																index={index}
 																disabled={isSaving}
+																unavailable={
+																	availabilityCatalog?.types?.[step.type]
+																		?.available === false
+																}
+																unavailableMessage={
+																	availabilityCatalog?.types?.[step.type]
+																		?.reasons?.[0]?.message
+																}
 																countries={countries}
 																onRemove={() =>
 																	field.handleChange(

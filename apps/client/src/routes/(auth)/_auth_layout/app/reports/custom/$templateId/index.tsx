@@ -1,11 +1,14 @@
 import { ArrowLeftIcon, EyeIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
 import {
 	useMixedVerificationDetailV2Query,
+	useMixedVerificationsAvailabilityV2Query,
 	useTenantVerificationBatchesV2Query,
+	VERIFICATIONS_V2_QUERY_KEYS,
 } from "#/api/http/v2/verifications/verifications.hooks";
 import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Button } from "@verifyafrica/ui/components/ui/button";
@@ -83,6 +86,7 @@ export const Route = createFileRoute(
 });
 
 function CustomVerificationReportsPage() {
+	const queryClient = useQueryClient();
 	const { templateId } = Route.useParams();
 	const searchParams = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
@@ -99,9 +103,29 @@ function CustomVerificationReportsPage() {
 		templateId,
 		Boolean(templateId),
 	);
+	const availabilityQuery = useMixedVerificationsAvailabilityV2Query(
+		tenantId,
+		Boolean(tenantId),
+	);
 	const canEditTemplate = Boolean(
 		isTenantAdmin && tenantId && templateQuery.data?.is_custom,
 	);
+
+	async function openEditDialog() {
+		setEditDialogOpen(true);
+		if (!tenantId || !templateId) {
+			return;
+		}
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey:
+					VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationsAvailability(tenantId),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationDetail(templateId),
+			}),
+		]);
+	}
 
 	const updateSearchParams = useCallback(
 		(patch: Partial<CustomReportSearchParams>) => {
@@ -254,7 +278,7 @@ function CustomVerificationReportsPage() {
 							type="button"
 							variant="outline"
 							className="cursor-pointer tracking-wide"
-							onClick={() => setEditDialogOpen(true)}
+							onClick={() => void openEditDialog()}
 							disabled={!templateQuery.data}
 						>
 							<PencilSimpleIcon className="size-4" />
@@ -349,6 +373,7 @@ function CustomVerificationReportsPage() {
 					onOpenChange={setEditDialogOpen}
 					tenantId={tenantId}
 					template={templateQuery.data ?? null}
+					availabilityCatalog={availabilityQuery.data}
 				/>
 			) : null}
 		</div>

@@ -246,6 +246,21 @@ export function AdminDashboardContent({
 	const verificationTypeChartData = data.verificationTypes.filter(
 		(item) => item.value > 0,
 	);
+	const tenantGrowthMax = Math.max(
+		0,
+		...data.tenantGrowth.map((point) => point.value),
+	);
+	const verificationVolumeMax = Math.max(
+		0,
+		...data.verificationVolume.map((point) => point.value),
+	);
+	const revenueOverTimeMax = Math.max(
+		0,
+		...data.revenueOverTime.map((point) => point.value),
+	);
+	const tenantGrowthEmpty = tenantGrowthMax === 0;
+	const verificationVolumeEmpty = verificationVolumeMax === 0;
+	const revenueOverTimeEmpty = revenueOverTimeMax === 0;
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -349,11 +364,14 @@ export function AdminDashboardContent({
 									tickLine={false}
 									axisLine={false}
 									tickMargin={8}
+									minTickGap={24}
 								/>
 								<YAxis
 									tickLine={false}
 									axisLine={false}
 									width={40}
+									allowDecimals={false}
+									domain={[0, tenantGrowthEmpty ? 1 : "auto"]}
 								/>
 								<ChartTooltip content={<ChartTooltipContent />} />
 								<Area
@@ -363,9 +381,16 @@ export function AdminDashboardContent({
 									fill="var(--color-value)"
 									fillOpacity={0.15}
 									strokeWidth={2}
+									dot={{ r: 3 }}
+									activeDot={{ r: 5 }}
 								/>
 							</AreaChart>
 						</ChartContainer>
+						{tenantGrowthEmpty ? (
+							<p className="mt-3 text-center text-xs text-muted-foreground">
+								No new tenants in this period
+							</p>
+						) : null}
 					</CardContent>
 				</Card>
 
@@ -438,13 +463,8 @@ export function AdminDashboardContent({
 				</Card>
 			</div>
 
-			<div
-				className={cn(
-					"grid gap-4 lg:grid-cols-2",
-					data.revenueOverTime.length === 0 && "hidden",
-				)}
-			>
-				<Card className="gap-10 flex flex-col">
+			<div className="grid gap-4 lg:grid-cols-2">
+				<Card className="flex flex-col gap-10">
 					<CardHeader>
 						<CardTitle className="font-semibold"> Revenue Over Time</CardTitle>
 					</CardHeader>
@@ -464,12 +484,18 @@ export function AdminDashboardContent({
 									tickLine={false}
 									axisLine={false}
 									tickMargin={8}
+									minTickGap={24}
 								/>
 								<YAxis
 									tickLine={false}
 									axisLine={false}
 									width={48}
-									tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
+									domain={[0, revenueOverTimeEmpty ? 1 : "auto"]}
+									tickFormatter={(value) =>
+										revenueOverTimeEmpty
+											? "$0"
+											: `$${Math.round(value / 1000)}k`
+									}
 								/>
 								<ChartTooltip
 									content={
@@ -485,6 +511,11 @@ export function AdminDashboardContent({
 								/>
 							</BarChart>
 						</ChartContainer>
+						{revenueOverTimeEmpty ? (
+							<p className="mt-3 text-center text-xs text-muted-foreground">
+								No revenue in this period
+							</p>
+						) : null}
 						<div className="mt-6 grid grid-cols-2 gap-4 border-t pt-6">
 							<div className="text-center">
 								<p className="text-xs text-muted-foreground">Total Revenue</p>
@@ -502,7 +533,7 @@ export function AdminDashboardContent({
 					</CardContent>
 				</Card>
 
-				<Card className="hidden lg:flex gap-10 flex-col">
+				<Card className="hidden flex-col gap-10 lg:flex">
 					<CardHeader>
 						<CardTitle className="font-semibold">
 							{" "}
@@ -525,11 +556,14 @@ export function AdminDashboardContent({
 									tickLine={false}
 									axisLine={false}
 									tickMargin={8}
+									minTickGap={24}
 								/>
 								<YAxis
 									tickLine={false}
 									axisLine={false}
 									width={40}
+									allowDecimals={false}
+									domain={[0, verificationVolumeEmpty ? 1 : "auto"]}
 								/>
 								<ChartTooltip content={<ChartTooltipContent />} />
 								<Line
@@ -541,6 +575,11 @@ export function AdminDashboardContent({
 								/>
 							</LineChart>
 						</ChartContainer>
+						{verificationVolumeEmpty ? (
+							<p className="mt-3 text-center text-xs text-muted-foreground">
+								No verifications in this period
+							</p>
+						) : null}
 					</CardContent>
 				</Card>
 			</div>
