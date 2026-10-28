@@ -93,17 +93,37 @@ export function useSwitchApiMode() {
 		}
 		if (next === mode) return;
 
+		const authStore = useAuthStore.getState();
+		const previousTenantId = authStore.selectedTenantId;
+		const previousTenants = normalizeUserTenants(authStore.user?.tenants ?? null);
+
 		if (next === "test") {
 			try {
 				const token = await mintTestAccessToken();
+				// Pause tenant-scoped queries before flipping the API base URL so we
+				// never hit Test with a Live tenant id (and never wipe good cache via clear()).
+				authStore.setSelectedTenantId(null);
 				setTestAccessToken(token);
 				setMode("test");
-				await syncAuthSessionForActiveMode();
-				queryClient.clear();
+
+				const me: UserSession = await USERS_V2_API.ME();
+				const nextTenants = me.tenants ?? [];
+				authStore.setUser({
+					...me,
+					phone_number: me.phone_number ?? undefined,
+					tenants: nextTenants,
+					created_at: authStore.user?.created_at ?? "",
+				});
+				authStore.setSelectedTenantId(
+					resolveTwinTenantId(previousTenants, previousTenantId, nextTenants),
+				);
+
+				await queryClient.invalidateQueries({ type: "active" });
 				toast.success("Switched to Test mode");
 			} catch (error) {
 				clearTestSession();
 				setMode(apiModeConfig.defaultMode);
+				authStore.setSelectedTenantId(previousTenantId);
 				const data =
 					error &&
 					typeof error === "object" &&
@@ -125,14 +145,21 @@ export function useSwitchApiMode() {
 			return;
 		}
 
+		authStore.setSelectedTenantId(null);
 		clearTestSession();
 		setMode("live");
 		try {
 			await syncAuthSessionForActiveMode();
 		} catch {
-			// Live session may still be usable with cached user; queries will refresh.
+			authStore.setSelectedTenantId(
+				resolveTwinTenantId(
+					previousTenants,
+					previousTenantId,
+					normalizeUserTenants(authStore.user?.tenants ?? null),
+				) ?? previousTenantId,
+			);
 		}
-		queryClient.clear();
+		await queryClient.invalidateQueries({ type: "active" });
 		toast.success("Switched to Live mode");
 	}
 
