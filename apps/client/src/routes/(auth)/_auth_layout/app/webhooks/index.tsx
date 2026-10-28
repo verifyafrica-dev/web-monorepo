@@ -20,6 +20,7 @@ import {
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { env } from "#/config/env";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import {
 	Card,
 	CardContent,
@@ -141,6 +142,11 @@ function ConfigurationTab() {
 	const [isKeyVisible, setIsKeyVisible] = useState(false);
 	const { copied, copy } = useClipboard();
 	const { tenantId, isTenantAdmin } = useCurrentTenant();
+	const apiMode = useApiModeStore((state) => state.mode);
+	const apiKeyTitle =
+		apiMode === "test" || env.deployEnvironment !== "production"
+			? "Test API Key"
+			: "Production API Key";
 
 	const apiKeyQuery = useTenantApiKeyV2Query(tenantId, Boolean(tenantId));
 	const webhookQuery = useTenantWebhookV2Query(tenantId, Boolean(tenantId));
@@ -214,9 +220,7 @@ function ConfigurationTab() {
 							</div>
 							<div>
 								<CardTitle className="font-semibold">
-									{env.deployEnvironment === "production"
-										? "Production API Key"
-										: "Test API Key"}
+									{apiKeyTitle}
 								</CardTitle>
 								<CardDescription>
 									{apiKey.is_active

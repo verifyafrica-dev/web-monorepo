@@ -12,6 +12,7 @@ import type { AxiosError } from "axios";
 import { subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { env } from "#/config/env";
+import { isTestApiMode } from "#/stores/api-mode-store";
 
 export type BillingFormState = {
 	billing_name: string;
@@ -457,6 +458,10 @@ export function getInvoicePaymentStatusBadgeClassName(status?: string | null) {
 export const BILLING_SUPPORT_EMAIL = "support@verifyafrica.io";
 
 export function isTestWalletEnvironment() {
+	if (isTestApiMode()) {
+		return true;
+	}
+
 	const stripeKey = env.stripePublishableKey ?? "";
 	const apiBaseUrl = env.apiBaseUrl.toLowerCase();
 

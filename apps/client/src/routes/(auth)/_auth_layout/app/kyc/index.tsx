@@ -4,10 +4,11 @@ import {
 	FileTextIcon,
 	InfoIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { useKycTenantQuery } from "#/api/http/v2/kyc/kyc.hooks";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import { normalizeComplianceData } from "@verifyafrica/api-client/http/v2/kyc/kyc.types";
 import type { TenantDetail } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
@@ -178,6 +179,7 @@ function KycPageInner({
 function KycPage() {
 	const tenantId = useKycTenantId();
 	const navigate = useNavigate();
+	const apiMode = useApiModeStore((state) => state.mode);
 	const { section: activeSectionPath } = Route.useSearch();
 	const activeSection = getSectionByPath(activeSectionPath);
 	const kycQuery = useKycTenantQuery(tenantId, Boolean(tenantId));
@@ -187,6 +189,10 @@ function KycPage() {
 			to: "/app/kyc",
 			search: path ? { section: path } : {},
 		});
+	}
+
+	if (apiMode === "test") {
+		return <Navigate to="/app" replace />;
 	}
 
 	if (!tenantId) {
