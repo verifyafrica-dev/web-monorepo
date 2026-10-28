@@ -26,42 +26,56 @@ export function EnvironmentModeSwitcher({
 	return (
 		<div
 			className={cn(
-				"inline-flex items-center rounded-lg border bg-background p-0.5 text-xs font-medium",
+				"flex w-full flex-col gap-1.5 group-data-[collapsible=icon]:items-center",
 				className,
 			)}
-			role="group"
-			aria-label="API environment"
 		>
-			<button
-				type="button"
-				disabled={isSwitching}
-				onClick={() => void handleSwitch("live")}
+			<p className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
+				Environment
+			</p>
+			<div
 				className={cn(
-					"inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors",
-					mode === "live"
-						? "bg-foreground text-background"
-						: "text-muted-foreground hover:text-foreground",
-					isSwitching && "opacity-60",
+					"inline-flex w-full items-center rounded-lg border bg-background p-0.5 text-xs font-medium",
+					"group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:flex-col",
 				)}
+				role="group"
+				aria-label="API environment"
 			>
-				<LightningIcon className="size-3.5" weight="bold" />
-				Live
-			</button>
-			<button
-				type="button"
-				disabled={isSwitching}
-				onClick={() => void handleSwitch("test")}
-				className={cn(
-					"inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors",
-					mode === "test"
-						? "bg-amber-600 text-white"
-						: "text-muted-foreground hover:text-foreground",
-					isSwitching && "opacity-60",
-				)}
-			>
-				<FlaskIcon className="size-3.5" weight="bold" />
-				Test
-			</button>
+				<button
+					type="button"
+					disabled={isSwitching}
+					title="Live mode"
+					onClick={() => void handleSwitch("live")}
+					className={cn(
+						"inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors",
+						"group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2",
+						mode === "live"
+							? "bg-foreground text-background"
+							: "text-muted-foreground hover:text-foreground",
+						isSwitching && "opacity-60",
+					)}
+				>
+					<LightningIcon className="size-3.5 shrink-0" weight="bold" />
+					<span className="group-data-[collapsible=icon]:hidden">Live</span>
+				</button>
+				<button
+					type="button"
+					disabled={isSwitching}
+					title="Test mode"
+					onClick={() => void handleSwitch("test")}
+					className={cn(
+						"inline-flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors",
+						"group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:px-2",
+						mode === "test"
+							? "bg-amber-600 text-white"
+							: "text-muted-foreground hover:text-foreground",
+						isSwitching && "opacity-60",
+					)}
+				>
+					<FlaskIcon className="size-3.5 shrink-0" weight="bold" />
+					<span className="group-data-[collapsible=icon]:hidden">Test</span>
+				</button>
+			</div>
 		</div>
 	);
 }

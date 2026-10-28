@@ -52,6 +52,7 @@ import {
 	useCurrentTenant,
 } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { toast } from "sonner";
+import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
 import { useApiModeStore } from "#/stores/api-mode-store";
 
 const teamSubItems = [
@@ -406,7 +407,9 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter></SidebarFooter>
+			<SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:p-1">
+				<EnvironmentModeSwitcher />
+			</SidebarFooter>
 		</Sidebar>
 	);
 }

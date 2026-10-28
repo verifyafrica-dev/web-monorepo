@@ -123,10 +123,11 @@ export function resolveApiModeConfig(
 		};
 	}
 
+	// Local / development: fixed to the configured API — no Live↔Test switcher.
 	return {
 		liveApiBaseUrl: configuredApiBaseUrl,
-		testApiBaseUrl: API_BASE_URLS.test,
-		switcherEnabled: true,
+		testApiBaseUrl: configuredApiBaseUrl,
+		switcherEnabled: false,
 		defaultMode: "live",
 	};
 }
