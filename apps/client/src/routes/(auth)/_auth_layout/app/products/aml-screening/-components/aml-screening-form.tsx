@@ -144,7 +144,10 @@ export function AmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildAmlScreeningLinkPayload(value, screeningOptions),
+				buildAmlScreeningLinkPayload(value, {
+					...screeningOptions,
+					biometricSearchImage: null,
+				}),
 				{
 					mode: "link",
 					email: value.email,
@@ -430,21 +433,25 @@ export function AmlScreeningForm() {
 						</FieldGroup>
 					)}
 
-					<ProductProofUpload
-						label="Biometric search image (optional)"
-						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.amlScreening}
-						proofUrl={biometricUrl}
-						onProofUrlChange={setBiometricUrl}
-						onUploadingChange={setIsBiometricUploading}
-						accept="image/jpeg,image/jpg,image/png"
-						allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
-						maxSize={AML_BIOMETRIC_MAX_BYTES}
-						emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
-						disabled={isSubmitting}
-					/>
-					<FieldDescription>
-						A facial image used to match records in connected AML databases.
-					</FieldDescription>
+					{mode === "direct" ? (
+						<>
+							<ProductProofUpload
+								label="Biometric search image (optional)"
+								verificationName={PRODUCT_UPLOAD_VERIFICATIONS.amlScreening}
+								proofUrl={biometricUrl}
+								onProofUrlChange={setBiometricUrl}
+								onUploadingChange={setIsBiometricUploading}
+								accept="image/jpeg,image/jpg,image/png"
+								allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
+								maxSize={AML_BIOMETRIC_MAX_BYTES}
+								emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
+								disabled={isSubmitting}
+							/>
+							<FieldDescription>
+								A facial image used to match records in connected AML databases.
+							</FieldDescription>
+						</>
+					) : null}
 
 					<Field className="gap-3">
 						<FieldLabel>Filters</FieldLabel>

@@ -1,24 +1,30 @@
 import { ArrowLeftIcon, PlusIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import { useTenantMixedVerificationsV2Query } from "#/api/http/v2/verifications/verifications.hooks";
+import {
+	useMixedVerificationsAvailabilityV2Query,
+	useTenantMixedVerificationsV2Query,
+	VERIFICATIONS_V2_QUERY_KEYS,
+} from "#/api/http/v2/verifications/verifications.hooks";
 import type {
 	MixedVerification,
-	VerificationRequest,
+	MixedVerificationAvailabilityCatalog,
+	MixedVerificationSession,
+	PaginatedMixedVerificationListResult,
 } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
-	buildLinkResult,
+	buildMixedSessionLinkResult,
 	type HostedLinkResult,
 } from "@verifyafrica/api-client/lib/verification-links";
 import { useCurrentTenant } from "../../team/-data";
 import { VerificationResultDialog } from "../-components/verification-result-dialog";
 import { getProduct } from "../-data";
 import { CustomVerificationDialog } from "./-components/custom-verification-dialog";
-import { DeleteCustomVerificationDialog } from "./-components/delete-custom-verification-dialog";
 import { MixedVerificationCard } from "./-components/mixed-verification-card";
 import { StartMixedVerificationDialog } from "./-components/start-mixed-verification-dialog";
 import {
@@ -64,18 +70,18 @@ function MixedVerificationSection({
 	templates,
 	isLoading = false,
 	canManageCustom,
+	availabilityCatalog,
 	onStart,
 	onEdit,
-	onDelete,
 }: {
 	title: string;
 	description: string;
 	templates: MixedVerification[];
 	isLoading?: boolean;
 	canManageCustom: boolean;
+	availabilityCatalog?: MixedVerificationAvailabilityCatalog | null;
 	onStart: (template: MixedVerification) => void;
 	onEdit: (template: MixedVerification) => void;
-	onDelete: (template: MixedVerification) => void;
 }) {
 	return (
 		<section className="space-y-4">
@@ -97,9 +103,9 @@ function MixedVerificationSection({
 							key={template.id}
 							template={template}
 							canManageCustom={canManageCustom}
+							availabilityCatalog={availabilityCatalog}
 							onStart={onStart}
 							onEdit={onEdit}
-							onDelete={onDelete}
 						/>
 					))}
 				</div>
@@ -109,6 +115,7 @@ function MixedVerificationSection({
 }
 
 function MixedVerificationsPage() {
+	const queryClient = useQueryClient();
 	const product = getProduct("mixed-verifications");
 	const { tenantId, isTenantAdmin } = useCurrentTenant();
 	const mixedVerificationsQuery = useTenantMixedVerificationsV2Query(
@@ -116,15 +123,16 @@ function MixedVerificationsPage() {
 		MIXED_VERIFICATIONS_LIST_PARAMS,
 		Boolean(tenantId),
 	);
+	const availabilityQuery = useMixedVerificationsAvailabilityV2Query(
+		tenantId,
+		Boolean(tenantId),
+	);
 
 	const [customDialogOpen, setCustomDialogOpen] = useState(false);
 	const [startDialogOpen, setStartDialogOpen] = useState(false);
-	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [editingTemplate, setEditingTemplate] =
 		useState<MixedVerification | null>(null);
 	const [startingTemplate, setStartingTemplate] =
-		useState<MixedVerification | null>(null);
-	const [deletingTemplate, setDeletingTemplate] =
 		useState<MixedVerification | null>(null);
 	const [linkResult, setLinkResult] = useState<HostedLinkResult | null>(null);
 	const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
@@ -134,6 +142,48 @@ function MixedVerificationsPage() {
 		[mixedVerificationsQuery.data?.items],
 	);
 
+	async function refreshAvailabilityForForm(
+		template?: MixedVerification | null,
+	) {
+		if (!tenantId) {
+			return;
+		}
+
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey:
+					VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationsAvailability(tenantId),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.tenantMixedVerifications(
+					tenantId,
+					MIXED_VERIFICATIONS_LIST_PARAMS,
+				),
+			}),
+		]);
+
+		if (!template) {
+			return;
+		}
+
+		const freshList =
+			queryClient.getQueryData<PaginatedMixedVerificationListResult>(
+				VERIFICATIONS_V2_QUERY_KEYS.tenantMixedVerifications(
+					tenantId,
+					MIXED_VERIFICATIONS_LIST_PARAMS,
+				),
+			);
+		const freshTemplate = freshList?.items.find(
+			(item) => item.id === template.id,
+		);
+		if (freshTemplate) {
+			setEditingTemplate(freshTemplate);
+			setStartingTemplate((current) =>
+				current?.id === freshTemplate.id ? freshTemplate : current,
+			);
+		}
+	}
+
 	if (!product) {
 		return null;
 	}
@@ -141,28 +191,26 @@ function MixedVerificationsPage() {
 	function openCreateDialog() {
 		setEditingTemplate(null);
 		setCustomDialogOpen(true);
+		void refreshAvailabilityForForm(null);
 	}
 
 	function openEditDialog(template: MixedVerification) {
 		setEditingTemplate(template);
 		setCustomDialogOpen(true);
+		void refreshAvailabilityForForm(template);
 	}
 
 	function openStartDialog(template: MixedVerification) {
 		setStartingTemplate(template);
 		setStartDialogOpen(true);
-	}
-
-	function openDeleteDialog(template: MixedVerification) {
-		setDeletingTemplate(template);
-		setDeleteDialogOpen(true);
+		void refreshAvailabilityForForm(template);
 	}
 
 	function handleMixedVerificationStarted(
-		verification: VerificationRequest,
+		session: MixedVerificationSession,
 		email: string,
 	) {
-		setLinkResult(buildLinkResult(verification, email));
+		setLinkResult(buildMixedSessionLinkResult(session, email));
 		setIsResultDialogOpen(true);
 	}
 
@@ -226,9 +274,9 @@ function MixedVerificationsPage() {
 						templates={groupedTemplates.platform}
 						isLoading={mixedVerificationsQuery.isPending}
 						canManageCustom={isTenantAdmin}
+						availabilityCatalog={availabilityQuery.data}
 						onStart={openStartDialog}
 						onEdit={openEditDialog}
-						onDelete={openDeleteDialog}
 					/>
 
 					<MixedVerificationSection
@@ -241,9 +289,9 @@ function MixedVerificationsPage() {
 						templates={groupedTemplates.custom}
 						isLoading={mixedVerificationsQuery.isPending}
 						canManageCustom={isTenantAdmin}
+						availabilityCatalog={availabilityQuery.data}
 						onStart={openStartDialog}
 						onEdit={openEditDialog}
-						onDelete={openDeleteDialog}
 					/>
 				</div>
 			)}
@@ -255,12 +303,14 @@ function MixedVerificationsPage() {
 						onOpenChange={setCustomDialogOpen}
 						tenantId={tenantId}
 						template={editingTemplate}
+						availabilityCatalog={availabilityQuery.data}
 					/>
 					<StartMixedVerificationDialog
 						open={startDialogOpen}
 						onOpenChange={setStartDialogOpen}
 						template={startingTemplate}
 						tenantId={tenantId}
+						availabilityCatalog={availabilityQuery.data}
 						onStarted={handleMixedVerificationStarted}
 					/>
 					<VerificationResultDialog
@@ -270,11 +320,6 @@ function MixedVerificationsPage() {
 						verification={null}
 						onStartNew={handleStartNewMixedVerification}
 						description="Your mixed verification request was created successfully."
-					/>
-					<DeleteCustomVerificationDialog
-						open={deleteDialogOpen}
-						template={deletingTemplate}
-						onOpenChange={setDeleteDialogOpen}
 					/>
 				</>
 			)}

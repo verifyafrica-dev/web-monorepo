@@ -26,6 +26,10 @@ export interface V2Pagination {
 
 export interface V2PaginationMeta {
 	pagination: V2Pagination;
+	/** Present on template-scoped verification-batch lists (DB aggregate). */
+	success_rate?: number | null;
+	success_count?: number;
+	total_count?: number;
 }
 
 export type V2PaginatedSuccessResponse<TItem> = V2SuccessResponse<

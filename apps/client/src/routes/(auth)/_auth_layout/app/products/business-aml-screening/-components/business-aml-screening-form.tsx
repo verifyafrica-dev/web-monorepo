@@ -172,7 +172,11 @@ export function BusinessAmlScreeningForm() {
 			}
 
 			const submitted = await submitVerification(
-				buildBusinessAmlScreeningLinkPayload(value, screeningOptions),
+				buildBusinessAmlScreeningLinkPayload(value, {
+					...screeningOptions,
+					biometricSearchImage: null,
+					individualFace: null,
+				}),
 				{
 					mode: "link",
 					email: value.email,
@@ -485,30 +489,34 @@ export function BusinessAmlScreeningForm() {
 						)}
 					</FieldGroup>
 
-					<ProductProofUpload
-						label="Biometric search image (optional)"
-						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
-						proofUrl={biometricUrl}
-						onProofUrlChange={setBiometricUrl}
-						onUploadingChange={setIsBiometricUploading}
-						accept="image/jpeg,image/jpg,image/png"
-						allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
-						maxSize={AML_BIOMETRIC_MAX_BYTES}
-						emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
-						disabled={isSubmitting}
-					/>
-					<ProductProofUpload
-						label="Individual face (optional)"
-						verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
-						proofUrl={individualFaceUrl}
-						onProofUrlChange={setIndividualFaceUrl}
-						onUploadingChange={setIsFaceUploading}
-						accept="image/jpeg,image/jpg,image/png,application/pdf"
-						allowedMimeTypes={AML_INDIVIDUAL_FACE_MIME_TYPES}
-						maxSize={AML_INDIVIDUAL_FACE_MAX_BYTES}
-						emptyStateText="Upload a JPEG, PNG, or PDF up to 16MB"
-						disabled={isSubmitting}
-					/>
+					{mode === "direct" ? (
+						<>
+							<ProductProofUpload
+								label="Biometric search image (optional)"
+								verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
+								proofUrl={biometricUrl}
+								onProofUrlChange={setBiometricUrl}
+								onUploadingChange={setIsBiometricUploading}
+								accept="image/jpeg,image/jpg,image/png"
+								allowedMimeTypes={AML_BIOMETRIC_MIME_TYPES}
+								maxSize={AML_BIOMETRIC_MAX_BYTES}
+								emptyStateText="Upload a JPEG or PNG up to 5MB for biometric matching"
+								disabled={isSubmitting}
+							/>
+							<ProductProofUpload
+								label="Individual face (optional)"
+								verificationName={PRODUCT_UPLOAD_VERIFICATIONS.businessAmlScreening}
+								proofUrl={individualFaceUrl}
+								onProofUrlChange={setIndividualFaceUrl}
+								onUploadingChange={setIsFaceUploading}
+								accept="image/jpeg,image/jpg,image/png,application/pdf"
+								allowedMimeTypes={AML_INDIVIDUAL_FACE_MIME_TYPES}
+								maxSize={AML_INDIVIDUAL_FACE_MAX_BYTES}
+								emptyStateText="Upload a JPEG, PNG, or PDF up to 16MB"
+								disabled={isSubmitting}
+							/>
+						</>
+					) : null}
 
 					<Accordion type="single" collapsible className="rounded-lg border px-4">
 						<AccordionItem value="advanced" className="border-none">

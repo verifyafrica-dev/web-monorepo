@@ -13,6 +13,7 @@ import type {
 	ProductAvailability,
 	ProductAvailabilityUpdatePayload,
 	MixedVerification,
+	MixedVerificationAvailabilityCatalog,
 	MixedVerificationListQuery,
 	MixedVerificationStartPayload,
 	MixedVerificationUpsertPayload,
@@ -53,6 +54,13 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 		params?: MixedVerificationListQuery,
 	) =>
 		["verifications-v2", "mixed", tenantId ?? "global", params ?? {}] as const,
+	mixedVerificationsAvailability: (tenantId?: string) =>
+		[
+			"verifications-v2",
+			"mixed",
+			"availability",
+			tenantId ?? "platform",
+		] as const,
 	mixedVerificationDetail: (id: string) =>
 		["verifications-v2", "mixed", "detail", id] as const,
 	allBatches: (params?: VerificationBatchListQuery) =>
@@ -133,6 +141,19 @@ export const useAllMixedVerificationsV2Query = (
 	useQuery<PaginatedMixedVerificationListResult>({
 		queryKey: VERIFICATIONS_V2_QUERY_KEYS.allMixedVerifications(params),
 		queryFn: () => VERIFICATIONS_V2_API.ALL_MIXED_VERIFICATIONS(params),
+		enabled,
+		staleTime: VERIFICATIONS_V2_STALE_TIME,
+	});
+
+export const useMixedVerificationsAvailabilityV2Query = (
+	tenantId?: string,
+	enabled = true,
+): UseQueryResult<MixedVerificationAvailabilityCatalog> =>
+	useQuery<MixedVerificationAvailabilityCatalog>({
+		queryKey: VERIFICATIONS_V2_QUERY_KEYS.mixedVerificationsAvailability(
+			tenantId,
+		),
+		queryFn: () => VERIFICATIONS_V2_API.MIXED_VERIFICATIONS_AVAILABILITY(tenantId),
 		enabled,
 		staleTime: VERIFICATIONS_V2_STALE_TIME,
 	});
@@ -477,6 +498,9 @@ export const useUpdateCountryAvailabilityV2Mutation = () => {
 				VERIFICATIONS_V2_QUERY_KEYS.countryAvailability,
 				data,
 			);
+			void queryClient.invalidateQueries({
+				queryKey: ["verifications-v2", "mixed", "availability"],
+			});
 		},
 	});
 };
@@ -502,6 +526,12 @@ export const useUpdateProductAvailabilityV2Mutation = () => {
 				VERIFICATIONS_V2_QUERY_KEYS.productAvailability,
 				data,
 			);
+			void queryClient.invalidateQueries({
+				queryKey: ["verifications-v2", "mixed", "availability"],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: ["verifications-v2", "mixed"],
+			});
 		},
 	});
 };

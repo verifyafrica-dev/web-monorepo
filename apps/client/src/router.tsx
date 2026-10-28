@@ -1,9 +1,13 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { configureVerificationLinkMode } from "@verifyafrica/api-client/lib/verification-links";
 
 import { NotFoundPage } from "@verifyafrica/ui/components/ui-extended/not-found-page";
+import { getCurrentApiMode } from "./stores/api-mode-store";
 import { getContext } from "./integrations/tanstack-query/root-provider";
 import { routeTree } from "./routeTree.gen";
+
+configureVerificationLinkMode(() => getCurrentApiMode());
 
 export function getRouter() {
 	const context = getContext();

@@ -155,6 +155,22 @@ export function createNewVerifyIdDocumentFormSchema(
 	});
 }
 
+export interface NewVerifyMixedStep {
+	step_id: string;
+	type: string;
+	order: number;
+	status: string;
+	verification_id: string | null;
+	submitted: boolean;
+}
+
+export interface NewVerifyMixedSessionSummary {
+	session_id: string;
+	status: string;
+	current_step_id: string;
+	steps: NewVerifyMixedStep[];
+}
+
 export interface NewVerifySession {
 	token: string;
 	reference: string;
@@ -181,6 +197,11 @@ export interface NewVerifySession {
 	registry_fields?: NewVerifyRegistryFields;
 	locked_fields?: string[];
 	require_selfie?: boolean;
+	/** Present when this hosted link is a multi-step mixed verification session. */
+	is_mixed?: boolean;
+	mixed_session_id?: string;
+	current_step_id?: string;
+	mixed_session?: NewVerifyMixedSessionSummary;
 }
 
 export type NewVerifyGovernmentRegistrySubmitPayload = Record<string, string>;

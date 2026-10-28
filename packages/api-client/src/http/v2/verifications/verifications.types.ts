@@ -91,6 +91,7 @@ export const VerificationStatusSchema = z.enum([
 	"SUCCESS",
 	"FAILED",
 	"PENDING",
+	"PROCESSING",
 	"ABANDONED",
 	"ERROR",
 	"PARTIAL",
@@ -166,6 +167,8 @@ export const VerificationBatchListQuerySchema = z.object({
 	total_in_page: z.number().int().positive().optional(),
 	status: VerificationStatusSchema.optional(),
 	search: z.string().optional(),
+	/** When set, list only mixed sessions for this mixed verification template. */
+	template_id: z.string().uuid().optional(),
 	tenant_id: z.string().uuid().optional(),
 });
 
@@ -212,29 +215,82 @@ export const MixedVerificationStartSchema = z.object({
 	full_address: z.string().optional(),
 	reference: z.string().optional(),
 	notification_email: z.string().email().optional(),
+	/** Hosted link lifetime in minutes (15, 30, 60, 120, 240, or 1440). */
+	ttl: z.number().int().positive().optional(),
 });
 
 export type MixedVerificationStartPayload = z.infer<
 	typeof MixedVerificationStartSchema
 >;
 
+export const MixedVerificationStepSchema = z.object({
+	type: z.string().min(1),
+	order: z.number().int().positive(),
+	/** Optional per-step merchant config (country, document/address allow-lists, collect, …). */
+	config: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const MixedVerificationStepsSchema = z.object({
+	steps: z.record(z.string().uuid(), MixedVerificationStepSchema),
+});
+
+export type MixedVerificationSteps = z.infer<typeof MixedVerificationStepsSchema>;
+
 export const MixedVerificationUpsertSchema = z.object({
 	name: z.string().min(1),
 	description: z.string().optional(),
-	verifications: z.array(z.string()).min(1),
+	/** @deprecated Prefer ``steps``; still accepted by the API. */
+	verifications: z.array(z.string()).min(1).optional(),
+	steps: MixedVerificationStepsSchema.optional(),
 	price: z.string().optional(),
 	is_active: z.boolean().optional(),
 	is_custom: z.boolean().optional(),
-	journey_id: z.string().optional(),
+	journey_id: z.string().optional().nullable(),
 });
 
 export type MixedVerificationUpsertPayload = z.infer<
 	typeof MixedVerificationUpsertSchema
 >;
 
+export interface MixedVerificationSessionStep {
+	step_id: string;
+	type: string;
+	order: number;
+	status: VerificationStatus | string;
+	verification_id: string | null;
+	submitted: boolean;
+}
+
+export interface MixedVerificationSession {
+	session_id: string;
+	status: VerificationStatus | string;
+	email: string;
+	reference: string;
+	current_step_id: string;
+	steps: MixedVerificationSessionStep[];
+	link: string | null;
+	verification_url: string | null;
+	ttl_minutes?: number | null;
+	expires_at?: string | null;
+	template_id: string | null;
+	metadata: Record<string, unknown>;
+	created_at: string | null;
+	updated_at: string | null;
+	completed_at: string | null;
+}
+
 export interface VerificationRequestDetail extends VerificationRequest {
 	proofs_available: boolean;
 	proofs: VerificationProofs;
+}
+
+export interface VerificationBatchStepSummary {
+	step_id: string;
+	type: string;
+	order: number;
+	status: string;
+	verification_id: string | null;
+	submitted: boolean;
 }
 
 export interface VerificationBatch {
@@ -245,8 +301,17 @@ export interface VerificationBatch {
 	success_count: number;
 	failed_count: number;
 	inactive_count: number;
+	kind?: "bulk" | "mixed" | string;
+	email?: string;
+	name?: string;
+	reference?: string;
+	template_id?: string | null;
+	template_is_custom?: boolean;
+	verification_url?: string | null;
+	steps?: VerificationBatchStepSummary[];
 	created_at: string;
 	updated_at: string;
+	completed_at?: string | null;
 }
 
 export interface VerificationTypeDefinition {
@@ -255,20 +320,128 @@ export interface VerificationTypeDefinition {
 	validation_parameters: string[];
 }
 
+export interface MixedVerificationAvailabilityReason {
+	code: string;
+	message: string;
+	verification_type: string;
+	product?: string;
+	product_label?: string;
+	country?: string;
+}
+
+export interface MixedVerificationStepAvailability {
+	available: boolean;
+	reasons: MixedVerificationAvailabilityReason[];
+}
+
+export interface MixedVerificationAvailabilityCatalog {
+	mixed_product: {
+		product: string;
+		available: boolean;
+		reasons: MixedVerificationAvailabilityReason[];
+	};
+	types: Record<string, MixedVerificationStepAvailability>;
+	unavailable: Array<{
+		verification_type: string;
+		product?: string | null;
+		reasons: MixedVerificationAvailabilityReason[];
+	}>;
+	products: Record<string, string[]>;
+}
+
 export interface MixedVerification {
 	id: string;
 	tenant: string | null;
 	name: string;
 	description: string;
 	verifications: string[];
+	steps?: MixedVerificationSteps | Record<string, unknown>;
 	price: string | null;
 	calculated_price: string | null;
+	available?: boolean;
+	availability_reasons?: MixedVerificationAvailabilityReason[];
 	is_active: boolean;
 	is_custom: boolean;
 	journey_id: string | null;
+	legacy_unsupported?: boolean;
 	deleted_at: string | null;
 	created_at: string;
 	updated_at: string;
+}
+
+/**
+ * Merge list/detail `available` with the pre-create catalog so platform
+ * (global / variant) disables still badge templates when the list payload is
+ * stale or evaluated without a tenant.
+ */
+export function isMixedStepUnavailable(
+	verificationType: string,
+	template?: Pick<MixedVerification, "availability_reasons"> | null,
+	catalog?: MixedVerificationAvailabilityCatalog | null,
+): boolean {
+	if (
+		(template?.availability_reasons ?? []).some(
+			(reason) => reason.verification_type === verificationType,
+		)
+	) {
+		return true;
+	}
+	return catalog?.types?.[verificationType]?.available === false;
+}
+
+export function resolveMixedTemplateAvailability(
+	template: Pick<
+		MixedVerification,
+		"available" | "availability_reasons" | "verifications"
+	>,
+	catalog?: MixedVerificationAvailabilityCatalog | null,
+): {
+	available: boolean;
+	reasons: MixedVerificationAvailabilityReason[];
+} {
+	const reasons: MixedVerificationAvailabilityReason[] = [
+		...(template.availability_reasons ?? []),
+	];
+	const seen = new Set(
+		reasons.map(
+			(reason) =>
+				`${reason.code}:${reason.verification_type}:${reason.country ?? ""}`,
+		),
+	);
+
+	const pushReason = (reason: MixedVerificationAvailabilityReason) => {
+		const key = `${reason.code}:${reason.verification_type}:${reason.country ?? ""}`;
+		if (seen.has(key)) {
+			return;
+		}
+		seen.add(key);
+		reasons.push(reason);
+	};
+
+	if (catalog?.mixed_product?.available === false) {
+		for (const reason of catalog.mixed_product.reasons ?? []) {
+			pushReason(reason);
+		}
+	}
+
+	for (const verificationType of template.verifications ?? []) {
+		const step = catalog?.types?.[verificationType];
+		if (step?.available === false) {
+			for (const reason of step.reasons ?? []) {
+				pushReason(reason);
+			}
+		}
+	}
+
+	const available =
+		template.available !== false &&
+		catalog?.mixed_product?.available !== false &&
+		!(template.verifications ?? []).some(
+			(verificationType) =>
+				catalog?.types?.[verificationType]?.available === false,
+		);
+
+	return { available, reasons };
 }
 
 export interface VerificationPrice {
@@ -403,6 +576,8 @@ export interface DocumentVerificationInputDocument {
 	dob?: string;
 	age?: number | string;
 	gender?: string;
+	/** Empty / omitted means all Shufti ID document types are allowed. */
+	supported_types?: string[];
 }
 
 export interface DocumentVerificationInputData extends VerificationInputDataBase {

@@ -81,9 +81,11 @@ export type UserActivateAccountSearch = z.infer<
 >;
 
 export const AcceptInvitationSearchSchema = z.object({
-	email: z.email({ message: "Invalid email address" }),
 	token: z.uuid({ message: "Invalid invitation token" }),
-	tenant: z.uuid({ message: "Invalid tenant id" }),
+	/** @deprecated Legacy invite links only; V2 emails send token alone. */
+	email: z.email({ message: "Invalid email address" }).optional(),
+	/** @deprecated Legacy invite links only; V2 emails send token alone. */
+	tenant: z.uuid({ message: "Invalid tenant id" }).optional(),
 });
 
 export type AcceptInvitationSearch = z.infer<typeof AcceptInvitationSearchSchema>;

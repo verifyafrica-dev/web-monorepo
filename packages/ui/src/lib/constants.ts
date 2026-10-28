@@ -322,6 +322,23 @@ export const SHUFTI_CHOICES = {
 	ANY: "any",
 };
 
+export const SHUFTI_DOCUMENT_SUPPORTED_TYPES = [
+	"id_card",
+	"passport",
+	"driving_license",
+] as const;
+
+export type ShuftiDocumentSupportedType =
+	(typeof SHUFTI_DOCUMENT_SUPPORTED_TYPES)[number];
+
+export function formatShuftiDocumentTypeLabel(value: string) {
+	return value
+		.split("_")
+		.filter(Boolean)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ");
+}
+
 export const SHUFTI_ADDRESS_RECOMMENDED_SUPPORTED_TYPES = [
 	"utility_bill",
 	"bank_statement",

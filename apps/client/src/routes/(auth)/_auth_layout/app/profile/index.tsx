@@ -44,6 +44,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import {
 	getProfileInitials,
 	mergeProfileSearchParams,
@@ -70,9 +71,15 @@ function ProfilePage() {
 	const meQuery = useMeV2Query();
 	const user = meQuery.data;
 	const isLoading = meQuery.isPending || meQuery.isFetching;
-	const activeTab = urlSearch.tab ?? "profile";
+	const apiMode = useApiModeStore((state) => state.mode);
+	const passwordChangeAllowed = apiMode !== "test";
+	const activeTab =
+		!passwordChangeAllowed && urlSearch.tab === "password"
+			? "profile"
+			: (urlSearch.tab ?? "profile");
 
 	function handleTabChange(value: string) {
+		if (!passwordChangeAllowed && value === "password") return;
 		void navigate({
 			search: (current) =>
 				mergeProfileSearchParams(current, {
@@ -99,7 +106,9 @@ function ProfilePage() {
 					Profile Settings
 				</CardTitle>
 				<CardDescription>
-					Manage your personal information and security
+					{passwordChangeAllowed
+						? "Manage your personal information and security"
+						: "Manage your personal information. Switch to Live mode to change your password."}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -116,18 +125,22 @@ function ProfilePage() {
 								<UserIcon />
 								Update Profile
 							</TabsTrigger>
-							<TabsTrigger value="password">
-								<ShieldCheckIcon />
-								Change Password
-							</TabsTrigger>
+							{passwordChangeAllowed ? (
+								<TabsTrigger value="password">
+									<ShieldCheckIcon />
+									Change Password
+								</TabsTrigger>
+							) : null}
 						</TabsList>
 
 						<TabsContent value="profile">
 							<UpdateProfileTab key={user.id} user={user} />
 						</TabsContent>
-						<TabsContent value="password">
-							<ChangePasswordTab />
-						</TabsContent>
+						{passwordChangeAllowed ? (
+							<TabsContent value="password">
+								<ChangePasswordTab />
+							</TabsContent>
+						) : null}
 					</Tabs>
 				)}
 			</CardContent>

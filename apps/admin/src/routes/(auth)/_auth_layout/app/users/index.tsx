@@ -52,6 +52,7 @@ import { getUserInitials } from "#/lib/user.ts";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { env } from "#/config/env";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import { useAuthStore } from "#/stores/auth-store";
 import { getTenantAvatarColor } from "../tenants/-data";
 import { CreateTestAccountDialog } from "./-components/create-test-account-dialog";
@@ -119,6 +120,9 @@ function getUserTableHeadClassName(index: number, total: number) {
 function UsersPage() {
 	const navigate = useNavigate();
 	const currentUserId = useAuthStore((state) => state.user?.id);
+	const apiMode = useApiModeStore((state) => state.mode);
+	const canCreateTestAccount =
+		apiMode === "test" || env.deployEnvironment === "test";
 
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -247,7 +251,7 @@ function UsersPage() {
 						/>
 						Refresh
 					</Button>
-					{env.isTestAccountCreationEnabled ? (
+					{canCreateTestAccount ? (
 						<Button onClick={() => setCreateTestAccountOpen(true)}>
 							<UserPlusIcon weight="bold" />
 							Create Test Account
@@ -462,7 +466,7 @@ function UsersPage() {
 				onSuccess={() => void usersQuery.refetch()}
 			/>
 
-			{env.isTestAccountCreationEnabled ? (
+			{canCreateTestAccount ? (
 				<CreateTestAccountDialog
 					open={createTestAccountOpen}
 					onOpenChange={setCreateTestAccountOpen}

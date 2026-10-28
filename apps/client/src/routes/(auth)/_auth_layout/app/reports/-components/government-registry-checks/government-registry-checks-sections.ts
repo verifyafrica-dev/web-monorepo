@@ -203,7 +203,7 @@ function parseValidation(data: UnknownRecord) {
 		const confidence = Number(selfie.confidence_rating);
 		faceMatch = {
 			key: "selfie",
-			label: "Face Match",
+			label: "Facial Screening",
 			submitted: null,
 			match: selfie.match,
 			confidence: Number.isFinite(confidence) ? confidence : undefined,

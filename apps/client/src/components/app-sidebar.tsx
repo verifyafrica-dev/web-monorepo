@@ -52,6 +52,8 @@ import {
 	useCurrentTenant,
 } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { toast } from "sonner";
+import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
+import { useApiModeStore } from "#/stores/api-mode-store";
 
 const teamSubItems = [
 	{ title: "Active Users", to: "/app/team/active-users" },
@@ -359,6 +361,11 @@ function OrganizationSwitcher() {
 }
 
 export function AppSidebar() {
+	const mode = useApiModeStore((state) => state.mode);
+	const visibleNavItems = navItems.filter((item) =>
+		mode === "test" ? item.to !== "/app/kyc" : true,
+	);
+
 	return (
 		<Sidebar collapsible="icon">
 			<SidebarHeader className="gap-0 border-b border-sidebar-border p-0">
@@ -389,7 +396,7 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{navItems.map((item) => (
+							{visibleNavItems.map((item) => (
 								<SidebarNavItem
 									key={item.to}
 									item={item}
@@ -400,7 +407,9 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter></SidebarFooter>
+			<SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:p-1">
+				<EnvironmentModeSwitcher />
+			</SidebarFooter>
 		</Sidebar>
 	);
 }

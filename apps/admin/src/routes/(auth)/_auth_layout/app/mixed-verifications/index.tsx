@@ -2,17 +2,26 @@ import {
 	PencilSimpleIcon,
 	PlusIcon,
 	PowerIcon,
-	TrashIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
 	useAllMixedVerificationsV2Query,
+	useMixedVerificationsAvailabilityV2Query,
 	useUpdateMixedVerificationV2Mutation,
+	VERIFICATIONS_V2_QUERY_KEYS,
 } from "#/api/http/v2/verifications/verifications.hooks";
-import type { MixedVerification } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import type {
+	MixedVerification,
+	PaginatedMixedVerificationListResult,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import {
+	isMixedStepUnavailable,
+	resolveMixedTemplateAvailability,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -32,7 +41,6 @@ import {
 } from "@verifyafrica/ui/components/ui/tooltip";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
-import { DeleteMixedVerificationDialog } from "./-components/delete-mixed-verification-dialog";
 import { MixedVerificationFormDialog } from "./-components/mixed-verification-form-dialog";
 import {
 	formatMixedVerificationPrice,
@@ -53,31 +61,64 @@ export const Route = createFileRoute(
 });
 
 function MixedVerificationsPage() {
+	const queryClient = useQueryClient();
 	const [formOpen, setFormOpen] = useState(false);
 	const [editingTemplate, setEditingTemplate] =
 		useState<MixedVerification | null>(null);
-	const [templateToDelete, setTemplateToDelete] =
-		useState<MixedVerification | null>(null);
 
-	const templatesQuery = useAllMixedVerificationsV2Query({
-		per_page: 500,
-		is_custom: false,
-	});
+	const listParams = useMemo(
+		() => ({
+			per_page: 500,
+			is_custom: false as const,
+		}),
+		[],
+	);
+	const templatesQuery = useAllMixedVerificationsV2Query(listParams);
+	const availabilityQuery = useMixedVerificationsAvailabilityV2Query();
 	const updateTemplateMutation = useUpdateMixedVerificationV2Mutation();
+	const availabilityCatalog = availabilityQuery.data;
 
 	const templates = useMemo(
 		() => templatesQuery.data?.items ?? [],
 		[templatesQuery.data?.items],
 	);
 
+	const refreshAvailabilityForForm = async (
+		template?: MixedVerification | null,
+	) => {
+		await queryClient.invalidateQueries({
+			queryKey: ["verifications-v2", "mixed", "availability"],
+		});
+		await queryClient.invalidateQueries({
+			queryKey: VERIFICATIONS_V2_QUERY_KEYS.allMixedVerifications(listParams),
+		});
+
+		if (!template) {
+			return;
+		}
+
+		const freshList =
+			queryClient.getQueryData<PaginatedMixedVerificationListResult>(
+				VERIFICATIONS_V2_QUERY_KEYS.allMixedVerifications(listParams),
+			);
+		const freshTemplate = freshList?.items.find(
+			(item) => item.id === template.id,
+		);
+		if (freshTemplate) {
+			setEditingTemplate(freshTemplate);
+		}
+	};
+
 	const handleOpenCreate = () => {
 		setEditingTemplate(null);
 		setFormOpen(true);
+		void refreshAvailabilityForForm(null);
 	};
 
 	const handleOpenEdit = (template: MixedVerification) => {
 		setEditingTemplate(template);
 		setFormOpen(true);
+		void refreshAvailabilityForForm(template);
 	};
 
 	const handleToggleActive = async (template: MixedVerification) => {
@@ -145,9 +186,6 @@ function MixedVerificationsPage() {
 											Included Verifications
 										</TableHead>
 										<TableHead className="text-xs font-medium tracking-wide uppercase">
-											Journey ID
-										</TableHead>
-										<TableHead className="text-xs font-medium tracking-wide uppercase">
 											Price
 										</TableHead>
 										<TableHead className="text-xs font-medium tracking-wide uppercase">
@@ -186,33 +224,56 @@ function MixedVerificationsPage() {
 											</TableCell>
 											<TableCell>
 												<div className="flex max-w-md flex-wrap gap-1.5">
-													{template.verifications.map((verificationType) => (
-														<Badge
-															key={verificationType}
-															className="font-normal"
-														>
-															{formatMixedVerificationType(verificationType)}
-														</Badge>
-													))}
+													{template.verifications.map((verificationType) => {
+														const stepUnavailable = isMixedStepUnavailable(
+															verificationType,
+															template,
+															availabilityCatalog,
+														);
+														return (
+															<Badge
+																key={verificationType}
+																className={cn(
+																	"font-normal",
+																	stepUnavailable &&
+																		"border-amber-300 bg-amber-50 text-amber-800",
+																)}
+																variant={stepUnavailable ? "outline" : "default"}
+															>
+																{formatMixedVerificationType(verificationType)}
+																{stepUnavailable ? " · Unavailable" : ""}
+															</Badge>
+														);
+													})}
 												</div>
-											</TableCell>
-											<TableCell className="whitespace-nowrap font-mono text-sm">
-												{template.journey_id || "—"}
 											</TableCell>
 											<TableCell className="whitespace-nowrap tabular-nums">
 												{formatMixedVerificationPrice(template.price)}
 											</TableCell>
 											<TableCell>
-												<Badge
-													variant="outline"
-													className={cn(
-														getMixedVerificationStatusBadgeClass(
-															template.is_active,
-														),
-													)}
-												>
-													{template.is_active ? "Active" : "Disabled"}
-												</Badge>
+												<div className="flex flex-wrap gap-1.5">
+													<Badge
+														variant="outline"
+														className={cn(
+															getMixedVerificationStatusBadgeClass(
+																template.is_active,
+															),
+														)}
+													>
+														{template.is_active ? "Active" : "Disabled"}
+													</Badge>
+													{!resolveMixedTemplateAvailability(
+														template,
+														availabilityCatalog,
+													).available ? (
+														<Badge
+															variant="outline"
+															className="border-amber-300 bg-amber-50 text-amber-800"
+														>
+															Unavailable
+														</Badge>
+													) : null}
+												</div>
 											</TableCell>
 											<TableCell className="text-right">
 												<div className="flex items-center justify-end gap-1">
@@ -253,23 +314,6 @@ function MixedVerificationsPage() {
 																: "Enable template"}
 														</TooltipContent>
 													</Tooltip>
-													<Tooltip>
-														<TooltipTrigger asChild>
-															<span className="inline-flex">
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																	className="text-destructive hover:text-destructive"
-																	onClick={() => setTemplateToDelete(template)}
-																>
-																	<TrashIcon className="size-4" />
-																</Button>
-															</span>
-														</TooltipTrigger>
-														<TooltipContent side="top">
-															Delete template
-														</TooltipContent>
-													</Tooltip>
 												</div>
 											</TableCell>
 										</TableRow>
@@ -284,23 +328,12 @@ function MixedVerificationsPage() {
 			<MixedVerificationFormDialog
 				open={formOpen}
 				template={editingTemplate}
+				availabilityCatalog={availabilityCatalog}
 				onOpenChange={(nextOpen) => {
 					setFormOpen(nextOpen);
 				}}
 			/>
 
-			<DeleteMixedVerificationDialog
-				open={Boolean(templateToDelete)}
-				template={templateToDelete}
-				onOpenChange={(nextOpen) => {
-					if (!nextOpen) {
-						setTemplateToDelete(null);
-					}
-				}}
-				onSuccess={() => {
-					setTemplateToDelete(null);
-				}}
-			/>
 		</div>
 	);
 }

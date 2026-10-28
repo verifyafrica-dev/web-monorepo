@@ -10,10 +10,19 @@ export const AUTH_APP_HEADER = "X-Auth-App";
 const REFRESH_TOKEN_ENDPOINT = "/v2/users/refresh-token/";
 
 export type CreateHttpClientOptions = {
-	baseURL: string;
+	/** Static base URL (legacy). Prefer `getBaseURL` when Live/Test switching is enabled. */
+	baseURL?: string;
+	getBaseURL?: () => string;
 	isDevelopment: boolean;
 	authApp: string;
-	getTokenPrefix: (host: string) => string;
+	/** Host-derived cookie prefix for Live access tokens (legacy helper). */
+	getTokenPrefix?: (host: string) => string;
+	getAccessToken?: () => string;
+	setAccessToken?: (accessToken: string) => void;
+	/** Custom refresh / re-mint. Defaults to cookie refresh against the Live/base API. */
+	refreshAccessToken?: () => Promise<string>;
+	/** Base URL used for the default refresh-token call (Live API). */
+	getRefreshBaseURL?: () => string;
 	publicRouteFragments: string[];
 	isPublicRoute?: (url: string) => boolean;
 	onLogout: () => void;
@@ -21,14 +30,32 @@ export type CreateHttpClientOptions = {
 
 export function createHttpClient(options: CreateHttpClientOptions) {
 	const isBrowser = typeof window !== "undefined";
+	const resolveBaseURL = () =>
+		options.getBaseURL?.() ?? options.baseURL ?? "";
+	const resolveRefreshBaseURL = () =>
+		options.getRefreshBaseURL?.() ?? resolveBaseURL();
+
 	const getAccessTokenKey = () =>
-		`${options.getTokenPrefix(isBrowser ? window.location.host : "")}accessToken`;
+		`${options.getTokenPrefix?.(isBrowser ? window.location.host : "") ?? ""}accessToken`;
+
 	const expiresDays = options.isDevelopment ? 1 : 5 / 60 / 24;
 
-	const getAccessToken = () => (isBrowser ? getCookie(getAccessTokenKey()) ?? "" : "");
-	const setAccessToken = (accessToken: string) => {
+	const defaultGetAccessToken = () =>
+		isBrowser ? (getCookie(getAccessTokenKey()) ?? "") : "";
+	const defaultSetAccessToken = (accessToken: string) => {
 		if (isBrowser) setCookie(getAccessTokenKey(), accessToken, expiresDays);
 	};
+
+	const getAccessToken = () =>
+		options.getAccessToken?.() ?? defaultGetAccessToken();
+	const setAccessToken = (accessToken: string) => {
+		if (options.setAccessToken) {
+			options.setAccessToken(accessToken);
+			return;
+		}
+		defaultSetAccessToken(accessToken);
+	};
+
 	const setTokens = (
 		accessToken: string,
 		_refreshToken?: string,
@@ -41,25 +68,29 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 		options.onLogout();
 	};
 
+	const defaultRefreshAccessToken = async () => {
+		const response = await axios.post<V2SuccessResponse<{ access_token: string }>>(
+			`${resolveRefreshBaseURL()}${REFRESH_TOKEN_ENDPOINT}`,
+			undefined,
+			{ withCredentials: true, headers: { [AUTH_APP_HEADER]: options.authApp } },
+		);
+		return response.data.data.access_token;
+	};
+
+	const refreshAccessToken =
+		options.refreshAccessToken ?? defaultRefreshAccessToken;
+
 	const http = axios.create({
-		baseURL: options.baseURL,
+		baseURL: resolveBaseURL(),
 		timeout: 30000,
 		headers: { "Content-Type": "application/json", [AUTH_APP_HEADER]: options.authApp },
 		withCredentials: true,
 	});
 
 	const isPublicRoute = (url: string) =>
-		options.isPublicRoute?.(url) || options.publicRouteFragments.some((route) => url.includes(route));
+		options.isPublicRoute?.(url) ||
+		options.publicRouteFragments.some((route) => url.includes(route));
 	const shouldUseAccessToken = (url: string) => !isPublicRoute(url);
-
-	const refreshAccessToken = async () => {
-		const response = await axios.post<V2SuccessResponse<{ access_token: string }>>(
-			`${options.baseURL}${REFRESH_TOKEN_ENDPOINT}`,
-			undefined,
-			{ withCredentials: true, headers: { [AUTH_APP_HEADER]: options.authApp } },
-		);
-		return response.data.data.access_token;
-	};
 
 	let isRefreshing = false;
 	let failedRequestsQueue: Array<{
@@ -69,6 +100,7 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 	}> = [];
 
 	http.interceptors.request.use(async (config) => {
+		config.baseURL = resolveBaseURL();
 		const accessToken = getAccessToken();
 		if (accessToken && shouldUseAccessToken(config.url ?? "")) {
 			config.headers.Authorization = `Bearer ${accessToken}`;
@@ -84,7 +116,12 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 				error?.response?.status === StatusCodes.UNAUTHORIZED ||
 				error?.response?.data?.code === "token_not_valid";
 
-			if (tokenExpired && originalRequest && !originalRequest._retry && shouldUseAccessToken(originalRequest.url ?? "")) {
+			if (
+				tokenExpired &&
+				originalRequest &&
+				!originalRequest._retry &&
+				shouldUseAccessToken(originalRequest.url ?? "")
+			) {
 				originalRequest._retry = true;
 				if (!isRefreshing) {
 					isRefreshing = true;
@@ -92,18 +129,28 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 						const accessToken = await refreshAccessToken();
 						setAccessToken(accessToken);
 						isRefreshing = false;
-						failedRequestsQueue.forEach((request) => request.resolve(http(request.config)));
+						failedRequestsQueue.forEach((request) =>
+							request.resolve(http(request.config)),
+						);
 						failedRequestsQueue = [];
 						return http(originalRequest);
 					} catch (refreshError) {
 						isRefreshing = false;
+						failedRequestsQueue.forEach((request) =>
+							request.reject(refreshError),
+						);
+						failedRequestsQueue = [];
 						clearTokensAndLogout();
 						return Promise.reject(refreshError);
 					}
 				}
 
 				return new Promise((resolve, reject) => {
-					failedRequestsQueue.push({ resolve, reject, config: originalRequest });
+					failedRequestsQueue.push({
+						resolve,
+						reject,
+						config: originalRequest,
+					});
 				});
 			}
 
@@ -112,5 +159,5 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 	);
 
 	configureHttpClient(http);
-	return { http, getAccessTokenKey, setAccessToken, setTokens };
+	return { http, getAccessTokenKey, setAccessToken, setTokens, getAccessToken };
 }

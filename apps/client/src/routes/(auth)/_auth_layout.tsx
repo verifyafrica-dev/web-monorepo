@@ -12,6 +12,7 @@ import {
 	useUserV2LogoutMutation,
 } from "#/api/http/v2/users/users.hooks";
 import { AppSidebar } from "#/components/app-sidebar";
+import { TestModeBanner } from "#/components/environment-mode-switcher";
 import { NoOrganizationState } from "#/components/no-organization-state";
 import { RequiredPasswordChange } from "#/components/required-password-change";
 import {
@@ -122,6 +123,7 @@ function AuthLayout() {
 		<SidebarProvider>
 			<AppSidebar />
 			<SidebarInset className="min-w-0">
+				<TestModeBanner />
 				<header className="flex min-h-14 items-center gap-2 border-b px-4 justify-between">
 					<SidebarTrigger />
 					<Popover>

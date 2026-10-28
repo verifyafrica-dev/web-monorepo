@@ -1,9 +1,13 @@
 import { EyeIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useTenantVerificationBatchesV2Query } from "#/api/http/v2/verifications/verifications.hooks";
+import { useTenantMixedVerificationsV2Query } from "#/api/http/v2/verifications/verifications.hooks";
+import type {
+	MixedVerification,
+	MixedVerificationSteps,
+} from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import { TablePagination } from "@verifyafrica/ui/components/ui-extended/table-pagination";
+import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Table,
@@ -13,43 +17,17 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
-import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { cn } from "@verifyafrica/ui/lib/utils";
-import {
-	type BatchVerificationReport,
-	formatReportDate,
-	mapVerificationBatchesToReports,
-	REPORTS_PAGE_SIZE,
-} from "../-data";
-import {
-	buildReportsListQuery,
-	getBatchFiltersFromSearch,
-	REPORTS_VERIFICATION_STATUSES,
-	type ReportsFiltersFormValues,
-	type ReportsSearchParams,
-} from "../-filter-utils";
+import { formatReportDate, REPORTS_PAGE_SIZE } from "../-data";
+import type { ReportsSearchParams } from "../-filter-utils";
 import { ClickableTableRow } from "./clickable-table-row";
-import { ReportsFiltersForm } from "./reports-filters-form";
 import { ReportsTableShell } from "./reports-table-shell";
 import {
 	ReportsPaginationSkeleton,
 	ReportsTableSkeleton,
 } from "./reports-table-skeleton";
-import {
-	BatchCountBadge,
-	VerificationStatusBadge,
-} from "./verification-badges";
 
-const COLUMNS = [
-	"Batch ID",
-	"Status",
-	"Total Count",
-	"Success",
-	"Failed",
-	"Success Rate",
-	"Created At",
-	"Actions",
-];
+const COLUMNS = ["ID", "Name", "Status", "Steps", "Created At", "Actions"];
 
 type BatchVerificationsTabProps = {
 	tenantId: string;
@@ -63,100 +41,30 @@ export function BatchVerificationsTab({
 	updateSearchParams,
 }: BatchVerificationsTabProps) {
 	const page = searchParams.batch_page ?? 1;
-	const [searchDraft, setSearchDraft] = useState(
-		searchParams.batch_search ?? "",
-	);
-	const debouncedSearch = useDebouncedValue(searchDraft);
 
-	useEffect(() => {
-		setSearchDraft(searchParams.batch_search ?? "");
-	}, [searchParams.batch_search]);
-
-	useEffect(() => {
-		const nextSearch = debouncedSearch.trim();
-		const currentSearch = (searchParams.batch_search ?? "").trim();
-
-		if (nextSearch === currentSearch) {
-			return;
-		}
-
-		updateSearchParams({
-			batch_search: nextSearch || undefined,
-			batch_page: undefined,
-		});
-	}, [debouncedSearch, searchParams.batch_search, updateSearchParams]);
-
-	const filters = useMemo(
-		() => getBatchFiltersFromSearch(searchParams, searchDraft),
-		[searchParams, searchDraft],
-	);
-
-	const queryFilters = useMemo(
-		() => ({
-			...filters,
-			search: debouncedSearch,
-		}),
-		[filters, debouncedSearch],
-	);
-
-	const queryParams = useMemo(
-		() =>
-			buildReportsListQuery(queryFilters, {
-				page,
-				perPage: REPORTS_PAGE_SIZE,
-				scope: "batches",
-			}),
-		[queryFilters, page],
-	);
-
-	const verificationBatchesQuery = useTenantVerificationBatchesV2Query(
+	const templatesQuery = useTenantMixedVerificationsV2Query(
 		tenantId,
-		queryParams,
+		{
+			page,
+			per_page: REPORTS_PAGE_SIZE,
+			is_custom: true,
+		},
 		Boolean(tenantId),
 	);
 
-	const batchVerifications = useMemo(
-		() =>
-			mapVerificationBatchesToReports(
-				verificationBatchesQuery.data?.items ?? [],
-			),
-		[verificationBatchesQuery.data?.items],
-	);
-
-	const total = verificationBatchesQuery.data?.meta.pagination.total ?? 0;
-
-	const handleFiltersChange = useCallback(
-		(values: ReportsFiltersFormValues) => {
-			setSearchDraft(values.search);
-			updateSearchParams({
-				tab: "batch",
-				status: values.status === "all" ? undefined : values.status,
-				batch_page: undefined,
-			});
-		},
-		[updateSearchParams],
-	);
+	const templates = templatesQuery.data?.items ?? [];
+	const total = templatesQuery.data?.meta.pagination.total ?? 0;
 
 	return (
 		<div className="flex min-w-0 flex-col gap-6">
-			<ReportsFiltersForm
-				scope="batches"
-				values={filters}
-				statuses={REPORTS_VERIFICATION_STATUSES}
-				totalCount={total}
-				filteredCount={total}
-				disabled={verificationBatchesQuery.isPending}
-				onChange={handleFiltersChange}
-			/>
-
-			{verificationBatchesQuery.isPending ? (
+			{templatesQuery.isPending ? (
 				<>
 					<ReportsTableSkeleton columns={COLUMNS} />
 					<ReportsPaginationSkeleton />
 				</>
-			) : verificationBatchesQuery.isError ? (
+			) : templatesQuery.isError ? (
 				<div className="flex min-h-[320px] items-center justify-center px-6 text-sm text-muted-foreground">
-					Failed to load batch verifications. Please try again.
+					Failed to load custom verifications. Please try again.
 				</div>
 			) : (
 				<>
@@ -180,22 +88,20 @@ export function BatchVerificationsTab({
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{batchVerifications.length === 0 ? (
+								{templates.length === 0 ? (
 									<TableRow>
 										<TableCell
 											colSpan={COLUMNS.length}
 											className="h-24 text-center text-sm text-muted-foreground"
 										>
-											{total === 0
-												? "No batch verifications found."
-												: "No batch verifications match your search or filters."}
+											No custom verifications found.
 										</TableCell>
 									</TableRow>
 								) : (
-									batchVerifications.map((batch) => (
-										<BatchVerificationRow
-											key={batch.id}
-											batch={batch}
+									templates.map((template) => (
+										<CustomVerificationRow
+											key={template.id}
+											template={template}
 										/>
 									))
 								)}
@@ -216,63 +122,47 @@ export function BatchVerificationsTab({
 	);
 }
 
-function BatchVerificationRow({ batch }: { batch: BatchVerificationReport }) {
-	const successRate =
-		batch.total_count > 0
-			? ((batch.success_count / batch.total_count) * 100).toFixed(1)
-			: "0";
+function CustomVerificationRow({ template }: { template: MixedVerification }) {
+	const stepsPayload = template.steps as MixedVerificationSteps | undefined;
+	const stepsMap = stepsPayload?.steps;
+	const stepCount =
+		stepsMap && typeof stepsMap === "object"
+			? Object.keys(stepsMap).length
+			: Array.isArray(template.verifications)
+				? template.verifications.length
+				: 0;
 
 	return (
-		<ClickableTableRow href={`/app/reports/batch/${batch.id}`}>
+		<ClickableTableRow href={`/app/reports/custom/${template.id}`}>
 			<TableCell className="pl-4 font-mono text-xs sm:pl-6">
 				<Link
-					to="/app/reports/batch/$batchId"
-					params={{ batchId: batch.id }}
-					className="block truncate max-w-[15ch] hover:underline"
+					to="/app/reports/custom/$templateId"
+					params={{ templateId: template.id }}
+					className="block max-w-[15ch] truncate hover:underline"
 				>
-					{batch.id}
+					{template.id}
 				</Link>
 			</TableCell>
 			<TableCell>
-				<VerificationStatusBadge status={batch.status} />
-			</TableCell>
-			<TableCell className="text-sm font-medium tabular-nums">
-				{batch.total_count}
-			</TableCell>
-			<TableCell>
-				<BatchCountBadge
-					count={batch.success_count}
-					variant="success"
-				/>
-			</TableCell>
-			<TableCell>
-				<BatchCountBadge
-					count={batch.failed_count}
-					variant="error"
-				/>
-			</TableCell>
-			<TableCell>
-				<div className="flex items-center gap-2 whitespace-nowrap">
-					<span className="text-sm font-medium tabular-nums">
-						{successRate}%
-					</span>
-					<div className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
-						<div
-							className={cn(
-								"h-full rounded-full",
-								Number(successRate) >= 80
-									? "bg-emerald-500"
-									: Number(successRate) >= 50
-										? "bg-amber-500"
-										: "bg-red-500",
-							)}
-							style={{ width: `${successRate}%` }}
-						/>
-					</div>
+				<div className="min-w-0 space-y-0.5">
+					<p className="truncate text-sm font-medium">{template.name}</p>
+					{template.description?.trim() ? (
+						<p className="max-w-[36ch] truncate text-xs text-muted-foreground">
+							{template.description}
+						</p>
+					) : null}
 				</div>
 			</TableCell>
+			<TableCell>
+				<Badge variant={template.is_active ? "default" : "outline"}>
+					{template.is_active ? "Active" : "Inactive"}
+				</Badge>
+			</TableCell>
+			<TableCell className="text-sm font-medium tabular-nums">
+				{stepCount}
+			</TableCell>
 			<TableCell className="text-sm text-muted-foreground">
-				{formatReportDate(batch.created_at)}
+				{template.created_at ? formatReportDate(template.created_at) : "—"}
 			</TableCell>
 			<TableCell className="pr-4 text-center sm:pr-6">
 				<Button
@@ -283,8 +173,8 @@ function BatchVerificationRow({ batch }: { batch: BatchVerificationReport }) {
 					asChild
 				>
 					<Link
-						to="/app/reports/batch/$batchId"
-						params={{ batchId: batch.id }}
+						to="/app/reports/custom/$templateId"
+						params={{ templateId: template.id }}
 					>
 						<EyeIcon className="size-4" />
 						View

@@ -10,7 +10,17 @@
 
 export type DeployEnvironment = "local" | "test" | "production";
 
+/** In-app Live ↔ Test API mode (customer-facing switcher). */
+export type ApiMode = "live" | "test";
+
 export type AppSurface = "client" | "admin" | "app" | "status" | "api";
+
+export type ApiModeConfig = {
+	liveApiBaseUrl: string;
+	testApiBaseUrl: string;
+	switcherEnabled: boolean;
+	defaultMode: ApiMode;
+};
 
 export const DEPLOY_ENVIRONMENTS = ["local", "test", "production"] as const;
 
@@ -87,6 +97,72 @@ export function getApiBaseUrlForEnvironment(
 	return API_BASE_URLS[deployEnv];
 }
 
+/**
+ * Resolve Live/Test API bases for the current frontend deploy.
+ * Internal `test.*` frontends stay test-only (no customer switcher).
+ */
+export function resolveApiModeConfig(
+	configuredApiBaseUrl: string,
+	deployEnvironment: DeployEnvironment,
+): ApiModeConfig {
+	if (deployEnvironment === "test") {
+		return {
+			liveApiBaseUrl: API_BASE_URLS.test,
+			testApiBaseUrl: API_BASE_URLS.test,
+			switcherEnabled: false,
+			defaultMode: "test",
+		};
+	}
+
+	if (deployEnvironment === "production") {
+		return {
+			liveApiBaseUrl: API_BASE_URLS.production,
+			testApiBaseUrl: API_BASE_URLS.test,
+			switcherEnabled: true,
+			defaultMode: "live",
+		};
+	}
+
+	// Local / development: fixed to the configured API — no Live↔Test switcher.
+	return {
+		liveApiBaseUrl: configuredApiBaseUrl,
+		testApiBaseUrl: configuredApiBaseUrl,
+		switcherEnabled: false,
+		defaultMode: "live",
+	};
+}
+
+export function getApiBaseUrlForMode(
+	mode: ApiMode,
+	config: ApiModeConfig,
+): string {
+	return mode === "test" ? config.testApiBaseUrl : config.liveApiBaseUrl;
+}
+
+export function getVerifyAppOriginForMode(
+	mode: ApiMode,
+	host?: string,
+): string {
+	if (mode === "test") {
+		return APP_ORIGINS.test.app;
+	}
+
+	const resolvedHost =
+		host ?? (typeof window !== "undefined" ? window.location.host : "");
+	const deployEnv = detectDeployEnvironment(resolvedHost);
+	if (deployEnv === "local") {
+		return APP_ORIGINS.local.app;
+	}
+	return APP_ORIGINS.production.app;
+}
+
+export function withApiModeQueryKey<T extends readonly unknown[]>(
+	mode: ApiMode,
+	queryKey: T,
+): [ApiMode, ...T] {
+	return [mode, ...queryKey];
+}
+
 export function detectDeployEnvironment(host: string): DeployEnvironment {
 	const normalized = host.toLowerCase();
 
@@ -151,13 +227,24 @@ export function getVerifyAppOrigin(host?: string): string {
 	return getAppOrigin(detectDeployEnvironment(resolvedHost), "app");
 }
 
-export function buildNewVerifyUrl(linkToken: string, host?: string): string {
-	return joinOrigin(getVerifyAppOrigin(host), `/new-verify/${linkToken}`);
+export function buildNewVerifyUrl(
+	linkToken: string,
+	host?: string,
+	mode?: ApiMode,
+): string {
+	const origin = mode
+		? getVerifyAppOriginForMode(mode, host)
+		: getVerifyAppOrigin(host);
+	return joinOrigin(origin, `/new-verify/${linkToken}`);
 }
 
 export function buildHostedVerificationUrl(
 	linkToken: string,
 	host?: string,
+	mode?: ApiMode,
 ): string {
+	if (mode === "test") {
+		return joinOrigin(APP_ORIGINS.test.client, `/verify/${linkToken}`);
+	}
 	return joinOrigin(getClientAppOrigin(host), `/verify/${linkToken}`);
 }

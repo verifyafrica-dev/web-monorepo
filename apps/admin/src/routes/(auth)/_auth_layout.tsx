@@ -27,6 +27,7 @@ import {
 	SidebarTrigger,
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { AppSidebar } from "#/components/app-sidebar";
+import { TestModeBanner } from "#/components/environment-mode-switcher";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
 import { useAuthStore } from "#/stores/auth-store";
@@ -81,6 +82,7 @@ function AuthLayout() {
 		<SidebarProvider>
 			<AppSidebar />
 			<SidebarInset className="min-w-0">
+				<TestModeBanner />
 				<header className="flex min-h-14 items-center gap-2 border-b px-4 justify-between">
 					<SidebarTrigger />
 					<Popover>

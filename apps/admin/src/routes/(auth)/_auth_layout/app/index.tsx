@@ -43,9 +43,12 @@ function DashboardPage() {
 	const data = useMemo(
 		() =>
 			platformAnalyticsQuery.data
-				? mapPlatformAnalyticsToDashboardData(platformAnalyticsQuery.data)
+				? mapPlatformAnalyticsToDashboardData(
+						platformAnalyticsQuery.data,
+						timeRange,
+					)
 				: undefined,
-		[platformAnalyticsQuery.data],
+		[platformAnalyticsQuery.data, timeRange],
 	);
 	const isLoading =
 		platformAnalyticsQuery.isPending || platformAnalyticsQuery.isFetching;

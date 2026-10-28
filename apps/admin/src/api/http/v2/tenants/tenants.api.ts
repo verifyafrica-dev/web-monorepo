@@ -62,6 +62,8 @@ const TENANTS_V2_ENDPOINTS = {
 	invitations: "/v2/tenants/invitations/",
 	invitationResend: (invitationId: string) =>
 		`/v2/tenants/invitations/${invitationId}/resend/`,
+	invitationDelete: (invitationId: string) =>
+		`/v2/tenants/invitations/${invitationId}/`,
 	invitationAccept: "/v2/tenants/invitations/accept/",
 	invitationCreateUser: "/v2/tenants/invitations/create-user/",
 	verifyInvitation: "/v2/tenants/verify-invitation/",
@@ -264,6 +266,17 @@ export const TENANTS_V2_API = {
 			.post(
 				TENANTS_V2_ENDPOINTS.invitationResend(invitationId),
 				{},
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantInvitation>(res)),
+
+	INVITATION_DELETE: async (
+		tenantId: string,
+		invitationId: string,
+	): Promise<TenantInvitation> =>
+		await $http
+			.delete(
+				TENANTS_V2_ENDPOINTS.invitationDelete(invitationId),
 				withTenantHeader(tenantId),
 			)
 			.then((res) => unwrapV2Data<TenantInvitation>(res)),

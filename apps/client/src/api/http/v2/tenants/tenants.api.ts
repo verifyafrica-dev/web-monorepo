@@ -225,13 +225,16 @@ export const TENANTS_V2_API = {
 			)
 			.then((res) => unwrapV2Data<TenantInvitation>(res)),
 
-	INVITATION_DELETE: async (tenantId: string, invitationId: string) =>
+	INVITATION_DELETE: async (
+		tenantId: string,
+		invitationId: string,
+	): Promise<TenantInvitation> =>
 		await $http
 			.delete(
 				TENANTS_V2_ENDPOINTS.invitationDelete(invitationId),
 				withTenantHeader(tenantId),
 			)
-			.then((res) => unwrapV2Data<string>(res)),
+			.then((res) => unwrapV2Data<TenantInvitation>(res)),
 
 	INVITATION_ACCEPT: async (
 		data: TenantInvitationAcceptPayload,

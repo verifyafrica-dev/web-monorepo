@@ -55,5 +55,12 @@ function NewVerifyTokenPage() {
 
 	const session = sessionQuery.data;
 
-	return <NewVerifySessionView session={session} />;
+	return (
+		<NewVerifySessionView
+			session={session}
+			onMixedContinue={() => {
+				void sessionQuery.refetch();
+			}}
+		/>
+	);
 }

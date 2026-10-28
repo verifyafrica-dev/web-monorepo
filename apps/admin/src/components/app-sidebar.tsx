@@ -16,6 +16,7 @@ import type { ComponentType, SVGProps } from "react";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarHeader,
@@ -24,6 +25,7 @@ import {
 	SidebarMenuItem,
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
 
 const navItems = [
 	{
@@ -146,6 +148,9 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+			<SidebarFooter className="border-t border-sidebar-border p-2 group-data-[collapsible=icon]:p-1">
+				<EnvironmentModeSwitcher />
+			</SidebarFooter>
 		</Sidebar>
 	);
 }

@@ -25,6 +25,10 @@ export type BatchVerificationReport = {
 	success_count: number;
 	failed_count: number;
 	created_at: string;
+	kind?: string;
+	name?: string;
+	email?: string;
+	template_id?: string | null;
 };
 
 export const REPORTS_PAGE_SIZE = 10;
@@ -177,6 +181,10 @@ export function mapVerificationBatchToReport(
 		success_count: batch.success_count,
 		failed_count: batch.failed_count,
 		created_at: batch.created_at,
+		kind: batch.kind,
+		name: batch.name,
+		email: batch.email,
+		template_id: batch.template_id,
 	};
 }
 
@@ -187,9 +195,12 @@ export function mapVerificationBatchesToReports(
 }
 
 export function formatVerificationType(report: VerificationReport) {
-	const formattedType = report.verification_type
-		.replace(/_/g, " ")
-		.replace(/\b\w/g, (char) => char.toUpperCase());
+	const formattedType =
+		report.verification_type === "face_match"
+			? "Facial Screening"
+			: report.verification_type
+					.replace(/_/g, " ")
+					.replace(/\b\w/g, (char) => char.toUpperCase());
 
 	if (
 		report.verification_type === "mixed_verification" &&

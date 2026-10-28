@@ -1,7 +1,9 @@
 import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
 
 import { VerificationStatusSchema } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
 import type { VerificationRequestDetail } from "@verifyafrica/api-client/http/v2/verifications/verifications.types";
+import { extractHostedVerificationUrl } from "@verifyafrica/api-client/lib/verification-links";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Card,
@@ -10,7 +12,6 @@ import {
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
 import { useClipboard } from "@verifyafrica/ui/hooks/use-clipboard";
-import { extractHostedVerificationUrl } from "@verifyafrica/api-client/lib/verification-links";
 import {
 	formatReportDate,
 	formatVerificationType,
@@ -54,7 +55,19 @@ export function VerificationMetadataCard({
 				/>
 				<ReportDetailField
 					label="Batch ID"
-					value={verification.batch_id ?? "N/A"}
+					value={
+						verification.batch_id ? (
+							<Link
+								to="/app/reports/batch/$batchId"
+								params={{ batchId: verification.batch_id }}
+								className="text-primary hover:underline"
+							>
+								{verification.batch_id}
+							</Link>
+						) : (
+							"N/A"
+						)
+					}
 					mono
 				/>
 				<ReportDetailField

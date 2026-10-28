@@ -1,8 +1,26 @@
-import type { VerificationLink, VerificationRequest } from "../http/v2/verifications/verifications.types";
+import type {
+	MixedVerificationSession,
+	VerificationLink,
+	VerificationRequest,
+} from "../http/v2/verifications/verifications.types";
+import type { ApiMode } from "@verifyafrica/config/domains";
 import {
 	buildHostedVerificationUrl as buildHostedVerificationUrlFromDomains,
 	buildNewVerifyUrl as buildNewVerifyUrlFromDomains,
 } from "@verifyafrica/config/domains";
+
+let resolveApiMode: (() => ApiMode | undefined) | null = null;
+
+/** Optional app hook so hosted links follow Live/Test mode without hard-wiring stores. */
+export function configureVerificationLinkMode(
+	resolver: () => ApiMode | undefined,
+) {
+	resolveApiMode = resolver;
+}
+
+function currentApiMode(): ApiMode | undefined {
+	return resolveApiMode?.();
+}
 
 export type HostedLinkResult = {
 	verificationUrl: string;
@@ -20,11 +38,15 @@ export function buildNewVerifyPath(linkToken: string) {
 }
 
 export function buildHostedVerificationUrl(linkToken: string) {
-	return buildHostedVerificationUrlFromDomains(linkToken);
+	return buildHostedVerificationUrlFromDomains(
+		linkToken,
+		undefined,
+		currentApiMode(),
+	);
 }
 
 export function buildNewVerifyUrl(linkToken: string) {
-	return buildNewVerifyUrlFromDomains(linkToken);
+	return buildNewVerifyUrlFromDomains(linkToken, undefined, currentApiMode());
 }
 
 export function extractHostedVerificationUrl(
@@ -65,5 +87,35 @@ export function buildLinkResult(
 					)
 				: undefined,
 		hostedLink: verification?.link ?? null,
+	};
+}
+
+export function buildMixedSessionLinkResult(
+	session: MixedVerificationSession | null | undefined,
+	customerEmail: string,
+): HostedLinkResult {
+	const linkToken = session?.link ?? null;
+	const verificationUrl =
+		session?.verification_url ||
+		(linkToken ? buildNewVerifyUrl(linkToken) : "");
+
+	return {
+		verificationUrl,
+		customerEmail,
+		hostedLink: linkToken
+			? {
+					id: session?.session_id ?? "",
+					link: linkToken,
+					link_type: "verify_link",
+					verification_id: session?.session_id ?? "",
+					inner_link: "",
+					verification_reference: session?.reference ?? "",
+					provider: "sf",
+					ttl_minutes: session?.ttl_minutes ?? null,
+					expires_at: session?.expires_at ?? null,
+					used_at: null,
+					created_at: session?.created_at ?? "",
+				}
+			: null,
 	};
 }

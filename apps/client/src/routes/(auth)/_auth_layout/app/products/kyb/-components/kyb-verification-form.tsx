@@ -52,6 +52,12 @@ import { NoCountriesNotice } from "../../-no-countries-notice";
 import { useProductVerificationSubmit } from "../../-use-product-verification-submit";
 import { PRODUCT_SLUG } from "../../-data";
 import { ProductDisabledNotice } from "../../-product-access";
+import { ProductProofUpload } from "../../-components/product-proof-upload";
+import {
+	PRODUCT_UPLOAD_VERIFICATIONS,
+	UPLOAD_ALLOWED_MIME_TYPES,
+	UPLOAD_MAX_FILE_SIZE,
+} from "../../-upload-utils";
 import {
 	buildKybVerificationLinkPayload,
 	buildKybVerificationPayload,
@@ -556,20 +562,21 @@ export function KybVerificationForm() {
 											{mode === "direct" ? (
 												<form.Field name="documentProof">
 													{(field) => (
-														<Field className="gap-1.5">
-															<FieldLabel htmlFor="kyb-document-proof">
-																Document proof URL
-															</FieldLabel>
-															<Input
-																id="kyb-document-proof"
-																placeholder="https://"
-																value={field.state.value}
-																onBlur={field.handleBlur}
-																onChange={(event) =>
-																	field.handleChange(event.target.value)
-																}
-															/>
-														</Field>
+														<ProductProofUpload
+															label="Business document"
+															verificationName={
+																PRODUCT_UPLOAD_VERIFICATIONS.kybScreening
+															}
+															proofUrl={field.state.value.trim() || null}
+															onProofUrlChange={(url) =>
+																field.handleChange(url ?? "")
+															}
+															accept="image/jpeg,image/jpg,image/png,application/pdf"
+															allowedMimeTypes={UPLOAD_ALLOWED_MIME_TYPES}
+															maxSize={UPLOAD_MAX_FILE_SIZE}
+															emptyStateText="Upload a JPEG, PNG, or PDF up to 16MB"
+															disabled={isSubmitting}
+														/>
 													)}
 												</form.Field>
 											) : (

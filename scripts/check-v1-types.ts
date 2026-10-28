@@ -19,6 +19,7 @@ function sourceFiles(directory: string): string[] {
 	return files;
 }
 
+
 function resolveModule(from: string, specifier: string, appRoot: string): string | undefined {
 	if (specifier.startsWith("#/")) return resolve(appRoot, "src", specifier.slice(2));
 	if (specifier.startsWith("@verifyafrica/api-client/")) {

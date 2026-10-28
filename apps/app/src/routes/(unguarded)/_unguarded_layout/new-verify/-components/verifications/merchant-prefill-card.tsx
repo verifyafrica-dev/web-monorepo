@@ -36,13 +36,9 @@ const LABELS: Record<string, string> = {
 	jurisdiction_code: "Business Jurisdiction",
 	search_by: "Search Identifier",
 	search_word: "Other Identifier Value",
-	search_type: "Search Type",
 };
 
 const VALUE_LABELS: Record<string, string> = {
-	fuzzy: "Fuzzy",
-	contains: "Contains",
-	start_with: "Starts With",
 	company_name: "Company Name",
 	registration_number: "Company Registration Number",
 	vat_number: "VAT Number",
@@ -104,6 +100,9 @@ export function MerchantPrefillCard({ session }: MerchantPrefillCardProps) {
 	const hasJurisdiction = Boolean(prefilled.jurisdiction_code);
 	const entries = Object.entries(prefilled).filter(([key, value]) => {
 		if (!value) {
+			return false;
+		}
+		if (key === "search_type") {
 			return false;
 		}
 		if (key === "country" && (hasCountries || hasJurisdiction)) {
