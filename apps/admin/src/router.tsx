@@ -17,7 +17,6 @@ export function getRouter() {
 		defaultNotFoundComponent: NotFoundPage,
 	});
 
-
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
 
 	return router;
