@@ -13,6 +13,11 @@ import {
 } from "#/stores/api-mode-store";
 import { useAuthStore } from "#/stores/auth-store";
 import { normalizeUserTenants } from "#/routes/(auth)/_auth_layout/app/team/-data";
+import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
+
+export type SwitchApiModeResult =
+	| { ok: true }
+	| { ok: false; reason: "blocked" | "error" | "unavailable" };
 
 function normalizeEmail(value: string | null | undefined): string {
 	return (value ?? "").trim().toLowerCase();
@@ -86,12 +91,12 @@ export function useSwitchApiMode() {
 	const setTestAccessToken = useApiModeStore((state) => state.setTestAccessToken);
 	const clearTestSession = useApiModeStore((state) => state.clearTestSession);
 
-	async function switchApiMode(next: ApiMode) {
+	async function switchApiMode(next: ApiMode): Promise<SwitchApiModeResult> {
 		if (!apiModeConfig.switcherEnabled) {
 			toast.message("Environment switching is not available on this host.");
-			return;
+			return { ok: false, reason: "unavailable" };
 		}
-		if (next === mode) return;
+		if (next === mode) return { ok: true };
 
 		const authStore = useAuthStore.getState();
 		const previousTenantId = authStore.selectedTenantId;
@@ -120,10 +125,14 @@ export function useSwitchApiMode() {
 
 				await queryClient.invalidateQueries({ type: "active" });
 				toast.success("Switched to Test mode");
+				return { ok: true };
 			} catch (error) {
 				clearTestSession();
 				setMode(apiModeConfig.defaultMode);
 				authStore.setSelectedTenantId(previousTenantId);
+				if (isTestAccountBlockedError(error)) {
+					return { ok: false, reason: "blocked" };
+				}
 				const data =
 					error &&
 					typeof error === "object" &&
@@ -141,8 +150,8 @@ export function useSwitchApiMode() {
 						? "Test mode is not linked for this account yet."
 						: message,
 				);
+				return { ok: false, reason: "error" };
 			}
-			return;
 		}
 
 		authStore.setSelectedTenantId(null);
@@ -161,6 +170,7 @@ export function useSwitchApiMode() {
 		}
 		await queryClient.invalidateQueries({ type: "active" });
 		toast.success("Switched to Live mode");
+		return { ok: true };
 	}
 
 	return {

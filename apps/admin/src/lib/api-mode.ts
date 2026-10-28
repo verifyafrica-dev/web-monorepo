@@ -6,6 +6,11 @@ import {
 	useApiModeStore,
 } from "#/stores/api-mode-store";
 import { mintTestAccessToken } from "#/api/http/xhr";
+import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
+
+export type SwitchApiModeResult =
+	| { ok: true }
+	| { ok: false; reason: "blocked" | "error" | "unavailable" };
 
 export function useSwitchApiMode() {
 	const queryClient = useQueryClient();
@@ -14,12 +19,12 @@ export function useSwitchApiMode() {
 	const setTestAccessToken = useApiModeStore((state) => state.setTestAccessToken);
 	const clearTestSession = useApiModeStore((state) => state.clearTestSession);
 
-	async function switchApiMode(next: ApiMode) {
+	async function switchApiMode(next: ApiMode): Promise<SwitchApiModeResult> {
 		if (!apiModeConfig.switcherEnabled) {
 			toast.message("Environment switching is not available on this host.");
-			return;
+			return { ok: false, reason: "unavailable" };
 		}
-		if (next === mode) return;
+		if (next === mode) return { ok: true };
 
 		if (next === "test") {
 			try {
@@ -30,9 +35,13 @@ export function useSwitchApiMode() {
 				// clear(), which can leave observers stuck in a pending skeleton state.
 				await queryClient.invalidateQueries({ type: "active" });
 				toast.success("Switched to Test mode");
+				return { ok: true };
 			} catch (error) {
 				clearTestSession();
 				setMode(apiModeConfig.defaultMode);
+				if (isTestAccountBlockedError(error)) {
+					return { ok: false, reason: "blocked" };
+				}
 				const data =
 					error && typeof error === "object" && "response" in error
 						? (error as { response?: { data?: { message?: string; detail?: string } } })
@@ -48,14 +57,15 @@ export function useSwitchApiMode() {
 						? "Test mode is not linked for this account yet."
 						: message,
 				);
+				return { ok: false, reason: "error" };
 			}
-			return;
 		}
 
 		clearTestSession();
 		setMode("live");
 		await queryClient.invalidateQueries({ type: "active" });
 		toast.success("Switched to Live mode");
+		return { ok: true };
 	}
 
 	return {
