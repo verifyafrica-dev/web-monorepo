@@ -373,6 +373,8 @@ export interface UserTenantMembership {
 	name: string;
 	slug: string;
 	email: string;
+	/** Shared Live↔Test twin id for this organization (null until linked). */
+	environment_link_id?: string | null;
 	enabled_countries?: string[];
 	/** Tenant countries that are also enabled platform-wide. */
 	available_countries?: string[];
@@ -401,6 +403,8 @@ export interface UserDetail {
 	last_name?: string;
 	phone_number?: string;
 	avatar_url?: string;
+	/** Shared Live↔Test twin id for this user (null until linked). */
+	environment_link_id?: string | null;
 	tenants: UserTenantMembership | UserTenantMembership[] | null;
 	is_active?: boolean;
 	must_change_password?: boolean;
@@ -424,6 +428,8 @@ export interface UserSession {
 	is_active?: boolean;
 	/** Signed in with a platform-issued temporary password that must be replaced. */
 	must_change_password?: boolean;
+	/** Shared Live↔Test twin id for this user (null until linked). */
+	environment_link_id?: string | null;
 	tenants: UserTenantMembership[];
 }
 

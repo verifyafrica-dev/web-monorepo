@@ -26,11 +26,27 @@ export function useSwitchApiMode() {
 				const token = await mintTestAccessToken();
 				setTestAccessToken(token);
 				setMode("test");
-				queryClient.clear();
+				// Mode is part of query keys — invalidate active queries instead of
+				// clear(), which can leave observers stuck in a pending skeleton state.
+				await queryClient.invalidateQueries({ type: "active" });
 				toast.success("Switched to Test mode");
-			} catch {
+			} catch (error) {
+				clearTestSession();
+				setMode(apiModeConfig.defaultMode);
+				const data =
+					error && typeof error === "object" && "response" in error
+						? (error as { response?: { data?: { message?: string; detail?: string } } })
+								.response?.data
+						: undefined;
+				const message =
+					data?.message ||
+					data?.detail ||
+					(error instanceof Error ? error.message : "") ||
+					"Could not enter Test mode. Ensure this admin account is linked on test.";
 				toast.error(
-					"Could not enter Test mode. Ensure this admin account is linked on test.",
+					message.toLowerCase().includes("not linked")
+						? "Test mode is not linked for this account yet."
+						: message,
 				);
 			}
 			return;
@@ -38,7 +54,7 @@ export function useSwitchApiMode() {
 
 		clearTestSession();
 		setMode("live");
-		queryClient.clear();
+		await queryClient.invalidateQueries({ type: "active" });
 		toast.success("Switched to Live mode");
 	}
 

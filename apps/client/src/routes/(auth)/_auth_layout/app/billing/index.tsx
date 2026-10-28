@@ -152,16 +152,14 @@ function BillingPage() {
 	const invoiceTotal =
 		invoicesQuery.data?.meta.pagination.total ?? invoices.length;
 
+	// Use isLoading (pending + fetching) so background refetches after mode switch
+	// keep showing existing data instead of permanent skeletons.
 	const isSummaryLoading =
-		walletBalanceQuery.isPending ||
-		walletBalanceQuery.isFetching ||
-		billingInformationQuery.isPending ||
-		billingInformationQuery.isFetching;
+		walletBalanceQuery.isLoading || billingInformationQuery.isLoading;
 
-	const isTransactionsLoading =
-		transactionsQuery.isPending || transactionsQuery.isFetching;
+	const isTransactionsLoading = transactionsQuery.isLoading;
 
-	const isInvoicesLoading = invoicesQuery.isPending || invoicesQuery.isFetching;
+	const isInvoicesLoading = invoicesQuery.isLoading;
 
 	const isRefreshing =
 		walletBalanceQuery.isFetching ||
