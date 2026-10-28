@@ -8,8 +8,8 @@ import {
 	MagnifyingGlassIcon,
 	PlusIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePlatformAnalyticsV2Query } from "#/api/http/v2/analytics/analytics.hooks";
 import { useTenantsAllV2Query } from "#/api/http/v2/tenants/tenants.hooks";
@@ -60,6 +60,9 @@ import {
 	KYC_STATUS_FILTER_OPTIONS,
 	type KycStatusFilter,
 	mapPlatformAnalyticsToTenantStats,
+	mergeTenantsSearchParams,
+	type TenantsSearchParams,
+	tenantsSearchSchema,
 } from "./-data";
 
 const PAGE_SIZE = 20;
@@ -73,19 +76,47 @@ export const Route = createFileRoute(
 			{ name: "description", content: "Review and manage all tenant organizations on VerifyAfrica." },
 		],
 	}),
+	validateSearch: tenantsSearchSchema,
 	component: TenantsPage,
 });
 
 function TenantsPage() {
-	const [page, setPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [billingPlanFilter, setBillingPlanFilter] =
-		useState<BillingPlanFilter>("all");
-	const [kycStatusFilter, setKycStatusFilter] =
-		useState<KycStatusFilter>("all");
+	const navigate = useNavigate({ from: Route.fullPath });
+	const urlSearch = Route.useSearch();
+	const page = urlSearch.page ?? 1;
+	const billingPlanFilter = (urlSearch.billing_plan ?? "all") as BillingPlanFilter;
+	const kycStatusFilter = (urlSearch.kyc_status ?? "all") as KycStatusFilter;
+
+	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [addTenantOpen, setAddTenantOpen] = useState(false);
 	const [isDownloadingStatement, setIsDownloadingStatement] = useState(false);
-	const debouncedSearch = useDebouncedValue(searchQuery, 300);
+	const debouncedSearch = useDebouncedValue(searchDraft, 300);
+
+	const updateSearchParams = useCallback(
+		(patch: Partial<TenantsSearchParams>) => {
+			void navigate({
+				search: (current) => mergeTenantsSearchParams(current, patch),
+				replace: true,
+			});
+		},
+		[navigate],
+	);
+
+	useEffect(() => {
+		setSearchDraft(urlSearch.search ?? "");
+	}, [urlSearch.search]);
+
+	useEffect(() => {
+		const nextSearch = debouncedSearch.trim();
+		const currentSearch = (urlSearch.search ?? "").trim();
+		if (nextSearch === currentSearch) {
+			return;
+		}
+		updateSearchParams({
+			search: nextSearch || undefined,
+			page: undefined,
+		});
+	}, [debouncedSearch, urlSearch.search, updateSearchParams]);
 
 	const tenantListQuery = useMemo(
 		() =>
@@ -101,10 +132,6 @@ function TenantsPage() {
 
 	const tenantsQuery = useTenantsAllV2Query(tenantListQuery);
 	const analyticsQuery = usePlatformAnalyticsV2Query();
-
-	useEffect(() => {
-		setPage(1);
-	}, []);
 
 	const tenants = tenantsQuery.data?.items ?? [];
 
@@ -163,8 +190,8 @@ function TenantsPage() {
 			<div className="relative">
 				<MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
-					value={searchQuery}
-					onChange={(event) => setSearchQuery(event.target.value)}
+					value={searchDraft}
+					onChange={(event) => setSearchDraft(event.target.value)}
 					placeholder="Search tenants by name..."
 					className="pl-9"
 				/>
@@ -181,7 +208,10 @@ function TenantsPage() {
 						<Select
 							value={billingPlanFilter}
 							onValueChange={(value) =>
-								setBillingPlanFilter(value as BillingPlanFilter)
+								updateSearchParams({
+									billing_plan: value as BillingPlanFilter,
+									page: undefined,
+								})
 							}
 						>
 							<SelectTrigger className="w-full">
@@ -199,7 +229,10 @@ function TenantsPage() {
 						<Select
 							value={kycStatusFilter}
 							onValueChange={(value) =>
-								setKycStatusFilter(value as KycStatusFilter)
+								updateSearchParams({
+									kyc_status: value as KycStatusFilter,
+									page: undefined,
+								})
 							}
 						>
 							<SelectTrigger className="w-full">
@@ -219,9 +252,13 @@ function TenantsPage() {
 						<Button
 							variant="outline"
 							onClick={() => {
-								setSearchQuery("");
-								setBillingPlanFilter("all");
-								setKycStatusFilter("all");
+								setSearchDraft("");
+								updateSearchParams({
+									search: undefined,
+									billing_plan: "all",
+									kyc_status: "all",
+									page: undefined,
+								});
 							}}
 						>
 							Clear Filters
@@ -370,7 +407,11 @@ function TenantsPage() {
 							page={page}
 							pageSize={PAGE_SIZE}
 							total={totalTenants}
-							onPageChange={setPage}
+							onPageChange={(nextPage) =>
+								updateSearchParams({
+									page: nextPage > 1 ? nextPage : undefined,
+								})
+							}
 						/>
 					</>
 				)}

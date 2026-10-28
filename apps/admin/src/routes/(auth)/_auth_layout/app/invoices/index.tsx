@@ -5,8 +5,8 @@ import {
 	FileTextIcon,
 	MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAllInvoicesV2Query } from "#/api/http/v2/billing/billing.hooks";
 import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
@@ -52,8 +52,11 @@ import {
 	getPaymentStatusBadgeClass,
 	getPaymentStatusLabel,
 	hasActiveInvoiceFilters,
+	invoicesSearchSchema,
+	type InvoicesSearchParams,
 	matchesAdminInvoiceSearch,
 	matchesInvoiceDateRange,
+	mergeInvoicesSearchParams,
 } from "./-data";
 
 const PAGE_SIZE = 10;
@@ -81,6 +84,7 @@ export const Route = createFileRoute("/(auth)/_auth_layout/app/invoices/")({
 			},
 		],
 	}),
+	validateSearch: invoicesSearchSchema,
 	component: InvoicesPage,
 });
 
@@ -97,22 +101,47 @@ function getInvoiceTableHeadClassName(index: number, total: number) {
 }
 
 function InvoicesPage() {
-	const [page, setPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [dateFrom, setDateFrom] = useState("");
-	const [dateTo, setDateTo] = useState("");
+	const navigate = useNavigate({ from: Route.fullPath });
+	const urlSearch = Route.useSearch();
+	const page = urlSearch.page ?? 1;
+	const dateFrom = urlSearch.date_from ?? "";
+	const dateTo = urlSearch.date_to ?? "";
+
+	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 	const [detailsOpen, setDetailsOpen] = useState(false);
-	const debouncedSearch = useDebouncedValue(searchQuery, 300);
+	const debouncedSearch = useDebouncedValue(searchDraft, 300);
+
+	const updateSearchParams = useCallback(
+		(patch: Partial<InvoicesSearchParams>) => {
+			void navigate({
+				search: (current) => mergeInvoicesSearchParams(current, patch),
+				replace: true,
+			});
+		},
+		[navigate],
+	);
+
+	useEffect(() => {
+		setSearchDraft(urlSearch.search ?? "");
+	}, [urlSearch.search]);
+
+	useEffect(() => {
+		const nextSearch = debouncedSearch.trim();
+		const currentSearch = (urlSearch.search ?? "").trim();
+		if (nextSearch === currentSearch) {
+			return;
+		}
+		updateSearchParams({
+			search: nextSearch || undefined,
+			page: undefined,
+		});
+	}, [debouncedSearch, urlSearch.search, updateSearchParams]);
 
 	const invoicesQuery = useAllInvoicesV2Query({
 		page: 1,
 		per_page: INVOICES_FETCH_SIZE,
 	});
-
-	useEffect(() => {
-		setPage(1);
-	}, []);
 
 	const filteredInvoices = useMemo(() => {
 		return (invoicesQuery.data?.items ?? []).filter((invoice) => {
@@ -200,8 +229,8 @@ function InvoicesPage() {
 					<div className="relative">
 						<MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
-							value={searchQuery}
-							onChange={(event) => setSearchQuery(event.target.value)}
+							value={searchDraft}
+							onChange={(event) => setSearchDraft(event.target.value)}
 							placeholder="Search by invoice ID, tenant, description, or amount..."
 							className="pl-9"
 							disabled={isLoading}
@@ -214,7 +243,12 @@ function InvoicesPage() {
 						id="invoices-date-from"
 						label="Start Date"
 						value={dateFrom}
-						onChange={setDateFrom}
+						onChange={(value) =>
+							updateSearchParams({
+								date_from: value || undefined,
+								page: undefined,
+							})
+						}
 						disabled={isLoading}
 						max={dateTo || undefined}
 						placeholder="Start date"
@@ -223,7 +257,12 @@ function InvoicesPage() {
 						id="invoices-date-to"
 						label="End Date"
 						value={dateTo}
-						onChange={setDateTo}
+						onChange={(value) =>
+							updateSearchParams({
+								date_to: value || undefined,
+								page: undefined,
+							})
+						}
 						disabled={isLoading}
 						min={dateFrom || undefined}
 						placeholder="End date"
@@ -236,9 +275,13 @@ function InvoicesPage() {
 							variant="outline"
 							size="sm"
 							onClick={() => {
-								setSearchQuery("");
-								setDateFrom("");
-								setDateTo("");
+								setSearchDraft("");
+								updateSearchParams({
+									search: undefined,
+									date_from: undefined,
+									date_to: undefined,
+									page: undefined,
+								});
 							}}
 						>
 							Clear Filters
@@ -303,7 +346,11 @@ function InvoicesPage() {
 								page={safePage}
 								pageSize={PAGE_SIZE}
 								total={total}
-								onPageChange={setPage}
+								onPageChange={(nextPage) =>
+									updateSearchParams({
+										page: nextPage > 1 ? nextPage : undefined,
+									})
+								}
 							/>
 						</>
 					)}

@@ -7,7 +7,7 @@ import {
 	UsersIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { USERS_V2_API } from "#/api/http/v2/users/users.api";
 import { useUsersV2ListQuery } from "#/api/http/v2/users/users.hooks";
@@ -72,12 +72,15 @@ import {
 	getUserPrimaryTenantName,
 	getUserPrimaryTenantRole,
 	getUserRoleLabel,
+	mergeUsersSearchParams,
 	USER_ROLE_FILTER,
 	USER_ROLE_FILTER_OPTIONS,
 	USER_SORT_OPTIONS,
 	USER_TENANT_ROLE_FILTER_OPTIONS,
 	type UserRoleFilter,
+	type UsersSearchParams,
 	type UserTenantRoleFilter,
+	usersSearchSchema,
 } from "./-data";
 
 const PAGE_SIZE = 10;
@@ -102,6 +105,7 @@ export const Route = createFileRoute("/(auth)/_auth_layout/app/users/")({
 			},
 		],
 	}),
+	validateSearch: usersSearchSchema,
 	component: UsersPage,
 });
 
@@ -118,26 +122,53 @@ function getUserTableHeadClassName(index: number, total: number) {
 }
 
 function UsersPage() {
-	const navigate = useNavigate();
+	const navigate = useNavigate({ from: Route.fullPath });
+	const urlSearch = Route.useSearch();
 	const currentUserId = useAuthStore((state) => state.user?.id);
 	const apiMode = useApiModeStore((state) => state.mode);
 	const canCreateTestAccount =
 		apiMode === "test" || env.deployEnvironment === "test";
 
-	const [page, setPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [sortBy, setSortBy] = useState<UserListSortBy>(DEFAULT_USER_SORT);
-	const [roleFilter, setRoleFilter] = useState<UserRoleFilter>(
-		DEFAULT_USER_ROLE_FILTER,
-	);
-	const [tenantRoleFilter, setTenantRoleFilter] =
-		useState<UserTenantRoleFilter>(DEFAULT_USER_TENANT_ROLE_FILTER);
+	const page = urlSearch.page ?? 1;
+	const sortBy = urlSearch.sort_by ?? DEFAULT_USER_SORT;
+	const roleFilter = (urlSearch.role ??
+		DEFAULT_USER_ROLE_FILTER) as UserRoleFilter;
+	const tenantRoleFilter = (urlSearch.tenant_role ??
+		DEFAULT_USER_TENANT_ROLE_FILTER) as UserTenantRoleFilter;
+
+	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 	const [detailsOpen, setDetailsOpen] = useState(false);
 	const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
 	const [toggleAccountOpen, setToggleAccountOpen] = useState(false);
 	const [createTestAccountOpen, setCreateTestAccountOpen] = useState(false);
-	const debouncedSearch = useDebouncedValue(searchQuery, 300);
+	const debouncedSearch = useDebouncedValue(searchDraft, 300);
+
+	const updateSearchParams = useCallback(
+		(patch: Partial<UsersSearchParams>) => {
+			void navigate({
+				search: (current) => mergeUsersSearchParams(current, patch),
+				replace: true,
+			});
+		},
+		[navigate],
+	);
+
+	useEffect(() => {
+		setSearchDraft(urlSearch.search ?? "");
+	}, [urlSearch.search]);
+
+	useEffect(() => {
+		const nextSearch = debouncedSearch.trim();
+		const currentSearch = (urlSearch.search ?? "").trim();
+		if (nextSearch === currentSearch) {
+			return;
+		}
+		updateSearchParams({
+			search: nextSearch || undefined,
+			page: undefined,
+		});
+	}, [debouncedSearch, urlSearch.search, updateSearchParams]);
 
 	const userListQuery = useMemo(
 		() => ({
@@ -154,10 +185,6 @@ function UsersPage() {
 	);
 
 	const usersQuery = useUsersV2ListQuery(userListQuery);
-
-	useEffect(() => {
-		setPage(1);
-	}, []);
 
 	const users = usersQuery.data?.items ?? [];
 	const totalUsers = usersQuery.data?.meta.pagination.total ?? 0;
@@ -265,8 +292,8 @@ function UsersPage() {
 					<div className="relative">
 						<MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
-							value={searchQuery}
-							onChange={(event) => setSearchQuery(event.target.value)}
+							value={searchDraft}
+							onChange={(event) => setSearchDraft(event.target.value)}
 							placeholder="Search by name, email, or tenant..."
 							className="pl-9"
 							disabled={isLoading}
@@ -287,7 +314,12 @@ function UsersPage() {
 					>
 						<Select
 							value={roleFilter}
-							onValueChange={(value) => setRoleFilter(value as UserRoleFilter)}
+							onValueChange={(value) =>
+								updateSearchParams({
+									role: value as UserRoleFilter,
+									page: undefined,
+								})
+							}
 							disabled={isLoading}
 						>
 							<SelectTrigger className="w-full">
@@ -309,7 +341,10 @@ function UsersPage() {
 							<Select
 								value={tenantRoleFilter}
 								onValueChange={(value) =>
-									setTenantRoleFilter(value as UserTenantRoleFilter)
+									updateSearchParams({
+										tenant_role: value as UserTenantRoleFilter,
+										page: undefined,
+									})
 								}
 								disabled={isLoading}
 							>
@@ -330,7 +365,12 @@ function UsersPage() {
 						)}
 						<Select
 							value={sortBy}
-							onValueChange={(value) => setSortBy(value as UserListSortBy)}
+							onValueChange={(value) =>
+								updateSearchParams({
+									sort_by: value as UserListSortBy,
+									page: undefined,
+								})
+							}
 							disabled={isLoading}
 						>
 							<SelectTrigger className="w-full">
@@ -353,10 +393,14 @@ function UsersPage() {
 						<Button
 							variant="ghost"
 							onClick={() => {
-								setSearchQuery("");
-								setSortBy(DEFAULT_USER_SORT);
-								setRoleFilter(DEFAULT_USER_ROLE_FILTER);
-								setTenantRoleFilter(DEFAULT_USER_TENANT_ROLE_FILTER);
+								setSearchDraft("");
+								updateSearchParams({
+									search: undefined,
+									sort_by: DEFAULT_USER_SORT,
+									role: DEFAULT_USER_ROLE_FILTER,
+									tenant_role: DEFAULT_USER_TENANT_ROLE_FILTER,
+									page: undefined,
+								});
 							}}
 						>
 							Clear Filters
@@ -425,7 +469,11 @@ function UsersPage() {
 								page={page}
 								pageSize={PAGE_SIZE}
 								total={totalUsers}
-								onPageChange={setPage}
+								onPageChange={(nextPage) =>
+									updateSearchParams({
+										page: nextPage > 1 ? nextPage : undefined,
+									})
+								}
 							/>
 						</>
 					)}

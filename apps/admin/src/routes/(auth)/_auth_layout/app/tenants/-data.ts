@@ -1,3 +1,4 @@
+import { z } from "zod";
 import $http from "#/api/http/xhr";
 import type { BillingPlan } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import type { PlatformAnalyticsPayload } from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
@@ -8,6 +9,38 @@ import type {
 
 export type BillingPlanFilter = "all" | BillingPlan;
 export type KycStatusFilter = "all" | "verified" | "pending" | "not_started";
+
+export const tenantsSearchSchema = z.object({
+	page: z.coerce.number().int().positive().optional(),
+	search: z.string().optional(),
+	billing_plan: z.enum(["all", "payg", "enterprise"]).optional(),
+	kyc_status: z.enum(["all", "verified", "pending", "not_started"]).optional(),
+});
+
+export type TenantsSearchParams = z.infer<typeof tenantsSearchSchema>;
+
+export function mergeTenantsSearchParams(
+	current: TenantsSearchParams,
+	patch: Partial<TenantsSearchParams>,
+): TenantsSearchParams {
+	const next = { ...current, ...patch };
+	const result: TenantsSearchParams = {};
+
+	if (next.page && next.page > 1) {
+		result.page = next.page;
+	}
+	if (next.search?.trim()) {
+		result.search = next.search.trim();
+	}
+	if (next.billing_plan && next.billing_plan !== "all") {
+		result.billing_plan = next.billing_plan;
+	}
+	if (next.kyc_status && next.kyc_status !== "all") {
+		result.kyc_status = next.kyc_status;
+	}
+
+	return result;
+}
 
 export type TenantStats = {
 	totalTenants: number;

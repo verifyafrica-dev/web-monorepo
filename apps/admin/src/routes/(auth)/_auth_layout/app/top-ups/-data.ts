@@ -1,8 +1,53 @@
+import { z } from "zod";
 import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import type { WalletTransactionsQuery } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { formatTenantDate } from "../tenants/-data";
 import { formatTenantMoney } from "../tenants/$tenantId/-data";
 import { downloadCsv } from "../tenants/$tenantId/-data";
+
+export const topUpsSearchSchema = z.object({
+	page: z.coerce.number().int().positive().optional(),
+	search: z.string().optional(),
+	payment_method: z.enum(["all", "stripe", "wallet"]).optional(),
+	status: z.enum(["all", "completed", "pending", "failed"]).optional(),
+	amount_paid: z.enum(["all", "under_100", "100_500", "over_500"]).optional(),
+	date_from: z.string().optional(),
+	date_to: z.string().optional(),
+});
+
+export type TopUpsSearchParams = z.infer<typeof topUpsSearchSchema>;
+
+export function mergeTopUpsSearchParams(
+	current: TopUpsSearchParams,
+	patch: Partial<TopUpsSearchParams>,
+): TopUpsSearchParams {
+	const next = { ...current, ...patch };
+	const result: TopUpsSearchParams = {};
+
+	if (next.page && next.page > 1) {
+		result.page = next.page;
+	}
+	if (next.search?.trim()) {
+		result.search = next.search.trim();
+	}
+	if (next.payment_method && next.payment_method !== "all") {
+		result.payment_method = next.payment_method;
+	}
+	if (next.status && next.status !== "all") {
+		result.status = next.status;
+	}
+	if (next.amount_paid && next.amount_paid !== "all") {
+		result.amount_paid = next.amount_paid;
+	}
+	if (next.date_from?.trim()) {
+		result.date_from = next.date_from.trim();
+	}
+	if (next.date_to?.trim()) {
+		result.date_to = next.date_to.trim();
+	}
+
+	return result;
+}
 
 export const CREDIT_TOPUP_QUERY = {
 	type: "CREDIT",
