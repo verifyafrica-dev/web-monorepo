@@ -38,6 +38,10 @@ export function resolveEnvSwitchSafePath(pathname: string): string | null {
 	return null;
 }
 
+function modeLabel(mode: ApiMode): string {
+	return mode === "test" ? "Test" : "Live";
+}
+
 function normalizeEmail(value: string | null | undefined): string {
 	return (value ?? "").trim().toLowerCase();
 }
@@ -130,6 +134,10 @@ export function useSwitchApiMode() {
 		const previousTenantId = authStore.selectedTenantId;
 		const previousTenants = normalizeUserTenants(authStore.user?.tenants ?? null);
 
+		// Leave id routes immediately so the UI feels responsive, then switch.
+		await leaveEntityIdRouteIfNeeded();
+		const toastId = toast.loading(`Switching to ${modeLabel(next)} mode…`);
+
 		if (next === "test") {
 			try {
 				const token = await mintTestAccessToken();
@@ -152,14 +160,14 @@ export function useSwitchApiMode() {
 				);
 
 				await queryClient.invalidateQueries({ type: "active" });
-				await leaveEntityIdRouteIfNeeded();
-				toast.success("Switched to Test mode");
+				toast.success("Switched to Test mode", { id: toastId });
 				return { ok: true };
 			} catch (error) {
 				clearTestSession();
 				setMode(apiModeConfig.defaultMode);
 				authStore.setSelectedTenantId(previousTenantId);
 				if (isTestAccountBlockedError(error)) {
+					toast.dismiss(toastId);
 					return { ok: false, reason: "blocked" };
 				}
 				const data =
@@ -178,6 +186,7 @@ export function useSwitchApiMode() {
 					message.toLowerCase().includes("not linked")
 						? "Test mode is not linked for this account yet."
 						: message,
+					{ id: toastId },
 				);
 				return { ok: false, reason: "error" };
 			}
@@ -198,8 +207,7 @@ export function useSwitchApiMode() {
 			);
 		}
 		await queryClient.invalidateQueries({ type: "active" });
-		await leaveEntityIdRouteIfNeeded();
-		toast.success("Switched to Live mode");
+		toast.success("Switched to Live mode", { id: toastId });
 		return { ok: true };
 	}
 
