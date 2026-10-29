@@ -25,7 +25,6 @@ export function getRouter() {
 		defaultPreloadStaleTime: 0,
 		defaultNotFoundComponent: AppNotFoundPage,
 	});
-
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
 
 	return router;
