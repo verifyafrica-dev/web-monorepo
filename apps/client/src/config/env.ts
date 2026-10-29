@@ -1,8 +1,16 @@
 import { detectDeployEnvironment } from "@verifyafrica/config/domains";
 import { z } from "zod";
 
+const optionalUrl = z.preprocess(
+	(value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+	z.string().url().optional(),
+);
+
 const envSchema = z.object({
 	VITE_API_BASE_URL: z.url(),
+	/** Production Live↔Test switcher only — ignored on local/dev/test hosts. */
+	VITE_LIVE_API_BASE_URL: optionalUrl,
+	VITE_TEST_API_BASE_URL: optionalUrl,
 	VITE_APP_NAME: z.string().default("Verify Africa"),
 	VITE_APP_ENVIRONMENT: z.string().default("development"),
 	VITE_SITE_TYPE: z.enum(["public", "client", "admin", "dashboard"]).optional(),
@@ -29,15 +37,19 @@ if (!parsed.success) {
 }
 
 const data = parsed.data;
-// Derived from the API URL rather than window.location so SSR and hydration agree.
-const deployEnvironment = detectDeployEnvironment(
-	new URL(data.VITE_API_BASE_URL).host,
-);
+// Prefer Live URL for deploy detection on production builds; else the single API URL.
+// Derived from env rather than window.location so SSR and hydration agree.
+const detectionHost = new URL(
+	data.VITE_LIVE_API_BASE_URL ?? data.VITE_API_BASE_URL,
+).host;
+const deployEnvironment = detectDeployEnvironment(detectionHost);
 
 export const env = {
 	...parsed.data,
 	// Backward-compatible app config accessors
 	apiBaseUrl: data.VITE_API_BASE_URL,
+	liveApiBaseUrl: data.VITE_LIVE_API_BASE_URL,
+	testApiBaseUrl: data.VITE_TEST_API_BASE_URL,
 	appName: data.VITE_APP_NAME,
 	appEnvironment: data.VITE_APP_ENVIRONMENT,
 	siteType: data.VITE_SITE_TYPE,

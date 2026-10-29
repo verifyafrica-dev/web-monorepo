@@ -55,7 +55,6 @@
     "country-state-city": "github:Itzadetunji/country-state-city",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^12.15.0",
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^2.0.4",
     "http-status-codes": "^2.3.0",
