@@ -27,6 +27,7 @@ import type {
 	VerificationLink,
 	VerificationListQuery,
 	VerificationPrice,
+	VerificationPriceBulkUpdatePayload,
 	VerificationProofKey,
 	VerificationRequest,
 	VerificationRequestCreatePayload,
@@ -448,6 +449,20 @@ export const useUpdateVerificationPriceV2Mutation = () => {
 			queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.priceDetail(data.id),
 			});
+			queryClient.invalidateQueries({
+				queryKey: VERIFICATIONS_V2_QUERY_KEYS.allPrices(),
+			});
+		},
+	});
+};
+
+export const useBulkUpdateVerificationPricesV2Mutation = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: VerificationPriceBulkUpdatePayload) =>
+			VERIFICATIONS_V2_API.BULK_UPDATE_PRICES(payload),
+		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: VERIFICATIONS_V2_QUERY_KEYS.allPrices(),
 			});

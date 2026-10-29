@@ -457,6 +457,25 @@ export interface VerificationPrice {
 	updated_at: string;
 }
 
+export type VerificationPriceBulkUpdateItem = {
+	id: string;
+} & Partial<
+	Pick<
+		VerificationPrice,
+		| "verification_type"
+		| "cost_price"
+		| "selling_price"
+		| "currency"
+		| "plan"
+		| "is_active"
+		| "source"
+	>
+>;
+
+export interface VerificationPriceBulkUpdatePayload {
+	items: VerificationPriceBulkUpdateItem[];
+}
+
 export interface VerificationTypePrice {
 	id: string;
 	verification_type: string;
@@ -494,6 +513,9 @@ export type VerificationTypeListResponse = V2SuccessResponse<
 >;
 export type MixedVerificationResponse = V2SuccessResponse<MixedVerification>;
 export type VerificationPriceResponse = V2SuccessResponse<VerificationPrice>;
+export type VerificationPriceBulkUpdateResponse = V2SuccessResponse<
+	VerificationPrice[]
+>;
 export type VerificationLinkResponse = V2SuccessResponse<VerificationLink>;
 export type VerificationSendEmailResponse =
 	V2SuccessResponse<VerificationSendEmailData>;
