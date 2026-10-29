@@ -3,8 +3,12 @@
  *
  * - `local` — portless dev (`*.verifyafrica.localhost`)
  * - `dev` — rigorous development (`dev.*.verifyafrica.io`, deploys from `dev`)
- * - `test` — staging (`test.*.verifyafrica.io`, deploys from `staging`)
+ * - `test` — test hosts (`test.*.verifyafrica.io`, deploys from `main` with production)
  * - `production` — live (`*.verifyafrica.io`, deploys from `main`)
+ *
+ * Production UI owns Live↔Test API switching; `test.*` stays on the same `main`
+ * build so UI/config stay aligned. A `staging` git branch may exist but is not
+ * used for `test.*` deploys.
  *
  * Backend mirrors these in `backend-main/src/core/domain_constants.py`.
  */

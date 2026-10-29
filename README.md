@@ -25,22 +25,22 @@ Copy each app’s `.env.example` to `.env` (or `.env.local`) and set at least `V
 
 ## Environments & branches
 
-All non-production frontends are **development-class**. Hosted envs map to git branches as follows:
+Hosted frontends map to git branches as follows:
 
-| Environment | Branch | Dashboard | Admin | App | API used by FE |
+| Environment | Branch | Dashboard | Admin | App | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Local | (local) | `*.verifyafrica.localhost` | same | same | `localhost:8300` |
-| **Dev** (rigorous testing) | **`dev`** | `dev.dashboard.verifyafrica.io` | `dev.admin.verifyafrica.io` | `dev.app.verifyafrica.io` | `test.api.verifyafrica.io` |
-| **Test / staging** | **`staging`** | `test.dashboard.verifyafrica.io` | `test.admin.verifyafrica.io` | `test.app.verifyafrica.io` | `test.api.verifyafrica.io` |
-| Production | **`main`** | `dashboard.verifyafrica.io` | `admin.verifyafrica.io` | `app.verifyafrica.io` | `api.verifyafrica.io` |
+| Local | (local) | `*.verifyafrica.localhost` | same | same | Local API `localhost:8300` |
+| **Dev** (rigorous testing) | **`dev`** | `dev.dashboard.verifyafrica.io` | `dev.admin.verifyafrica.io` | `dev.app.verifyafrica.io` | Points at `test.api`; no Live↔Test switcher |
+| **Test** hosts | **`main`** | `test.dashboard.verifyafrica.io` | `test.admin.verifyafrica.io` | `test.app.verifyafrica.io` | Same build as production |
+| **Production** | **`main`** | `dashboard.verifyafrica.io` | `admin.verifyafrica.io` | `app.verifyafrica.io` | Live↔Test switcher enabled |
 
 Notes:
 
-- **`dev.*`** is for active development and thorough QA. Deploys track the **`dev`** branch.
-- **`test.*`** is the staging surface customers/QA hit before prod. Deploys track the **`staging`** branch.
-- Promote features with PRs along `dev` → `staging` → `main` (or `dev` → `main` when skipping staging). Prefer that over long-lived release branches for routine work.
-- `dev` and `test` frontends are locked to the development API (no Live↔Test switcher). Only production enables the customer Live/Test switcher.
-- Wire DNS + Railway/Vercel custom domains for the three `dev.*` hosts to the **`dev`** branch deployments; keep existing `test.*` hosts on **`staging`**.
+- **`dev.*`** is for active development and thorough QA. Deploys track the **`dev`** branch only.
+- **`test.*` and production** both deploy from **`main`**. Customers switch Live ↔ Test in the production UI (same UI + API-mode config); there is no separate branch for `test.*` builds.
+- Promote features with PRs along `dev` → `main`. Prefer that over long-lived release branches for routine work.
+- A **`staging`** branch exists in the repo but is **not** used to build `test.*` domains — keep it around; do not rely on it for those hosts.
+- Wire DNS + Railway/Vercel custom domains for the three `dev.*` hosts to the **`dev`** branch; attach `test.*` and production hosts to **`main`**.
 - Backend CORS allowlists must include the `dev.*` origins (see `backend-main/src/core/domain_constants.py`).
 
 ## Realtime presence (Pusher)
