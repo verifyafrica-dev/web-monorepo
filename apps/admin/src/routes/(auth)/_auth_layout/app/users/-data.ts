@@ -1,6 +1,57 @@
-import type { AdminUser, UserListSortBy } from "@verifyafrica/api-client/http/v2/users/users.types";
+import { z } from "zod";
+import type {
+	AdminUser,
+	UserListSortBy,
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { formatTenantDate } from "../tenants/-data";
 import { downloadCsv } from "../tenants/$tenantId/-data";
+
+// Keep this enum local to this module. Importing UserListSortBySchema from the
+// api-client package can be undefined in Rolldown SSR chunks (TDZ / cross-chunk
+// re-exports), which 500s every admin route including /login.
+const usersSearchSortBySchema = z.enum([
+	"asc",
+	"dec",
+	"desc",
+	"recently_created",
+	"recently_logged_in",
+]);
+
+export const usersSearchSchema = z.object({
+	page: z.coerce.number().int().positive().optional(),
+	search: z.string().optional(),
+	sort_by: usersSearchSortBySchema.optional(),
+	role: z.enum(["all", "user", "superuser"]).optional(),
+	tenant_role: z.enum(["all", "admin", "member"]).optional(),
+});
+
+export type UsersSearchParams = z.infer<typeof usersSearchSchema>;
+
+export function mergeUsersSearchParams(
+	current: UsersSearchParams,
+	patch: Partial<UsersSearchParams>,
+): UsersSearchParams {
+	const next = { ...current, ...patch };
+	const result: UsersSearchParams = {};
+
+	if (next.page && next.page > 1) {
+		result.page = next.page;
+	}
+	if (next.search?.trim()) {
+		result.search = next.search.trim();
+	}
+	if (next.sort_by && next.sort_by !== "recently_created") {
+		result.sort_by = next.sort_by;
+	}
+	if (next.role && next.role !== "all") {
+		result.role = next.role;
+	}
+	if (next.tenant_role && next.tenant_role !== "all") {
+		result.tenant_role = next.tenant_role;
+	}
+
+	return result;
+}
 
 export const USER_ROLE_FILTER = {
 	ALL: "all",

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import { downloadCsv } from "../tenants/$tenantId/-data";
 import {
@@ -7,6 +8,38 @@ import {
 } from "../tenants/$tenantId/-data";
 
 export { getPaymentStatusBadgeClass };
+
+export const invoicesSearchSchema = z.object({
+	page: z.coerce.number().int().positive().optional(),
+	search: z.string().optional(),
+	date_from: z.string().optional(),
+	date_to: z.string().optional(),
+});
+
+export type InvoicesSearchParams = z.infer<typeof invoicesSearchSchema>;
+
+export function mergeInvoicesSearchParams(
+	current: InvoicesSearchParams,
+	patch: Partial<InvoicesSearchParams>,
+): InvoicesSearchParams {
+	const next = { ...current, ...patch };
+	const result: InvoicesSearchParams = {};
+
+	if (next.page && next.page > 1) {
+		result.page = next.page;
+	}
+	if (next.search?.trim()) {
+		result.search = next.search.trim();
+	}
+	if (next.date_from?.trim()) {
+		result.date_from = next.date_from.trim();
+	}
+	if (next.date_to?.trim()) {
+		result.date_to = next.date_to.trim();
+	}
+
+	return result;
+}
 
 const invoiceShortDateFormatter = new Intl.DateTimeFormat("en-US", {
 	month: "short",

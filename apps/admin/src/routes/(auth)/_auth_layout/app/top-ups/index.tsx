@@ -6,8 +6,8 @@ import {
 	FunnelIcon,
 	MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { WALLET_V2_API } from "#/api/http/v2/wallet/wallet.api";
 import { useAllTransactionsV2Query } from "#/api/http/v2/wallet/wallet.hooks";
@@ -61,11 +61,14 @@ import {
 	getTopUpStatusLabel,
 	getTopUpTenantName,
 	hasActiveTopUpFilters,
+	mergeTopUpsSearchParams,
 	PAYMENT_METHOD_FILTER_OPTIONS,
 	type AmountPaidFilter,
 	type PaymentMethodFilter,
 	TOP_UP_STATUS_FILTER_OPTIONS,
 	type TopUpStatusFilter,
+	type TopUpsSearchParams,
+	topUpsSearchSchema,
 } from "./-data";
 
 const PAGE_SIZE = 10;
@@ -90,6 +93,7 @@ export const Route = createFileRoute(
 			{ name: "description", content: "Monitor and manage tenant wallet credit top-up transactions." },
 		],
 	}),
+	validateSearch: topUpsSearchSchema,
 	component: TopUpsPage,
 });
 
@@ -106,23 +110,50 @@ function getTopUpTableHeadClassName(index: number, total: number) {
 }
 
 function TopUpsPage() {
-	const [page, setPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [paymentMethodFilter, setPaymentMethodFilter] =
-		useState<PaymentMethodFilter>(DEFAULT_PAYMENT_METHOD_FILTER);
-	const [statusFilter, setStatusFilter] = useState<TopUpStatusFilter>(
-		DEFAULT_TOP_UP_STATUS_FILTER,
-	);
-	const [amountPaidFilter, setAmountPaidFilter] = useState<AmountPaidFilter>(
-		DEFAULT_AMOUNT_PAID_FILTER,
-	);
-	const [dateFrom, setDateFrom] = useState("");
-	const [dateTo, setDateTo] = useState("");
+	const navigate = useNavigate({ from: Route.fullPath });
+	const urlSearch = Route.useSearch();
+	const page = urlSearch.page ?? 1;
+	const paymentMethodFilter = (urlSearch.payment_method ??
+		DEFAULT_PAYMENT_METHOD_FILTER) as PaymentMethodFilter;
+	const statusFilter = (urlSearch.status ??
+		DEFAULT_TOP_UP_STATUS_FILTER) as TopUpStatusFilter;
+	const amountPaidFilter = (urlSearch.amount_paid ??
+		DEFAULT_AMOUNT_PAID_FILTER) as AmountPaidFilter;
+	const dateFrom = urlSearch.date_from ?? "";
+	const dateTo = urlSearch.date_to ?? "";
+
+	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [selectedTopUp, setSelectedTopUp] = useState<WalletTransaction | null>(
 		null,
 	);
 	const [detailsOpen, setDetailsOpen] = useState(false);
-	const debouncedSearch = useDebouncedValue(searchQuery, 300);
+	const debouncedSearch = useDebouncedValue(searchDraft, 300);
+
+	const updateSearchParams = useCallback(
+		(patch: Partial<TopUpsSearchParams>) => {
+			void navigate({
+				search: (current) => mergeTopUpsSearchParams(current, patch),
+				replace: true,
+			});
+		},
+		[navigate],
+	);
+
+	useEffect(() => {
+		setSearchDraft(urlSearch.search ?? "");
+	}, [urlSearch.search]);
+
+	useEffect(() => {
+		const nextSearch = debouncedSearch.trim();
+		const currentSearch = (urlSearch.search ?? "").trim();
+		if (nextSearch === currentSearch) {
+			return;
+		}
+		updateSearchParams({
+			search: nextSearch || undefined,
+			page: undefined,
+		});
+	}, [debouncedSearch, urlSearch.search, updateSearchParams]);
 
 	const topUpsListQuery = useMemo(
 		() =>
@@ -148,11 +179,6 @@ function TopUpsPage() {
 	);
 
 	const topUpsQuery = useAllTransactionsV2Query(topUpsListQuery);
-
-	useEffect(() => {
-		setPage(1);
-	}, [
-	]);
 
 	const topUps = topUpsQuery.data?.items ?? [];
 	const totalTopUps = topUpsQuery.data?.meta.pagination.total ?? 0;
@@ -241,8 +267,8 @@ function TopUpsPage() {
 					<div className="relative">
 						<MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 						<Input
-							value={searchQuery}
-							onChange={(event) => setSearchQuery(event.target.value)}
+							value={searchDraft}
+							onChange={(event) => setSearchDraft(event.target.value)}
 							placeholder="Search by ID, tenant, amount, or reference..."
 							className="pl-9"
 							disabled={isLoading}
@@ -261,7 +287,12 @@ function TopUpsPage() {
 							id="top-ups-date-from"
 							label="Date from"
 							value={dateFrom}
-							onChange={setDateFrom}
+							onChange={(value) =>
+								updateSearchParams({
+									date_from: value || undefined,
+									page: undefined,
+								})
+							}
 							disabled={isLoading}
 							max={dateTo || undefined}
 							placeholder="Start date"
@@ -270,7 +301,12 @@ function TopUpsPage() {
 							id="top-ups-date-to"
 							label="Date to"
 							value={dateTo}
-							onChange={setDateTo}
+							onChange={(value) =>
+								updateSearchParams({
+									date_to: value || undefined,
+									page: undefined,
+								})
+							}
 							disabled={isLoading}
 							min={dateFrom || undefined}
 							placeholder="End date"
@@ -279,7 +315,10 @@ function TopUpsPage() {
 						<Select
 							value={paymentMethodFilter}
 							onValueChange={(value) =>
-								setPaymentMethodFilter(value as PaymentMethodFilter)
+								updateSearchParams({
+									payment_method: value as PaymentMethodFilter,
+									page: undefined,
+								})
 							}
 							disabled={isLoading}
 						>
@@ -298,7 +337,10 @@ function TopUpsPage() {
 						<Select
 							value={amountPaidFilter}
 							onValueChange={(value) =>
-								setAmountPaidFilter(value as AmountPaidFilter)
+								updateSearchParams({
+									amount_paid: value as AmountPaidFilter,
+									page: undefined,
+								})
 							}
 							disabled={isLoading}
 						>
@@ -317,7 +359,10 @@ function TopUpsPage() {
 						<Select
 							value={statusFilter}
 							onValueChange={(value) =>
-								setStatusFilter(value as TopUpStatusFilter)
+								updateSearchParams({
+									status: value as TopUpStatusFilter,
+									page: undefined,
+								})
 							}
 							disabled={isLoading}
 						>
@@ -339,12 +384,16 @@ function TopUpsPage() {
 							variant="outline"
 							className="shrink-0"
 							onClick={() => {
-								setSearchQuery("");
-								setPaymentMethodFilter(DEFAULT_PAYMENT_METHOD_FILTER);
-								setStatusFilter(DEFAULT_TOP_UP_STATUS_FILTER);
-								setAmountPaidFilter(DEFAULT_AMOUNT_PAID_FILTER);
-								setDateFrom("");
-								setDateTo("");
+								setSearchDraft("");
+								updateSearchParams({
+									search: undefined,
+									payment_method: DEFAULT_PAYMENT_METHOD_FILTER,
+									status: DEFAULT_TOP_UP_STATUS_FILTER,
+									amount_paid: DEFAULT_AMOUNT_PAID_FILTER,
+									date_from: undefined,
+									date_to: undefined,
+									page: undefined,
+								});
 							}}
 						>
 							Clear Filters
@@ -409,7 +458,11 @@ function TopUpsPage() {
 								page={page}
 								pageSize={PAGE_SIZE}
 								total={totalTopUps}
-								onPageChange={setPage}
+								onPageChange={(nextPage) =>
+									updateSearchParams({
+										page: nextPage > 1 ? nextPage : undefined,
+									})
+								}
 							/>
 						</>
 					)}
