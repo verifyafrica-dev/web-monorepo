@@ -1,8 +1,25 @@
-Welcome to your new TanStack Start app! 
+# VerifyAfrica Client (dashboard)
+
+Customer dashboard (TanStack Start). See the [monorepo README](../../README.md) for workspace setup, branching (`dev`), and shared packages.
+
+## Realtime presence (Pusher)
+
+After login, `PresenceConnector` reports this browser tab as online via Pusher (per-session + device metadata). Admins see it on the Active page.
+
+- Set `VITE_PUSHER_KEY` and `VITE_PUSHER_CLUSTER` in `.env` (see `.env.example`). Never put the Pusher secret in the frontend.
+- Offline is handled by the backend Pusher presence webhook when the socket disconnects.
+- Full flow: [monorepo README](../../README.md) and the backend README → **Realtime presence (Pusher)**.
 
 # Getting Started
 
-To run this application:
+From the monorepo root:
+
+```bash
+bun install
+bun run dev:client
+```
+
+Or from this app directory:
 
 ```bash
 bun install
