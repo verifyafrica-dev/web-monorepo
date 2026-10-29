@@ -2,13 +2,14 @@
  * Canonical VerifyAfrica app origins across deploy environments.
  *
  * - `local` — portless dev (`*.verifyafrica.localhost`)
- * - `test` — Railway / staging (`test.*.verifyafrica.io`)
- * - `production` — live (`*.verifyafrica.io`)
+ * - `dev` — rigorous development (`dev.*.verifyafrica.io`, deploys from `dev`)
+ * - `test` — staging (`test.*.verifyafrica.io`, deploys from `staging`)
+ * - `production` — live (`*.verifyafrica.io`, deploys from `main`)
  *
  * Backend mirrors these in `backend-main/src/core/domain_constants.py`.
  */
 
-export type DeployEnvironment = "local" | "test" | "production";
+export type DeployEnvironment = "local" | "dev" | "test" | "production";
 
 /** In-app Live ↔ Test API mode (customer-facing switcher). */
 export type ApiMode = "live" | "test";
@@ -22,7 +23,7 @@ export type ApiModeConfig = {
 	defaultMode: ApiMode;
 };
 
-export const DEPLOY_ENVIRONMENTS = ["local", "test", "production"] as const;
+export const DEPLOY_ENVIRONMENTS = ["local", "dev", "test", "production"] as const;
 
 /** Portless dev hostnames (no scheme). */
 export const PORTLESS_HOSTS = {
@@ -46,6 +47,14 @@ export const APP_ORIGINS: Record<
 		app: `https://${PORTLESS_HOSTS.app}`,
 		status: `https://${PORTLESS_HOSTS.status}`,
 		api: `http://localhost:${DEV_API_PORT}`,
+	},
+	dev: {
+		client: "https://dev.dashboard.verifyafrica.io",
+		admin: "https://dev.admin.verifyafrica.io",
+		app: "https://dev.app.verifyafrica.io",
+		status: "https://dev.status.verifyafrica.io",
+		// Shared development API until a dedicated `dev.api` is provisioned.
+		api: "https://test.api.verifyafrica.io",
 	},
 	test: {
 		client: "https://test.dashboard.verifyafrica.io",
@@ -73,6 +82,7 @@ export const LEGACY_LOCAL_ORIGINS: Record<AppSurface, string> = {
 };
 
 export const API_BASE_URLS = {
+	dev: `${APP_ORIGINS.dev.api}/api`,
 	test: `${APP_ORIGINS.test.api}/api`,
 	production: `${APP_ORIGINS.production.api}/api`,
 } as const;
@@ -99,16 +109,18 @@ export function getApiBaseUrlForEnvironment(
 
 /**
  * Resolve Live/Test API bases for the current frontend deploy.
- * Internal `test.*` frontends stay test-only (no customer switcher).
+ * Internal `dev.*` / `test.*` frontends stay development-only (no customer switcher).
  */
 export function resolveApiModeConfig(
 	configuredApiBaseUrl: string,
 	deployEnvironment: DeployEnvironment,
 ): ApiModeConfig {
-	if (deployEnvironment === "test") {
+	if (deployEnvironment === "dev" || deployEnvironment === "test") {
+		const apiBaseUrl =
+			deployEnvironment === "dev" ? API_BASE_URLS.dev : API_BASE_URLS.test;
 		return {
-			liveApiBaseUrl: API_BASE_URLS.test,
-			testApiBaseUrl: API_BASE_URLS.test,
+			liveApiBaseUrl: apiBaseUrl,
+			testApiBaseUrl: apiBaseUrl,
 			switcherEnabled: false,
 			defaultMode: "test",
 		};
@@ -123,7 +135,7 @@ export function resolveApiModeConfig(
 		};
 	}
 
-	// Local / development: fixed to the configured API — no Live↔Test switcher.
+	// Local: fixed to the configured API — no Live↔Test switcher.
 	return {
 		liveApiBaseUrl: configuredApiBaseUrl,
 		testApiBaseUrl: configuredApiBaseUrl,
@@ -153,6 +165,9 @@ export function getVerifyAppOriginForMode(
 	if (deployEnv === "local") {
 		return APP_ORIGINS.local.app;
 	}
+	if (deployEnv === "dev") {
+		return APP_ORIGINS.dev.app;
+	}
 	return APP_ORIGINS.production.app;
 }
 
@@ -166,6 +181,8 @@ export function withApiModeQueryKey<T extends readonly unknown[]>(
 export function detectDeployEnvironment(host: string): DeployEnvironment {
 	const normalized = host.toLowerCase();
 
+	// Check prefixed hosts before bare production hosts (`dev.dashboard` also
+	// contains `dashboard.verifyafrica.io`).
 	if (
 		normalized.includes("test.dashboard.verifyafrica.io") ||
 		normalized.includes("test.admin.verifyafrica.io") ||
@@ -174,6 +191,16 @@ export function detectDeployEnvironment(host: string): DeployEnvironment {
 		normalized.includes("test.api.verifyafrica.io")
 	) {
 		return "test";
+	}
+
+	if (
+		normalized.includes("dev.dashboard.verifyafrica.io") ||
+		normalized.includes("dev.admin.verifyafrica.io") ||
+		normalized.includes("dev.app.verifyafrica.io") ||
+		normalized.includes("dev.status.verifyafrica.io") ||
+		normalized.includes("dev.api.verifyafrica.io")
+	) {
+		return "dev";
 	}
 
 	if (
@@ -199,11 +226,15 @@ export function getAuthTokenPrefix(host: string): string {
 	}
 
 	if (normalized.includes("dashboard.verifyafrica.io")) {
-		return deployEnv === "test" ? "test-dashboard:" : "dashboard:";
+		if (deployEnv === "dev") return "dev-dashboard:";
+		if (deployEnv === "test") return "test-dashboard:";
+		return "dashboard:";
 	}
 
 	if (normalized.includes("admin.verifyafrica.io")) {
-		return deployEnv === "test" ? "test-admin:" : "admin:";
+		if (deployEnv === "dev") return "dev-admin:";
+		if (deployEnv === "test") return "test-admin:";
+		return "admin:";
 	}
 
 	return "local:";

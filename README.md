@@ -11,7 +11,7 @@ Bun workspaces for the VerifyAfrica frontends and shared packages.
 | `apps/app` | `@verifyafrica/app` | Public / product surfaces |
 | `apps/status` | `@verifyafrica/status` | Status page |
 
-Shared HTTP types and helpers live in `packages/api-client`. Domain URL constants live in `packages/config`.
+Shared HTTP types and helpers live in `packages/api-client`. Domain URL constants live in `packages/config` (`packages/config/src/domains.ts`).
 
 ## Getting started
 
@@ -23,9 +23,25 @@ bun run dev:admin    # admin
 
 Copy each app’s `.env.example` to `.env` (or `.env.local`) and set at least `VITE_API_BASE_URL` to your API (`http://localhost:8300/api` locally).
 
-## Branches
+## Environments & branches
 
-Feature work lands on **`dev`**. Promote to production with a `dev` → `main` PR (same pattern as the backend), not long-lived release branches for routine features.
+All non-production frontends are **development-class**. Hosted envs map to git branches as follows:
+
+| Environment | Branch | Dashboard | Admin | App | API used by FE |
+| --- | --- | --- | --- | --- | --- |
+| Local | (local) | `*.verifyafrica.localhost` | same | same | `localhost:8300` |
+| **Dev** (rigorous testing) | **`dev`** | `dev.dashboard.verifyafrica.io` | `dev.admin.verifyafrica.io` | `dev.app.verifyafrica.io` | `test.api.verifyafrica.io` |
+| **Test / staging** | **`staging`** | `test.dashboard.verifyafrica.io` | `test.admin.verifyafrica.io` | `test.app.verifyafrica.io` | `test.api.verifyafrica.io` |
+| Production | **`main`** | `dashboard.verifyafrica.io` | `admin.verifyafrica.io` | `app.verifyafrica.io` | `api.verifyafrica.io` |
+
+Notes:
+
+- **`dev.*`** is for active development and thorough QA. Deploys track the **`dev`** branch.
+- **`test.*`** is the staging surface customers/QA hit before prod. Deploys track the **`staging`** branch.
+- Promote features with PRs along `dev` → `staging` → `main` (or `dev` → `main` when skipping staging). Prefer that over long-lived release branches for routine work.
+- `dev` and `test` frontends are locked to the development API (no Live↔Test switcher). Only production enables the customer Live/Test switcher.
+- Wire DNS + Railway/Vercel custom domains for the three `dev.*` hosts to the **`dev`** branch deployments; keep existing `test.*` hosts on **`staging`**.
+- Backend CORS allowlists must include the `dev.*` origins (see `backend-main/src/core/domain_constants.py`).
 
 ## Realtime presence (Pusher)
 
