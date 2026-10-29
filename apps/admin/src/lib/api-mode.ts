@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import type { ApiMode } from "@verifyafrica/config/domains";
 import { toast } from "sonner";
 import {
@@ -12,12 +13,35 @@ export type SwitchApiModeResult =
 	| { ok: true }
 	| { ok: false; reason: "blocked" | "error" | "unavailable" };
 
+/**
+ * Entity-id routes are environment-specific. After Live↔Test switch, leave them
+ * for the nearest list page so the twin env is not asked for a foreign id.
+ */
+export function resolveEnvSwitchSafePath(pathname: string): string | null {
+	const path = pathname.replace(/\/+$/, "") || "/";
+
+	if (/^\/app\/tenants\/[^/]+$/.test(path)) {
+		return "/app/tenants";
+	}
+
+	return null;
+}
+
 export function useSwitchApiMode() {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const pathname = useRouterState({ select: (state) => state.location.pathname });
 	const mode = useApiModeStore((state) => state.mode);
 	const setMode = useApiModeStore((state) => state.setMode);
 	const setTestAccessToken = useApiModeStore((state) => state.setTestAccessToken);
 	const clearTestSession = useApiModeStore((state) => state.clearTestSession);
+
+	async function leaveEntityIdRouteIfNeeded() {
+		const safePath = resolveEnvSwitchSafePath(pathname);
+		if (safePath) {
+			await navigate({ to: safePath, replace: true });
+		}
+	}
 
 	async function switchApiMode(next: ApiMode): Promise<SwitchApiModeResult> {
 		if (!apiModeConfig.switcherEnabled) {
@@ -34,6 +58,7 @@ export function useSwitchApiMode() {
 				// Mode is part of query keys — invalidate active queries instead of
 				// clear(), which can leave observers stuck in a pending skeleton state.
 				await queryClient.invalidateQueries({ type: "active" });
+				await leaveEntityIdRouteIfNeeded();
 				toast.success("Switched to Test mode");
 				return { ok: true };
 			} catch (error) {
@@ -64,6 +89,7 @@ export function useSwitchApiMode() {
 		clearTestSession();
 		setMode("live");
 		await queryClient.invalidateQueries({ type: "active" });
+		await leaveEntityIdRouteIfNeeded();
 		toast.success("Switched to Live mode");
 		return { ok: true };
 	}
