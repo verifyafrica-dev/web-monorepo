@@ -27,6 +27,7 @@ import {
 	SidebarTrigger,
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { AppSidebar } from "#/components/app-sidebar";
+import { PresenceConnector } from "#/components/presence-connector";
 import { TestModeBanner } from "#/components/environment-mode-switcher";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
@@ -80,6 +81,10 @@ function AuthLayout() {
 
 	return (
 		<SidebarProvider>
+			<PresenceConnector
+				enabled={Boolean(user?.id)}
+				listenForAdminUpdates
+			/>
 			<AppSidebar />
 			<SidebarInset className="min-w-0">
 				<TestModeBanner />

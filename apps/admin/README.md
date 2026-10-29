@@ -1,8 +1,25 @@
-Welcome to your new TanStack Start app! 
+# VerifyAfrica Admin
+
+Internal admin app (TanStack Start). See the [monorepo README](../../README.md) for workspace setup, branching (`dev`), and shared packages.
+
+## Realtime presence (Pusher)
+
+The **Active** page (`/app/active`) lists online users and tenants.
+
+- `PresenceConnector` joins the platform presence channel after login and (for superusers) the private admin channel for live updates.
+- Set `VITE_PUSHER_KEY` and `VITE_PUSHER_CLUSTER` in `.env` (see `.env.example`). Never put the Pusher secret in the frontend.
+- Backend owns channel auth, Redis snapshots, and the Pusher presence webhook — details in the backend README.
 
 # Getting Started
 
-To run this application:
+From the monorepo root:
+
+```bash
+bun install
+bun run dev:admin
+```
+
+Or from this app directory:
 
 ```bash
 bun install

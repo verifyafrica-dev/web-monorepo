@@ -31,6 +31,8 @@ export const env = {
   sentryDsn: import.meta.env.VITE_SENTRY_DSN,
   stripePublishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
   logRocketKey: import.meta.env.VITE_LOGROCKET_KEY,
+  pusherKey: import.meta.env.VITE_PUSHER_KEY ?? '',
+  pusherCluster: import.meta.env.VITE_PUSHER_CLUSTER ?? 'eu',
 
   // Firebase (client-side web SDK — apiKey is public; restrict via Firebase console rules)
   firebase: {

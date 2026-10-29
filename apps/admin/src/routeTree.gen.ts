@@ -17,6 +17,7 @@ import { Route as authAuth_layoutAppIndexRouteImport } from './routes/(auth)/_au
 import { Route as unguardedUnguarded_layoutForgotPasswordIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/forgot-password/index'
 import { Route as unguardedUnguarded_layoutLoginIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/login/index'
 import { Route as unguardedUnguarded_layoutResetPasswordIndexRouteImport } from './routes/(unguarded)/_unguarded_layout/reset-password/index'
+import { Route as authAuth_layoutAppActiveIndexRouteImport } from './routes/(auth)/_auth_layout/app/active/index'
 import { Route as authAuth_layoutAppActivityLogsIndexRouteImport } from './routes/(auth)/_auth_layout/app/activity-logs/index'
 import { Route as authAuth_layoutAppInvoicesIndexRouteImport } from './routes/(auth)/_auth_layout/app/invoices/index'
 import { Route as authAuth_layoutAppMixedVerificationsIndexRouteImport } from './routes/(auth)/_auth_layout/app/mixed-verifications/index'
@@ -69,6 +70,12 @@ const unguardedUnguarded_layoutResetPasswordIndexRoute =
     id: '/reset-password/',
     path: '/reset-password/',
     getParentRoute: () => unguardedUnguarded_layoutRoute,
+  } as any)
+const authAuth_layoutAppActiveIndexRoute =
+  authAuth_layoutAppActiveIndexRouteImport.update({
+    id: '/app/active/',
+    path: '/app/active/',
+    getParentRoute: () => authAuth_layoutRoute,
   } as any)
 const authAuth_layoutAppActivityLogsIndexRoute =
   authAuth_layoutAppActivityLogsIndexRouteImport.update({
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password/': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/login/': typeof unguardedUnguarded_layoutLoginIndexRoute
   '/reset-password/': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
+  '/app/active/': typeof authAuth_layoutAppActiveIndexRoute
   '/app/activity-logs/': typeof authAuth_layoutAppActivityLogsIndexRoute
   '/app/invoices/': typeof authAuth_layoutAppInvoicesIndexRoute
   '/app/mixed-verifications/': typeof authAuth_layoutAppMixedVerificationsIndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/login': typeof unguardedUnguarded_layoutLoginIndexRoute
   '/reset-password': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
+  '/app/active': typeof authAuth_layoutAppActiveIndexRoute
   '/app/activity-logs': typeof authAuth_layoutAppActivityLogsIndexRoute
   '/app/invoices': typeof authAuth_layoutAppInvoicesIndexRoute
   '/app/mixed-verifications': typeof authAuth_layoutAppMixedVerificationsIndexRoute
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/(unguarded)/_unguarded_layout/forgot-password/': typeof unguardedUnguarded_layoutForgotPasswordIndexRoute
   '/(unguarded)/_unguarded_layout/login/': typeof unguardedUnguarded_layoutLoginIndexRoute
   '/(unguarded)/_unguarded_layout/reset-password/': typeof unguardedUnguarded_layoutResetPasswordIndexRoute
+  '/(auth)/_auth_layout/app/active/': typeof authAuth_layoutAppActiveIndexRoute
   '/(auth)/_auth_layout/app/activity-logs/': typeof authAuth_layoutAppActivityLogsIndexRoute
   '/(auth)/_auth_layout/app/invoices/': typeof authAuth_layoutAppInvoicesIndexRoute
   '/(auth)/_auth_layout/app/mixed-verifications/': typeof authAuth_layoutAppMixedVerificationsIndexRoute
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/forgot-password/'
     | '/login/'
     | '/reset-password/'
+    | '/app/active/'
     | '/app/activity-logs/'
     | '/app/invoices/'
     | '/app/mixed-verifications/'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/app/active'
     | '/app/activity-logs'
     | '/app/invoices'
     | '/app/mixed-verifications'
@@ -235,6 +247,7 @@ export interface FileRouteTypes {
     | '/(unguarded)/_unguarded_layout/forgot-password/'
     | '/(unguarded)/_unguarded_layout/login/'
     | '/(unguarded)/_unguarded_layout/reset-password/'
+    | '/(auth)/_auth_layout/app/active/'
     | '/(auth)/_auth_layout/app/activity-logs/'
     | '/(auth)/_auth_layout/app/invoices/'
     | '/(auth)/_auth_layout/app/mixed-verifications/'
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof unguardedUnguarded_layoutResetPasswordIndexRouteImport
       parentRoute: typeof unguardedUnguarded_layoutRoute
     }
+    '/(auth)/_auth_layout/app/active/': {
+      id: '/(auth)/_auth_layout/app/active/'
+      path: '/app/active'
+      fullPath: '/app/active/'
+      preLoaderRoute: typeof authAuth_layoutAppActiveIndexRouteImport
+      parentRoute: typeof authAuth_layoutRoute
+    }
     '/(auth)/_auth_layout/app/activity-logs/': {
       id: '/(auth)/_auth_layout/app/activity-logs/'
       path: '/app/activity-logs'
@@ -387,6 +407,7 @@ declare module '@tanstack/react-router' {
 
 interface authAuth_layoutRouteChildren {
   authAuth_layoutAppIndexRoute: typeof authAuth_layoutAppIndexRoute
+  authAuth_layoutAppActiveIndexRoute: typeof authAuth_layoutAppActiveIndexRoute
   authAuth_layoutAppActivityLogsIndexRoute: typeof authAuth_layoutAppActivityLogsIndexRoute
   authAuth_layoutAppInvoicesIndexRoute: typeof authAuth_layoutAppInvoicesIndexRoute
   authAuth_layoutAppMixedVerificationsIndexRoute: typeof authAuth_layoutAppMixedVerificationsIndexRoute
@@ -401,6 +422,7 @@ interface authAuth_layoutRouteChildren {
 
 const authAuth_layoutRouteChildren: authAuth_layoutRouteChildren = {
   authAuth_layoutAppIndexRoute: authAuth_layoutAppIndexRoute,
+  authAuth_layoutAppActiveIndexRoute: authAuth_layoutAppActiveIndexRoute,
   authAuth_layoutAppActivityLogsIndexRoute:
     authAuth_layoutAppActivityLogsIndexRoute,
   authAuth_layoutAppInvoicesIndexRoute: authAuth_layoutAppInvoicesIndexRoute,

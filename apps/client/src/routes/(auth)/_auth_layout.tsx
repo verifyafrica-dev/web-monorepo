@@ -12,6 +12,7 @@ import {
 	useUserV2LogoutMutation,
 } from "#/api/http/v2/users/users.hooks";
 import { AppSidebar } from "#/components/app-sidebar";
+import { PresenceConnector } from "#/components/presence-connector";
 import { TestModeBanner } from "#/components/environment-mode-switcher";
 import { NoOrganizationState } from "#/components/no-organization-state";
 import { RequiredPasswordChange } from "#/components/required-password-change";
@@ -100,6 +101,7 @@ function AuthLayout() {
 	if (tenants.length === 0) {
 		return (
 			<div className="flex min-h-dvh flex-col">
+				<PresenceConnector enabled={Boolean(user?.id)} />
 				<header className="flex min-h-14 items-center justify-end border-b px-4">
 					<Button
 						variant="ghost"
@@ -121,6 +123,7 @@ function AuthLayout() {
 
 	return (
 		<SidebarProvider>
+			<PresenceConnector enabled={Boolean(user?.id)} />
 			<AppSidebar />
 			<SidebarInset className="min-w-0">
 				<TestModeBanner />

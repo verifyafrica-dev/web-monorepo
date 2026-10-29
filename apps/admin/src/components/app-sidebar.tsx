@@ -1,4 +1,5 @@
 import {
+	BroadcastIcon,
 	BuildingsIcon,
 	ClockCounterClockwiseIcon,
 	CreditCardIcon,
@@ -43,6 +44,11 @@ const navItems = [
 		title: "Users",
 		to: "/app/users",
 		icon: UsersIcon,
+	},
+	{
+		title: "Active",
+		to: "/app/active",
+		icon: BroadcastIcon,
 	},
 	{
 		title: "Profile",
