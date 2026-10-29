@@ -13,7 +13,7 @@ import { z } from "zod";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
 	useAllVerificationPricesV2Query,
-	useUpdateVerificationPriceV2Mutation,
+	useBulkUpdateVerificationPricesV2Mutation,
 } from "#/api/http/v2/verifications/verifications.hooks";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Card, CardContent } from "@verifyafrica/ui/components/ui/card";
@@ -81,14 +81,14 @@ function VerificationSettingsPage() {
 	);
 
 	const pricesQuery = useAllVerificationPricesV2Query({ per_page: 500 });
-	const updatePriceMutation = useUpdateVerificationPriceV2Mutation();
+	const bulkUpdatePricesMutation = useBulkUpdateVerificationPricesV2Mutation();
 
 	const rows = useMemo(
 		() => groupVerificationPrices(pricesQuery.data?.items ?? []),
 		[pricesQuery.data?.items],
 	);
 	const hasChanges = Object.keys(drafts).length > 0;
-	const isSaving = updatePriceMutation.isPending;
+	const isSaving = bulkUpdatePricesMutation.isPending;
 
 	const { tab, product } = Route.useSearch();
 	const navigate = useNavigate({ from: Route.fullPath });
@@ -133,14 +133,12 @@ function VerificationSettingsPage() {
 		}
 
 		try {
-			await Promise.all(
-				updates.map((update) =>
-					updatePriceMutation.mutateAsync({
-						id: update.id,
-						payload: update.payload,
-					}),
-				),
-			);
+			await bulkUpdatePricesMutation.mutateAsync({
+				items: updates.map((update) => ({
+					id: update.id,
+					...update.payload,
+				})),
+			});
 			setDrafts({});
 			toast.success("Verification settings updated");
 		} catch (error) {

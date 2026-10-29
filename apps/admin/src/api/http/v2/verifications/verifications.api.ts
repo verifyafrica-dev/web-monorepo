@@ -25,6 +25,7 @@ import type {
 	VerificationLink,
 	VerificationListQuery,
 	VerificationPrice,
+	VerificationPriceBulkUpdatePayload,
 	VerificationProofKey,
 	VerificationRequest,
 	VerificationRequestCreatePayload,
@@ -61,6 +62,7 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 		`/v2/verifications/verification-batches/${id}/`,
 	prices: "/v2/verifications/prices/",
 	pricesAll: "/v2/verifications/prices/all/",
+	pricesBulk: "/v2/verifications/prices/bulk/",
 	priceDetail: (id: string) => `/v2/verifications/prices/${id}/`,
 	bulk: "/v2/verifications/bulk/",
 	batchRetryFailed: (batchId: string) =>
@@ -327,6 +329,13 @@ export const VERIFICATIONS_V2_API = {
 				data,
 			)
 			.then((res) => unwrapV2Data<VerificationPrice>(res)),
+
+	BULK_UPDATE_PRICES: async (
+		data: VerificationPriceBulkUpdatePayload,
+	): Promise<VerificationPrice[]> =>
+		await $http
+			.patch(VERIFICATIONS_V2_ENDPOINTS.pricesBulk, data)
+			.then((res) => unwrapV2Data<VerificationPrice[]>(res)),
 
 	BULK_CREATE: async (
 		tenantId: string,
