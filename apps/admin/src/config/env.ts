@@ -7,14 +7,31 @@
 
 import { detectDeployEnvironment } from '@verifyafrica/config/domains';
 
-// Derived from the API URL rather than window.location so SSR and hydration agree.
-const deployEnvironment = import.meta.env.VITE_API_BASE_URL
-  ? detectDeployEnvironment(new URL(import.meta.env.VITE_API_BASE_URL).host)
+function optionalEnvUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const liveApiBaseUrl = optionalEnvUrl(
+  import.meta.env.VITE_LIVE_API_BASE_URL as string | undefined,
+);
+const testApiBaseUrl = optionalEnvUrl(
+  import.meta.env.VITE_TEST_API_BASE_URL as string | undefined,
+);
+
+// Prefer Live URL for deploy detection on production builds; else the single API URL.
+// Derived from env rather than window.location so SSR and hydration agree.
+const detectionUrl = liveApiBaseUrl ?? apiBaseUrl;
+const deployEnvironment = detectionUrl
+  ? detectDeployEnvironment(new URL(detectionUrl).host)
   : 'local';
 
 export const env = {
   // API Configuration
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  apiBaseUrl,
+  liveApiBaseUrl,
+  testApiBaseUrl,
 
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'Verify Africa',

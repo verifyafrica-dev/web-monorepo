@@ -111,40 +111,40 @@ export function getApiBaseUrlForEnvironment(
 	return API_BASE_URLS[deployEnv];
 }
 
+export type ResolveApiModeConfigOptions = {
+	/** Production Live API override (`VITE_LIVE_API_BASE_URL`). */
+	liveApiBaseUrl?: string;
+	/** Production Test API override (`VITE_TEST_API_BASE_URL`). */
+	testApiBaseUrl?: string;
+};
+
 /**
  * Resolve Live/Test API bases for the current frontend deploy.
- * Internal `dev.*` / `test.*` frontends stay development-only (no customer switcher).
+ *
+ * - **production** — Live↔Test switcher on. Uses `VITE_LIVE_API_BASE_URL` /
+ *   `VITE_TEST_API_BASE_URL` when set, otherwise canonical hardcoded fallbacks.
+ * - **local / dev / test** — single `VITE_API_BASE_URL` for both modes; switcher off.
  */
 export function resolveApiModeConfig(
 	configuredApiBaseUrl: string,
 	deployEnvironment: DeployEnvironment,
+	options: ResolveApiModeConfigOptions = {},
 ): ApiModeConfig {
-	if (deployEnvironment === "dev" || deployEnvironment === "test") {
-		const apiBaseUrl =
-			deployEnvironment === "dev" ? API_BASE_URLS.dev : API_BASE_URLS.test;
-		return {
-			liveApiBaseUrl: apiBaseUrl,
-			testApiBaseUrl: apiBaseUrl,
-			switcherEnabled: false,
-			defaultMode: "test",
-		};
-	}
-
 	if (deployEnvironment === "production") {
 		return {
-			liveApiBaseUrl: API_BASE_URLS.production,
-			testApiBaseUrl: API_BASE_URLS.test,
+			liveApiBaseUrl: options.liveApiBaseUrl || API_BASE_URLS.production,
+			testApiBaseUrl: options.testApiBaseUrl || API_BASE_URLS.test,
 			switcherEnabled: true,
 			defaultMode: "live",
 		};
 	}
 
-	// Local: fixed to the configured API — no Live↔Test switcher.
+	// local, dev, test — env wins; no Live↔Test switcher.
 	return {
 		liveApiBaseUrl: configuredApiBaseUrl,
 		testApiBaseUrl: configuredApiBaseUrl,
 		switcherEnabled: false,
-		defaultMode: "live",
+		defaultMode: deployEnvironment === "local" ? "live" : "test",
 	};
 }
 

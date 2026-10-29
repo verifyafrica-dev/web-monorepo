@@ -11,6 +11,10 @@ import { env } from "#/config/env";
 export const apiModeConfig: ApiModeConfig = resolveApiModeConfig(
 	env.apiBaseUrl,
 	env.deployEnvironment,
+	{
+		liveApiBaseUrl: env.liveApiBaseUrl,
+		testApiBaseUrl: env.testApiBaseUrl,
+	},
 );
 
 type ApiModeStoreState = {
