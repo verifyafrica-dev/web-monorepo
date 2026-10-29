@@ -36,6 +36,8 @@ export const env = {
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'Verify Africa',
   appEnvironment: import.meta.env.VITE_APP_ENVIRONMENT || 'development',
+  /** Mirrors backend ENV_STATE: production | sandbox | dev. Unused in UI yet. */
+  envState: (import.meta.env.VITE_ENV_STATE || 'dev') as 'production' | 'sandbox' | 'dev',
   siteType: import.meta.env.VITE_SITE_TYPE as 'public' | 'client' | 'admin' | undefined,
 
   // Feature Flags
