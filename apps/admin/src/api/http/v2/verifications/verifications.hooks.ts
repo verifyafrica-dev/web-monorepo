@@ -73,7 +73,7 @@ export const VERIFICATIONS_V2_QUERY_KEYS = {
 		["verifications-v2", "prices", "all", params ?? {}] as const,
 	tenantPrices: (tenantId: string, params?: VerificationBatchListQuery) =>
 		["verifications-v2", "prices", tenantId, params ?? {}] as const,
-	priceDetail: (id: number) =>
+	priceDetail: (id: string) =>
 		["verifications-v2", "prices", "detail", id] as const,
 	linkDetail: (link: string) => ["verifications-v2", "links", link] as const,
 	countryAvailability: ["verifications-v2", "country-availability"] as const,
@@ -255,13 +255,13 @@ export const useTenantVerificationPricesV2Query = (
 	});
 
 export const useVerificationPriceDetailV2Query = (
-	id: number | undefined,
+	id: string | undefined,
 	enabled = true,
 ): UseQueryResult<VerificationPrice> =>
 	useQuery<VerificationPrice>({
-		queryKey: VERIFICATIONS_V2_QUERY_KEYS.priceDetail(id ?? 0),
-		queryFn: () => VERIFICATIONS_V2_API.PRICE_DETAIL(id ?? 0),
-		enabled: enabled && id !== undefined,
+		queryKey: VERIFICATIONS_V2_QUERY_KEYS.priceDetail(id ?? ""),
+		queryFn: () => VERIFICATIONS_V2_API.PRICE_DETAIL(id ?? ""),
+		enabled: enabled && Boolean(id),
 		staleTime: VERIFICATIONS_V2_STALE_TIME,
 	});
 
@@ -441,7 +441,7 @@ export const useUpdateVerificationPriceV2Mutation = () => {
 			id,
 			payload,
 		}: {
-			id: number;
+			id: string;
 			payload: Partial<VerificationPrice>;
 		}) => VERIFICATIONS_V2_API.UPDATE_PRICE(id, payload),
 		onSuccess: (data: VerificationPrice) => {

@@ -56,7 +56,7 @@ const VERIFICATIONS_V2_ENDPOINTS = {
 		`/v2/verifications/verification-batches/${id}/`,
 	prices: "/v2/verifications/prices/",
 	pricesAll: "/v2/verifications/prices/all/",
-	priceDetail: (id: number) => `/v2/verifications/prices/${id}/`,
+	priceDetail: (id: string) => `/v2/verifications/prices/${id}/`,
 	bulk: "/v2/verifications/bulk/",
 	batchRetryFailed: (batchId: string) =>
 		`/v2/verifications/batch/${batchId}/retry-failed/`,
@@ -273,13 +273,13 @@ export const VERIFICATIONS_V2_API = {
 			})
 			.then((res) => unwrapV2Paginated(res)),
 
-	PRICE_DETAIL: async (id: number): Promise<VerificationPrice> =>
+	PRICE_DETAIL: async (id: string): Promise<VerificationPrice> =>
 		await $http
 			.get(VERIFICATIONS_V2_ENDPOINTS.priceDetail(id))
 			.then((res) => unwrapV2Data<VerificationPrice>(res)),
 
 	UPDATE_PRICE: async (
-		id: number,
+		id: string,
 		data: Partial<VerificationPrice>,
 	): Promise<VerificationPrice> =>
 		await $http

@@ -445,7 +445,7 @@ export function resolveMixedTemplateAvailability(
 }
 
 export interface VerificationPrice {
-	id: number;
+	id: string;
 	verification_type: string;
 	cost_price: string;
 	selling_price: string;
@@ -458,7 +458,7 @@ export interface VerificationPrice {
 }
 
 export interface VerificationTypePrice {
-	id: number;
+	id: string;
 	verification_type: string;
 	is_active: boolean;
 	plan: string;

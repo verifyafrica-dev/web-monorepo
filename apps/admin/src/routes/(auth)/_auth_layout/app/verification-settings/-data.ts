@@ -10,7 +10,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 };
 
 export type VerificationPriceDraft = {
-	id: number;
+	id: string;
 	verification_type: string;
 	plan: string;
 	cost_price: string;
