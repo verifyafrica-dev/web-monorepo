@@ -4,6 +4,8 @@ const envSchema = z.object({
 	VITE_API_BASE_URL: z.url(),
 	VITE_APP_NAME: z.string().default("Verify Africa"),
 	VITE_APP_ENVIRONMENT: z.string().default("development"),
+	/** Mirrors backend ENV_STATE. Unused in UI yet. */
+	VITE_ENV_STATE: z.enum(["production", "sandbox", "dev"]).optional().default("dev"),
 	VITE_SITE_TYPE: z.enum(["public", "client", "admin", "dashboard"]).optional(),
 	VITE_ENABLE_ANALYTICS: z.enum(["true", "false"]).optional().default("false"),
 	VITE_ENABLE_DEBUG: z.enum(["true", "false"]).optional().default("false"),
@@ -33,6 +35,7 @@ export const env = {
 	apiBaseUrl: data.VITE_API_BASE_URL,
 	appName: data.VITE_APP_NAME,
 	appEnvironment: data.VITE_APP_ENVIRONMENT,
+	envState: data.VITE_ENV_STATE,
 	siteType: data.VITE_SITE_TYPE,
 	enableAnalytics: data.VITE_ENABLE_ANALYTICS === "true",
 	enableDebug: data.VITE_ENABLE_DEBUG === "true",
