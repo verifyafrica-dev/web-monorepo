@@ -17,6 +17,8 @@ const envSchema = z.object({
 	VITE_POSTHOG_HOST: z.string().url().optional().default("https://us.i.posthog.com"),
 	VITE_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
 	VITE_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+	VITE_PUSHER_KEY: z.string().optional(),
+	VITE_PUSHER_CLUSTER: z.string().optional().default("eu"),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
@@ -46,6 +48,8 @@ export const env = {
 	sentryDsn: data.VITE_SENTRY_DSN,
 	stripePublishableKey: data.VITE_STRIPE_PUBLISHABLE_KEY,
 	logRocketKey: data.VITE_LOGROCKET_KEY,
+	pusherKey: data.VITE_PUSHER_KEY ?? "",
+	pusherCluster: data.VITE_PUSHER_CLUSTER ?? "eu",
 	// Computed runtime values
 	isDevelopment: import.meta.env.DEV,
 	isProduction: import.meta.env.PROD,

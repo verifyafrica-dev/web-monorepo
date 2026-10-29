@@ -22,5 +22,8 @@
     "build:client": "bun run --filter='@verifyafrica/client' build",
     "build:admin": "bun run --filter='@verifyafrica/admin' build",
     "build:status": "bun run --filter='@verifyafrica/status' build"
+  },
+  "devDependencies": {
+    "@types/pusher-js": "^5.1.0"
   }
 }
