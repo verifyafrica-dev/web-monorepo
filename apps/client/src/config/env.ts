@@ -25,8 +25,6 @@ const envSchema = z.object({
 	VITE_LOGROCKET_KEY: z.string().optional(),
 	VITE_POSTHOG_KEY: z.string().optional(),
 	VITE_POSTHOG_HOST: z.string().url().optional().default("https://us.i.posthog.com"),
-	VITE_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
-	VITE_PUBLIC_SUPABASE_URL: z.string().url().optional(),
 	VITE_PUSHER_KEY: z.string().optional(),
 	VITE_PUSHER_CLUSTER: z.string().optional().default("eu"),
 });
