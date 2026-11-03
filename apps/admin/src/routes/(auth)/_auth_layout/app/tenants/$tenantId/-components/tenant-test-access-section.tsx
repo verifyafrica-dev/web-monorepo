@@ -15,6 +15,7 @@ import {
 	useUpdateTenantTestAccessV2Mutation,
 } from "#/api/http/v2/tenants/tenants.hooks";
 import { env } from "#/config/env";
+import { useApiModeStore } from "#/stores/api-mode-store";
 
 export function TenantTestAccessSection({
 	tenantId,
@@ -23,8 +24,10 @@ export function TenantTestAccessSection({
 	tenantId: string;
 	tenantName: string;
 }) {
-	const canManage = env.envState === "production";
-	const query = useTenantTestAccessV2Query(tenantId);
+	const apiMode = useApiModeStore((s) => s.mode);
+	// Live API is the source of truth; Test-mode updates would only flip the twin.
+	const canManage = env.envState === "production" && apiMode === "live";
+	const query = useTenantTestAccessV2Query(tenantId, canManage);
 	const mutation = useUpdateTenantTestAccessV2Mutation(tenantId);
 
 	const enabled = query.data?.test_access_enabled ?? false;
@@ -54,6 +57,8 @@ export function TenantTestAccessSection({
 							<Badge variant={enabled ? "default" : "secondary"}>
 								{enabled ? "Enabled" : "Disabled"}
 							</Badge>
+						) : env.envState === "production" && apiMode === "test" ? (
+							<Badge variant="outline">Live mode only</Badge>
 						) : (
 							<Badge variant="outline">Production only</Badge>
 						)}
@@ -62,7 +67,14 @@ export function TenantTestAccessSection({
 						<p className="text-sm text-muted-foreground">
 							When enabled, members of this organization can switch from Live to
 							their linked Test account. New production signups create a Test twin
-							with access disabled until you enable it here.
+							with access disabled until you enable it here. Disabling also blocks
+							protected Test API requests for that twin.
+						</p>
+					) : env.envState === "production" && apiMode === "test" ? (
+						<p className="text-sm text-muted-foreground">
+							Switch back to Live mode to enable or disable test access. Changes
+							are managed on the production organization and synced to the Test
+							twin.
 						</p>
 					) : (
 						<p className="text-sm text-muted-foreground">
