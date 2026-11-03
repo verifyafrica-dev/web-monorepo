@@ -85,6 +85,7 @@ export const useMeV2Query = (
 		queryFn: USERS_V2_API.ME,
 		enabled: isEnabled,
 		staleTime: 60_000,
+		retry: false,
 	});
 
 	useEffect(() => {
@@ -132,8 +133,15 @@ export const useUserV2LoginMutation = () =>
 				user: toAuthStoreUser(data.user),
 			});
 
-			const user = await USERS_V2_API.ME();
-			useAuthStore.setState({ user: toAuthStoreUser(user) });
+			try {
+				const user = await USERS_V2_API.ME();
+				useAuthStore.setState({ user: toAuthStoreUser(user) });
+			} catch (error) {
+				// Avoid a half-authenticated session that loops login ↔ app spinner.
+				deleteAllCookies();
+				useAuthStore.getState().clearAuth();
+				throw error;
+			}
 		},
 	});
 

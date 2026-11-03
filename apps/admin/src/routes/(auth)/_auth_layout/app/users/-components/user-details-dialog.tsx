@@ -1,10 +1,12 @@
 import {
 	BuildingsIcon,
 	CalendarBlankIcon,
+	CaretRightIcon,
 	ClockIcon,
 	EnvelopeSimpleIcon,
 	PhoneIcon,
 } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
 import type { AdminUser } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
@@ -107,12 +109,24 @@ export function UserDetailsDialog({
 							<p className="text-sm font-semibold">Tenants</p>
 							<div className="divide-y rounded-lg border">
 								{user.tenants.map((tenant) => (
-									<div key={tenant.id} className="space-y-1 px-4 py-3">
-										<p className="text-sm font-medium capitalize">{tenant.name}</p>
-										<p className="text-xs text-muted-foreground capitalize">
-											Role: {tenant.role}
-										</p>
-									</div>
+									<Link
+										key={tenant.id}
+										to="/app/tenants/$tenantId"
+										params={{ tenantId: tenant.id }}
+										search={{ tab: "overview" }}
+										className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
+										onClick={() => onOpenChange(false)}
+									>
+										<div className="min-w-0 space-y-1">
+											<p className="truncate text-sm font-medium capitalize">
+												{tenant.name}
+											</p>
+											<p className="text-xs text-muted-foreground capitalize">
+												Role: {tenant.role}
+											</p>
+										</div>
+										<CaretRightIcon className="size-4 shrink-0 text-muted-foreground" />
+									</Link>
 								))}
 							</div>
 						</div>

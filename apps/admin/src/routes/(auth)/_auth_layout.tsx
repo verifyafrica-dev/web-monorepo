@@ -5,7 +5,10 @@ import {
 	Outlet,
 	useLocation,
 } from "@tanstack/react-router";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import { Loader2Icon } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
 	useMeV2Query,
 	useUserV2LogoutMutation,
@@ -31,6 +34,7 @@ import { PresenceConnector } from "#/components/presence-connector";
 import { TestModeBanner } from "#/components/environment-mode-switcher";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
+import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
 import { useAuthStore } from "#/stores/auth-store";
 import { getUserInitials } from "#/lib/user";
 
@@ -52,6 +56,14 @@ function AuthLayout() {
 	const location = useLocation();
 	const getUserQuery = useMeV2Query();
 	const { logout, isLoggingOut } = useUserV2LogoutMutation();
+	const blockedToastShown = useRef(false);
+
+	useEffect(() => {
+		if (!getUserQuery.isError || blockedToastShown.current) return;
+		if (!isTestAccountBlockedError(getUserQuery.error)) return;
+		blockedToastShown.current = true;
+		toast.error(getV2ErrorMessage(getUserQuery.error), { duration: 12_000 });
+	}, [getUserQuery.isError, getUserQuery.error]);
 
 	if (getUserQuery.isLoading) {
 		return (
@@ -61,7 +73,7 @@ function AuthLayout() {
 		);
 	}
 
-	if (!getUserQuery.isLoading && !getUserQuery.data?.id) {
+	if (getUserQuery.isError || !getUserQuery.data?.id) {
 		deleteAllCookies();
 		useAuthStore.getState().clearAuth();
 		return (
