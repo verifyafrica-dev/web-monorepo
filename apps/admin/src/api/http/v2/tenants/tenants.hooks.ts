@@ -17,6 +17,8 @@ import type {
 	TenantAPIKeyUpdatePayload,
 	TenantAccessRestriction,
 	TenantAccessRestrictionUpdatePayload,
+	TenantTestAccess,
+	TenantTestAccessUpdatePayload,
 	TenantComplianceDocumentRegisterPayload,
 	TenantComplianceDocumentDeletePayload,
 	TenantCreatePayload,
@@ -52,6 +54,8 @@ export const TENANTS_V2_QUERY_KEYS = {
 	apiKey: (tenantId: string) => ["tenants-v2", "api-key", tenantId] as const,
 	accessRestriction: (tenantId: string) =>
 		["tenants-v2", "access-restriction", tenantId] as const,
+	testAccess: (tenantId: string) =>
+		["tenants-v2", "test-access", tenantId] as const,
 	webhook: (tenantId: string) => ["tenants-v2", "webhook", tenantId] as const,
 	invitations: (tenantId: string, params?: TenantListQuery) =>
 		["tenants-v2", "invitations", tenantId, params ?? {}] as const,
@@ -261,6 +265,38 @@ export const useUpdateTenantAccessRestrictionV2Mutation = (tenantId: string) => 
 				TENANTS_V2_QUERY_KEYS.accessRestriction(tenantId),
 				data,
 			);
+		},
+	});
+};
+
+export const useTenantTestAccessV2Query = (
+	tenantId: string | undefined,
+	enabled = true,
+): UseQueryResult<TenantTestAccess> =>
+	useQuery<TenantTestAccess>({
+		queryKey: TENANTS_V2_QUERY_KEYS.testAccess(tenantId ?? ""),
+		queryFn: () => {
+			if (!tenantId) {
+				throw new Error("Tenant ID is required");
+			}
+
+			return TENANTS_V2_API.TEST_ACCESS(tenantId);
+		},
+		enabled: enabled && Boolean(tenantId),
+		staleTime: TENANTS_V2_STALE_TIME,
+	});
+
+export const useUpdateTenantTestAccessV2Mutation = (tenantId: string) => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: TenantTestAccessUpdatePayload) =>
+			TENANTS_V2_API.UPDATE_TEST_ACCESS(tenantId, payload),
+		onSuccess: (data) => {
+			queryClient.setQueryData(TENANTS_V2_QUERY_KEYS.testAccess(tenantId), data);
+			void queryClient.invalidateQueries({
+				queryKey: TENANTS_V2_QUERY_KEYS.all,
+			});
 		},
 	});
 };

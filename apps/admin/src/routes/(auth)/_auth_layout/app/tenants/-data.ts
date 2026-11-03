@@ -10,11 +10,14 @@ import type {
 export type BillingPlanFilter = "all" | BillingPlan;
 export type KycStatusFilter = "all" | "verified" | "pending" | "not_started";
 
+export type TenantsListTab = "all" | "test_access_disabled";
+
 export const tenantsSearchSchema = z.object({
 	page: z.coerce.number().int().positive().optional(),
 	search: z.string().optional(),
 	billing_plan: z.enum(["all", "payg", "enterprise"]).optional(),
 	kyc_status: z.enum(["all", "verified", "pending", "not_started"]).optional(),
+	tab: z.enum(["all", "test_access_disabled"]).optional(),
 });
 
 export type TenantsSearchParams = z.infer<typeof tenantsSearchSchema>;
@@ -37,6 +40,9 @@ export function mergeTenantsSearchParams(
 	}
 	if (next.kyc_status && next.kyc_status !== "all") {
 		result.kyc_status = next.kyc_status;
+	}
+	if (next.tab && next.tab !== "all") {
+		result.tab = next.tab;
 	}
 
 	return result;
@@ -104,12 +110,14 @@ export function buildTenantAllListQuery({
 	search,
 	billingPlanFilter,
 	kycStatusFilter,
+	tab,
 }: {
 	page: number;
 	perPage: number;
 	search: string;
 	billingPlanFilter: BillingPlanFilter;
 	kycStatusFilter: KycStatusFilter;
+	tab?: TenantsListTab;
 }) {
 	const trimmedSearch = search.trim();
 
@@ -121,6 +129,9 @@ export function buildTenantAllListQuery({
 			? { billing_plan: billingPlanFilter }
 			: {}),
 		...(kycStatusFilter !== "all" ? { kyc_status: kycStatusFilter } : {}),
+		...(tab === "test_access_disabled"
+			? { test_access_enabled: "false" as const }
+			: {}),
 	};
 }
 
