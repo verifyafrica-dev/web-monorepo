@@ -6,7 +6,7 @@ import {
 	UserPlusIcon,
 	UsersIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { USERS_V2_API } from "#/api/http/v2/users/users.api";
@@ -69,7 +69,6 @@ import {
 	formatUserLastActive,
 	getUserAvatarLabel,
 	getUserDisplayName,
-	getUserPrimaryTenantName,
 	getUserPrimaryTenantRole,
 	getUserRoleLabel,
 	mergeUsersSearchParams,
@@ -544,9 +543,20 @@ function UserRow({
 	const avatarColor = getTenantAvatarColor(avatarLabel);
 	const showToggleAccount = canToggleUserAccount(user, currentUserId);
 	const tenantRole = getUserPrimaryTenantRole(user);
+	const primaryTenant = user.tenants[0];
 
 	return (
-		<TableRow>
+		<TableRow
+			className="cursor-pointer"
+			onClick={onViewDetails}
+			onKeyDown={(event) => {
+				if (event.key === "Enter" || event.key === " ") {
+					event.preventDefault();
+					onViewDetails();
+				}
+			}}
+			tabIndex={0}
+		>
 			<TableCell className="pl-4 sm:pl-6">
 				<div className="flex items-center gap-3">
 					<Avatar className="size-9">
@@ -575,8 +585,23 @@ function UserRow({
 					</div>
 				</div>
 			</TableCell>
-			<TableCell className="capitalize">
-				{getUserPrimaryTenantName(user)}
+			<TableCell
+				className="capitalize"
+				onClick={(event) => event.stopPropagation()}
+				onKeyDown={(event) => event.stopPropagation()}
+			>
+				{primaryTenant ? (
+					<Link
+						to="/app/tenants/$tenantId"
+						params={{ tenantId: primaryTenant.id }}
+						search={{ tab: "overview" }}
+						className="font-medium text-foreground underline-offset-4 hover:underline"
+					>
+						{primaryTenant.name}
+					</Link>
+				) : (
+					<span className="text-muted-foreground">-</span>
+				)}
 			</TableCell>
 			<TableCell>
 				{tenantRole ? (
@@ -623,7 +648,11 @@ function UserRow({
 				) : null}
 			</TableCell>
 			<TableCell>{formatUserLastActive(user.last_login)}</TableCell>
-			<TableCell className="pr-4 text-right sm:pr-6">
+			<TableCell
+				className="pr-4 text-right sm:pr-6"
+				onClick={(event) => event.stopPropagation()}
+				onKeyDown={(event) => event.stopPropagation()}
+			>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button
@@ -641,6 +670,17 @@ function UserRow({
 						>
 							View Details
 						</DropdownMenuItem>
+						{primaryTenant ? (
+							<DropdownMenuItem asChild className="whitespace-nowrap">
+								<Link
+									to="/app/tenants/$tenantId"
+									params={{ tenantId: primaryTenant.id }}
+									search={{ tab: "overview" }}
+								>
+									View Tenant
+								</Link>
+							</DropdownMenuItem>
+						) : null}
 						<DropdownMenuItem
 							onClick={onResetPassword}
 							className="whitespace-nowrap"
