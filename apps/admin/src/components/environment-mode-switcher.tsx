@@ -2,6 +2,8 @@ import { FlaskIcon, LightningIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useSwitchApiMode } from "#/lib/api-mode";
 import {
+	TEST_ACCESS_REQUEST_DESCRIPTION,
+	TEST_ACCESS_REQUEST_TITLE,
 	TEST_ACCOUNT_BLOCKED_DESCRIPTION,
 	TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL,
 	TEST_ACCOUNT_BLOCKED_TITLE,
@@ -25,6 +27,7 @@ export function EnvironmentModeSwitcher({
 	const { mode, switchApiMode, switcherEnabled } = useSwitchApiMode();
 	const [isSwitching, setIsSwitching] = useState(false);
 	const [blockedOpen, setBlockedOpen] = useState(false);
+	const [requestAccessOpen, setRequestAccessOpen] = useState(false);
 
 	if (!switcherEnabled) return null;
 
@@ -33,7 +36,9 @@ export function EnvironmentModeSwitcher({
 		setIsSwitching(true);
 		try {
 			const result = await switchApiMode(next);
-			if (!result.ok && result.reason === "blocked") {
+			if (!result.ok && result.reason === "request_access") {
+				setRequestAccessOpen(true);
+			} else if (!result.ok && result.reason === "blocked") {
 				setBlockedOpen(true);
 			}
 		} finally {
@@ -97,6 +102,26 @@ export function EnvironmentModeSwitcher({
 				</div>
 			</div>
 
+			<AlertDialog open={requestAccessOpen} onOpenChange={setRequestAccessOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{TEST_ACCESS_REQUEST_TITLE}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{TEST_ACCESS_REQUEST_DESCRIPTION}{" "}
+							<a
+								href={`mailto:${TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL}?subject=Test%20account%20request`}
+								className="font-medium text-foreground underline underline-offset-2"
+							>
+								{TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL}
+							</a>
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogAction>Okay</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
 			<AlertDialog open={blockedOpen} onOpenChange={setBlockedOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
@@ -127,8 +152,8 @@ export function TestModeBanner() {
 
 	return (
 		<div className="border-b border-amber-600/30 bg-amber-500/15 px-4 py-2 text-center text-sm text-amber-950 dark:text-amber-100">
-			You are in <span className="font-semibold">Test mode</span>. Admin
-			actions target the test API — not production.
+			You are in <span className="font-semibold">Test mode</span>. Data and
+			API keys are from the test environment — not production.
 		</div>
 	);
 }

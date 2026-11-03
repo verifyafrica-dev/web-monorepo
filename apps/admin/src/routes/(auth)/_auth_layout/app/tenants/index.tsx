@@ -86,6 +86,7 @@ function TenantsPage() {
 	const page = urlSearch.page ?? 1;
 	const billingPlanFilter = (urlSearch.billing_plan ?? "all") as BillingPlanFilter;
 	const kycStatusFilter = (urlSearch.kyc_status ?? "all") as KycStatusFilter;
+	const listTab = (urlSearch.tab ?? "all") as "all" | "test_access_disabled";
 
 	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [addTenantOpen, setAddTenantOpen] = useState(false);
@@ -126,8 +127,9 @@ function TenantsPage() {
 				search: debouncedSearch,
 				billingPlanFilter,
 				kycStatusFilter,
+				tab: listTab,
 			}),
-		[page, debouncedSearch, billingPlanFilter, kycStatusFilter],
+		[page, debouncedSearch, billingPlanFilter, kycStatusFilter, listTab],
 	);
 
 	const tenantsQuery = useTenantsAllV2Query(tenantListQuery);
@@ -163,7 +165,8 @@ function TenantsPage() {
 	const hasActiveFilters =
 		debouncedSearch.trim().length > 0 ||
 		billingPlanFilter !== "all" ||
-		kycStatusFilter !== "all";
+		kycStatusFilter !== "all" ||
+		listTab !== "all";
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -180,6 +183,36 @@ function TenantsPage() {
 					Add Tenant
 				</Button>
 			</div>
+
+			<div className="flex flex-wrap gap-2">
+				<Button
+					variant={listTab === "all" ? "default" : "outline"}
+					size="sm"
+					onClick={() =>
+						updateSearchParams({ tab: "all", page: undefined })
+					}
+				>
+					All tenants
+				</Button>
+				<Button
+					variant={listTab === "test_access_disabled" ? "default" : "outline"}
+					size="sm"
+					onClick={() =>
+						updateSearchParams({
+							tab: "test_access_disabled",
+							page: undefined,
+						})
+					}
+				>
+					Test access disabled
+				</Button>
+			</div>
+			{listTab === "test_access_disabled" ? (
+				<p className="text-sm text-muted-foreground">
+					Organizations whose Test twin exists but Live → Test switching is
+					still off. Open Advanced settings on a tenant to enable access.
+				</p>
+			) : null}
 
 			{analyticsQuery.isPending && !analyticsQuery.data ? (
 				<TenantsStatCardsSkeleton />
@@ -257,6 +290,7 @@ function TenantsPage() {
 									search: undefined,
 									billing_plan: "all",
 									kyc_status: "all",
+									tab: "all",
 									page: undefined,
 								});
 							}}

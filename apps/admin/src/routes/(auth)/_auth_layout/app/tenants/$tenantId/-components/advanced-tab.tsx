@@ -7,6 +7,7 @@ import {
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
 import { TenantAccessRestrictionSection } from "./tenant-access-restriction-section";
+import { TenantTestAccessSection } from "./tenant-test-access-section";
 
 export function AdvancedTab({
 	tenantId,
@@ -23,6 +24,8 @@ export function AdvancedTab({
 				<CardTitle className="font-semibold">Advanced Settings</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-6">
+				<TenantTestAccessSection tenantId={tenantId} tenantName={tenantName} />
+
 				<TenantAccessRestrictionSection
 					tenantId={tenantId}
 					tenantName={tenantName}

@@ -17,6 +17,8 @@ import type {
 	TenantAPIKeyUpdatePayload,
 	TenantAccessRestriction,
 	TenantAccessRestrictionUpdatePayload,
+	TenantTestAccess,
+	TenantTestAccessUpdatePayload,
 	TenantAllListItem,
 	TenantAllListQuery,
 	TenantComplianceDataPayload,
@@ -53,6 +55,7 @@ const TENANTS_V2_ENDPOINTS = {
 	all: "/v2/tenants/all/",
 	list: "/v2/tenants/list/",
 	accessRestriction: "/v2/tenants/access-restriction/",
+	testAccess: "/v2/tenants/test-access/",
 	apiKey: "/v2/tenants/api-key/",
 	complianceDocuments: "/v2/tenants/compliance/documents/",
 	complianceSubmit: "/v2/tenants/compliance/submit/",
@@ -149,6 +152,23 @@ export const TENANTS_V2_API = {
 				withTenantHeader(tenantId),
 			)
 			.then((res) => unwrapV2Data<TenantAccessRestriction>(res)),
+
+	TEST_ACCESS: async (tenantId: string): Promise<TenantTestAccess> =>
+		await $http
+			.get(TENANTS_V2_ENDPOINTS.testAccess, withTenantHeader(tenantId))
+			.then((res) => unwrapV2Data<TenantTestAccess>(res)),
+
+	UPDATE_TEST_ACCESS: async (
+		tenantId: string,
+		data: TenantTestAccessUpdatePayload,
+	): Promise<TenantTestAccess> =>
+		await $http
+			.put(
+				TENANTS_V2_ENDPOINTS.testAccess,
+				data,
+				withTenantHeader(tenantId),
+			)
+			.then((res) => unwrapV2Data<TenantTestAccess>(res)),
 
 	API_KEY: async (tenantId: string): Promise<TenantAPIKey> =>
 		await $http
