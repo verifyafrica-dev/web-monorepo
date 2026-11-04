@@ -27,8 +27,21 @@ const WALLET_V2_ENDPOINTS = {
 	topUpCreateSession: "/v2/wallet/top-up/create-session/",
 	topUpVerify: "/v2/wallet/top-up/verify/",
 	transactions: "/v2/wallet/transactions/",
+	transactionsExport: "/v2/wallet/transactions/export/",
 	transactionsAll: "/v2/wallet/transactions/all/",
+	transactionsAllExport: "/v2/wallet/transactions/all/export/",
 } as const;
+
+function triggerBlobDownload(blob: Blob, filename: string) {
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.setAttribute("download", filename);
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	window.URL.revokeObjectURL(url);
+}
 
 const withTenantHeader = (tenantId: string) => ({
 	headers: {
@@ -119,27 +132,20 @@ export const WALLET_V2_API = {
 	TENANT_TRANSACTIONS_EXPORT: async (
 		tenantId: string,
 		params?: WalletTransactionsQuery,
-	): Promise<WalletTransaction[]> => {
-		const perPage = 100;
-		let page = 1;
-		const items: WalletTransaction[] = [];
+	): Promise<void> => {
+		const createdFrom = params?.created_from ?? "all";
+		const createdTo = params?.created_to ?? "all";
+		const blob = await $http
+			.get(WALLET_V2_ENDPOINTS.transactionsExport, {
+				params,
+				...withTenantHeader(tenantId),
+				responseType: "blob",
+			})
+			.then((res) => res.data as Blob);
 
-		while (true) {
-			const result = await WALLET_V2_API.TENANT_TRANSACTIONS(tenantId, {
-				...params,
-				page,
-				per_page: perPage,
-			});
-
-			items.push(...result.items);
-
-			if (page >= result.meta.pagination.total_pages) {
-				break;
-			}
-
-			page += 1;
-		}
-
-		return items;
+		triggerBlobDownload(
+			blob,
+			`transactions-${createdFrom}-to-${createdTo}.csv`,
+		);
 	},
 };

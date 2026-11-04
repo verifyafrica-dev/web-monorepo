@@ -1,10 +1,10 @@
 import {
 	CreditCardIcon,
+	DownloadSimpleIcon,
 	EyeIcon,
 	MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import type { WalletTransaction } from "@verifyafrica/api-client/http/v2/wallet/wallet.types";
 import { useTenantTransactionsV2Query } from "#/api/http/v2/wallet/wallet.hooks";
 import {
@@ -33,12 +33,12 @@ import {
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import {
-	downloadCsv,
 	formatTenantDate,
 	formatTenantMoney,
 	getTransactionTypeBadgeClass,
 	matchesTransactionSearch,
 } from "../-data";
+import { ExportTransactionsDialog } from "./export-transactions-dialog";
 
 const PAGE_SIZE = 10;
 
@@ -47,9 +47,18 @@ const TRANSACTION_TABLE_COLUMNS = [
 	"Date",
 	"Amount",
 	"Type",
+	"Product Key",
 	"Description",
 	"Actions",
 ] as const;
+
+function getTransactionProductKey(transaction: WalletTransaction) {
+	if (transaction.verification_type) {
+		return transaction.verification_type;
+	}
+	const metadataType = transaction.metadata?.type;
+	return typeof metadataType === "string" ? metadataType : null;
+}
 
 function getTransactionTableHeadClassName(index: number, total: number) {
 	if (index === 0) {
@@ -68,7 +77,7 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTransaction, setSelectedTransaction] =
 		useState<WalletTransaction | null>(null);
-	const [_isExporting, setIsExporting] = useState(false);
+	const [exportOpen, setExportOpen] = useState(false);
 	const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
 	const transactionsQuery = useTenantTransactionsV2Query(tenantId, {
@@ -92,58 +101,20 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 		(transactionsQuery.isFetching && !transactionsQuery.data);
 	const hasActiveSearch = debouncedSearch.trim().length > 0;
 
-	const _handleExport = () => {
-		if (filteredTransactions.length === 0) {
-			return;
-		}
-
-		setIsExporting(true);
-
-		try {
-			downloadCsv(
-				`tenant_transactions_${tenantId}_${new Date().toISOString().split("T")[0]}.csv`,
-				[
-					[
-						"Reference",
-						"Date",
-						"Amount",
-						"Type",
-						"Description",
-						"Balance Before",
-						"Balance After",
-					],
-					...filteredTransactions.map((transaction) => [
-						transaction.reference,
-						formatTenantDate(transaction.created_at),
-						transaction.amount,
-						transaction.type,
-						transaction.reason,
-						transaction.balance_before,
-						transaction.balance_after,
-					]),
-				],
-			);
-		} catch {
-			toast.error("Failed to export transactions");
-		} finally {
-			setIsExporting(false);
-		}
-	};
-
 	return (
 		<>
 			<Card>
 				<CardHeader className="gap-4 border-b">
 					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 						<CardTitle className="font-semibold">Transactions</CardTitle>
-						{/* <Button
+						<Button
 							variant="outline"
-							disabled={isExporting || filteredTransactions.length === 0}
-							onClick={handleExport}
+							disabled={isLoading}
+							onClick={() => setExportOpen(true)}
 						>
 							<DownloadSimpleIcon />
-							{isExporting ? "Exporting..." : "Export"}
-						</Button> */}
+							Download CSV
+						</Button>
 					</div>
 					<div className="relative">
 						<MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -195,45 +166,62 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{filteredTransactions.map((transaction) => (
-											<TableRow key={transaction.id}>
-												<TableCell className="pl-4 font-medium sm:pl-6">
-													{transaction.reference}
-												</TableCell>
-												<TableCell>
-													{formatTenantDate(transaction.created_at)}
-												</TableCell>
-												<TableCell className="font-medium">
-													{formatTenantMoney(transaction.amount)}
-												</TableCell>
-												<TableCell>
-													<Badge
-														variant="outline"
-														className={getTransactionTypeBadgeClass(
-															transaction.type,
+										{filteredTransactions.map((transaction) => {
+											const productKey = getTransactionProductKey(transaction);
+
+											return (
+												<TableRow key={transaction.id}>
+													<TableCell className="pl-4 font-medium sm:pl-6">
+														{transaction.reference}
+													</TableCell>
+													<TableCell>
+														{formatTenantDate(transaction.created_at)}
+													</TableCell>
+													<TableCell className="font-medium">
+														{formatTenantMoney(transaction.amount)}
+													</TableCell>
+													<TableCell>
+														<Badge
+															variant="outline"
+															className={getTransactionTypeBadgeClass(
+																transaction.type,
+															)}
+														>
+															{transaction.type}
+														</Badge>
+													</TableCell>
+													<TableCell>
+														{productKey ? (
+															<Badge
+																variant="outline"
+																className="max-w-48 truncate font-mono text-xs"
+																title={productKey}
+															>
+																{productKey}
+															</Badge>
+														) : (
+															<span className="text-muted-foreground">-</span>
 														)}
+													</TableCell>
+													<TableCell
+														className="max-w-xs truncate"
+														title={transaction.reason}
 													>
-														{transaction.type}
-													</Badge>
-												</TableCell>
-												<TableCell
-													className="max-w-xs truncate"
-													title={transaction.reason}
-												>
-													{transaction.reason}
-												</TableCell>
-												<TableCell className="pr-4 text-right sm:pr-6">
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														onClick={() => setSelectedTransaction(transaction)}
-													>
-														<EyeIcon className="size-4" />
-														<span className="sr-only">View transaction</span>
-													</Button>
-												</TableCell>
-											</TableRow>
-										))}
+														{transaction.reason}
+													</TableCell>
+													<TableCell className="pr-4 text-right sm:pr-6">
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															onClick={() => setSelectedTransaction(transaction)}
+														>
+															<EyeIcon className="size-4" />
+															<span className="sr-only">View transaction</span>
+														</Button>
+													</TableCell>
+												</TableRow>
+											);
+										})}
 									</TableBody>
 								</Table>
 							</div>
@@ -279,6 +267,12 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 								value={selectedTransaction.type}
 							/>
 							<DetailField
+								label="Product Key"
+								value={
+									getTransactionProductKey(selectedTransaction) ?? "-"
+								}
+							/>
+							<DetailField
 								label="Balance Before"
 								value={formatTenantMoney(selectedTransaction.balance_before)}
 							/>
@@ -306,6 +300,12 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 					) : null}
 				</DialogContent>
 			</Dialog>
+
+			<ExportTransactionsDialog
+				open={exportOpen}
+				onOpenChange={setExportOpen}
+				tenantId={tenantId}
+			/>
 		</>
 	);
 }

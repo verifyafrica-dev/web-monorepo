@@ -31,7 +31,19 @@ const BILLING_V2_ENDPOINTS = {
 	billingPricingDetail: (id: string) => `/v2/billing/billing-pricing/${id}/`,
 	invoices: "/v2/billing/invoices/",
 	invoicesAll: "/v2/billing/invoices/all/",
+	invoicesDownload: "/v2/billing/invoices/download/",
 } as const;
+
+function triggerBlobDownload(blob: Blob, filename: string) {
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.href = url;
+	link.setAttribute("download", filename);
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	window.URL.revokeObjectURL(url);
+}
 
 const withTenantHeader = (tenantId: string) => ({
 	headers: {
@@ -133,4 +145,17 @@ export const BILLING_V2_API = {
 		await $http
 			.get(BILLING_V2_ENDPOINTS.invoicesAll, { params: { id } })
 			.then((res) => unwrapV2Data<Invoice>(res)),
+
+	DOWNLOAD_INVOICE: async (
+		invoiceId: string,
+		filename = `invoice_${invoiceId}.pdf`,
+	): Promise<void> => {
+		const blob = await $http
+			.get(BILLING_V2_ENDPOINTS.invoicesDownload, {
+				params: { id: invoiceId },
+				responseType: "blob",
+			})
+			.then((res) => res.data as Blob);
+		triggerBlobDownload(blob, filename);
+	},
 };

@@ -40,6 +40,10 @@ import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
 import { InvoiceDetailsDialog } from "../../../invoices/-components/invoice-details-dialog";
 import {
+	downloadInvoice,
+	getInvoiceFilename,
+} from "../../../invoices/-data";
+import {
 	downloadCsv,
 	formatTenantDate,
 	formatTenantMoney,
@@ -341,21 +345,20 @@ function InvoiceRow({
 						<EyeIcon className="size-4" />
 						<span className="sr-only">View invoice</span>
 					</Button>
-					{invoice.file_attachment ? (
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							asChild
-						>
-							<a
-								href={invoice.file_attachment}
-								download={`invoice_${invoiceLabel}.pdf`}
-							>
-								<DownloadSimpleIcon className="size-4" />
-								<span className="sr-only">Download invoice</span>
-							</a>
-						</Button>
-					) : null}
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						onClick={() => {
+							void downloadInvoice(invoice).catch(() => {
+								toast.error("Unable to download invoice");
+							});
+						}}
+					>
+						<DownloadSimpleIcon className="size-4" />
+						<span className="sr-only">
+							Download invoice {getInvoiceFilename(invoice) || invoiceLabel}
+						</span>
+					</Button>
 				</div>
 			</TableCell>
 		</TableRow>

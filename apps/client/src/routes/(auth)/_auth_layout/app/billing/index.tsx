@@ -1,6 +1,7 @@
 import {
 	ArrowsClockwiseIcon,
 	BuildingsIcon,
+	DownloadSimpleIcon,
 	EyeIcon,
 	PencilSimpleIcon,
 } from "@phosphor-icons/react";
@@ -36,6 +37,7 @@ import {
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { BILLING_V2_API } from "#/api/http/v2/billing/billing.api";
 import {
 	BILLING_V2_QUERY_KEYS,
 	useTenantBillingInformationV2Query,
@@ -326,16 +328,16 @@ function BillingPage() {
 										/>
 										Refresh
 									</Button>
-									{/* <Button
+									<Button
 										type="button"
 										variant="outline"
-										className="cursor-pointer"
-										disabled={isTransactionsLoading}
+										className="cursor-pointer w-full sm:w-auto"
+										disabled={isTransactionsLoading || !tenantId}
 										onClick={() => setExportOpen(true)}
 									>
 										<DownloadSimpleIcon className="size-4" />
-										Export
-									</Button> */}
+										Download CSV
+									</Button>
 								</div>
 							</div>
 
@@ -346,7 +348,7 @@ function BillingPage() {
 											"Reference",
 											"Date",
 											"Description",
-											"Product",
+											"Product Key",
 											"Amount",
 											"Type",
 											"Actions",
@@ -370,7 +372,7 @@ function BillingPage() {
 												<TableHead>Reference</TableHead>
 												<TableHead>Date</TableHead>
 												<TableHead>Description</TableHead>
-												<TableHead>Product</TableHead>
+												<TableHead>Product Key</TableHead>
 												<TableHead>Amount</TableHead>
 												<TableHead>Type</TableHead>
 												{/* <TableHead>Balance Before</TableHead>
@@ -406,12 +408,16 @@ function BillingPage() {
 															<TableCell>{transaction.date}</TableCell>
 															<TableCell>{transaction.description}</TableCell>
 															<TableCell>
-																{transaction.product ? (
+																{transaction.productKey ? (
 																	<Badge
 																		variant="outline"
-																		className="whitespace-nowrap"
+																		className="max-w-48 truncate font-mono text-xs whitespace-nowrap"
+																		title={
+																			transaction.product ??
+																			transaction.productKey
+																		}
 																	>
-																		{transaction.product}
+																		{transaction.productKey}
 																	</Badge>
 																) : (
 																	<span className="text-muted-foreground">
@@ -594,16 +600,35 @@ function BillingPage() {
 														<TableCell
 															onClick={(event) => event.stopPropagation()}
 														>
-															<Button
-																type="button"
-																variant="outline"
-																size="sm"
-																className="cursor-pointer"
-																onClick={() => openInvoiceDetails(invoice.id)}
-															>
-																<EyeIcon className="size-4" />
-																View
-															</Button>
+															<div className="flex items-center gap-2">
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="sm"
+																	className="cursor-pointer"
+																	onClick={() => openInvoiceDetails(invoice.id)}
+																>
+																	<EyeIcon className="size-4" />
+																	View
+																</Button>
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="sm"
+																	className="cursor-pointer"
+																	onClick={() => {
+																		void BILLING_V2_API.DOWNLOAD_INVOICE(
+																			invoice.id,
+																			`invoice-${getInvoiceFilename(invoice)}.pdf`,
+																		).catch(() => {
+																			toast.error("Unable to download invoice");
+																		});
+																	}}
+																>
+																	<DownloadSimpleIcon className="size-4" />
+																	Download
+																</Button>
+															</div>
 														</TableCell>
 													</TableRow>
 												))
@@ -648,7 +673,6 @@ function BillingPage() {
 				onOpenChange={setExportOpen}
 				accountCreatedAt={accountCreatedAt}
 				tenantId={tenantId}
-				currency={currency}
 			/>
 			<TransactionDetailsDialog
 				open={detailsOpen}

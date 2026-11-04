@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import { BILLING_V2_API } from "#/api/http/v2/billing/billing.api";
 import { downloadCsv } from "../tenants/$tenantId/-data";
 import {
 	formatTenantMoney,
@@ -82,21 +83,11 @@ export function getInvoiceFilename(invoice: Invoice) {
 	return getInvoiceLabel(invoice);
 }
 
-export function downloadInvoice(invoice: Invoice) {
-	if (!invoice.file_attachment) {
-		return false;
-	}
-
-	const link = document.createElement("a");
-	link.href = invoice.file_attachment;
-	link.download = `invoice_${getInvoiceFilename(invoice)}.pdf`;
-	link.target = "_blank";
-	link.rel = "noopener noreferrer";
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
-
-	return true;
+export async function downloadInvoice(invoice: Invoice) {
+	await BILLING_V2_API.DOWNLOAD_INVOICE(
+		invoice.id,
+		`invoice_${getInvoiceFilename(invoice)}.pdf`,
+	);
 }
 
 export function getInvoicePeriod(invoice: Invoice) {
