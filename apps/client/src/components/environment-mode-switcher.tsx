@@ -1,14 +1,4 @@
 import { FlaskIcon, LightningIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-import { useSwitchApiMode } from "#/lib/api-mode";
-import {
-	TEST_ACCESS_REQUEST_DESCRIPTION,
-	TEST_ACCESS_REQUEST_TITLE,
-	TEST_ACCOUNT_BLOCKED_DESCRIPTION,
-	TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL,
-	TEST_ACCOUNT_BLOCKED_TITLE,
-} from "#/lib/test-account-blocked";
-import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -18,12 +8,17 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@verifyafrica/ui/components/ui/alert-dialog";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { useState } from "react";
+import { AccountBlockedDialog } from "#/components/account-blocked-dialog";
+import { useSwitchApiMode } from "#/lib/api-mode";
+import {
+	TEST_ACCESS_REQUEST_DESCRIPTION,
+	TEST_ACCESS_REQUEST_TITLE,
+	TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL,
+} from "#/lib/test-account-blocked";
 
-export function EnvironmentModeSwitcher({
-	className,
-}: {
-	className?: string;
-}) {
+export function EnvironmentModeSwitcher({ className }: { className?: string }) {
 	const { mode, switchApiMode, switcherEnabled } = useSwitchApiMode();
 	const [isSwitching, setIsSwitching] = useState(false);
 	const [blockedOpen, setBlockedOpen] = useState(false);
@@ -57,12 +52,11 @@ export function EnvironmentModeSwitcher({
 				<p className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase group-data-[collapsible=icon]:hidden">
 					Environment
 				</p>
-				<div
+				<fieldset
 					className={cn(
-						"inline-flex w-full items-center rounded-lg border bg-background p-0.5 text-xs font-medium",
+						"m-0 inline-flex w-full min-w-0 items-center rounded-lg border bg-background p-0.5 text-xs font-medium",
 						"group-data-[collapsible=icon]:w-auto group-data-[collapsible=icon]:flex-col",
 					)}
-					role="group"
 					aria-label="API environment"
 				>
 					<button
@@ -99,7 +93,7 @@ export function EnvironmentModeSwitcher({
 						<FlaskIcon className="size-3.5 shrink-0" weight="bold" />
 						<span className="group-data-[collapsible=icon]:hidden">Test</span>
 					</button>
-				</div>
+				</fieldset>
 			</div>
 
 			<AlertDialog open={requestAccessOpen} onOpenChange={setRequestAccessOpen}>
@@ -122,25 +116,7 @@ export function EnvironmentModeSwitcher({
 				</AlertDialogContent>
 			</AlertDialog>
 
-			<AlertDialog open={blockedOpen} onOpenChange={setBlockedOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>{TEST_ACCOUNT_BLOCKED_TITLE}</AlertDialogTitle>
-						<AlertDialogDescription>
-							{TEST_ACCOUNT_BLOCKED_DESCRIPTION}{" "}
-							<a
-								href={`mailto:${TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL}`}
-								className="font-medium text-foreground underline underline-offset-2"
-							>
-								{TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL}
-							</a>
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogAction>Okay</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<AccountBlockedDialog open={blockedOpen} onOpenChange={setBlockedOpen} />
 		</>
 	);
 }
@@ -152,8 +128,8 @@ export function TestModeBanner() {
 
 	return (
 		<div className="border-b border-amber-600/30 bg-amber-500/15 px-4 py-2 text-center text-sm text-amber-950 dark:text-amber-100">
-			You are in <span className="font-semibold">Test mode</span>. Data and
-			API keys are from the test environment — not production.
+			You are in <span className="font-semibold">Test mode</span>. Data and API
+			keys are from the test environment — not production.
 		</div>
 	);
 }

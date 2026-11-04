@@ -6,25 +6,33 @@ import {
 	Navigate,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { useUserV2LoginMutation } from "#/api/http/v2/users/users.hooks";
-import { env } from "#/config/env";
+import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
 import {
 	type UserLoginPayload,
 	UserLoginSchema,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import {
+	Field,
+	FieldError,
+	FieldGroup,
+} from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useUserV2LoginMutation } from "#/api/http/v2/users/users.hooks";
+import {
+	ACCOUNT_BLOCKED_STORAGE_KEY,
+	AccountBlockedDialog,
+} from "#/components/account-blocked-dialog";
+import { env } from "#/config/env";
+import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
 import { normalizeUserTenants } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { useAuthStore } from "#/stores/auth-store";
-import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
-import { Field, FieldError, FieldGroup } from "@verifyafrica/ui/components/ui/field";
 import { AuthPageShell } from "../-components";
 
 const SUPPORT_EMAIL = "support@verifyafrica.io";
@@ -54,10 +62,18 @@ function LoginPage() {
 	const user = useAuthStore((state) => state.user);
 	const userLoginMutation = useUserV2LoginMutation();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
+	const [blockedOpen, setBlockedOpen] = useState(false);
 	const isAlreadyAuthenticated =
 		Boolean(accessToken) &&
 		Boolean(user?.is_active) &&
 		!user?.must_change_password;
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		if (sessionStorage.getItem(ACCOUNT_BLOCKED_STORAGE_KEY) !== "1") return;
+		sessionStorage.removeItem(ACCOUNT_BLOCKED_STORAGE_KEY);
+		setBlockedOpen(true);
+	}, []);
 
 	const form = useForm({
 		defaultValues: {
@@ -111,6 +127,12 @@ function LoginPage() {
 						navigate({ href: postLoginPath });
 					},
 					onError: (error) => {
+						if (isTestAccountBlockedError(error)) {
+							setBlockedOpen(true);
+							setFormErrors([]);
+							return;
+						}
+
 						const axiosError = error as V2AxiosError;
 						const data = axiosError.response?.data;
 
@@ -138,118 +160,118 @@ function LoginPage() {
 	}
 
 	return (
-		<AuthPageShell
-			title="Welcome back"
-			subtitle="Sign in to your VerifyAfrica account"
-			footer={
-				<p className="mt-6 text-center text-sm text-muted-foreground">
-					Don&apos;t have an account?{" "}
-					{env.isPublicSignupEnabled ? (
-						<Link
-							to="/register"
-							className="font-semibold text-foreground hover:underline"
-						>
-							Create an account
-						</Link>
-					) : (
-						<>
-							Contact{" "}
-							<a
-								href={`mailto:${SUPPORT_EMAIL}`}
+		<>
+			<AuthPageShell
+				title="Welcome back"
+				subtitle="Sign in to your VerifyAfrica account"
+				footer={
+					<p className="mt-6 text-center text-sm text-muted-foreground">
+						Don&apos;t have an account?{" "}
+						{env.isPublicSignupEnabled ? (
+							<Link
+								to="/register"
 								className="font-semibold text-foreground hover:underline"
 							>
-								{SUPPORT_EMAIL}
-							</a>{" "}
-							to request a test account.
-						</>
-					)}
-				</p>
-			}
-		>
-			<form
-				id="login-form"
-				onSubmit={(e) => {
-					e.preventDefault();
-					form.handleSubmit();
-				}}
-				className="flex flex-col gap-4"
+								Create an account
+							</Link>
+						) : (
+							<>
+								Contact{" "}
+								<a
+									href={`mailto:${SUPPORT_EMAIL}`}
+									className="font-semibold text-foreground hover:underline"
+								>
+									{SUPPORT_EMAIL}
+								</a>{" "}
+								to request a test account.
+							</>
+						)}
+					</p>
+				}
 			>
-				<FieldGroup className="flex flex-col gap-2">
-					<form.Field name="email">
+				<form
+					id="login-form"
+					onSubmit={(e) => {
+						e.preventDefault();
+						form.handleSubmit();
+					}}
+					className="flex flex-col gap-4"
+				>
+					<FieldGroup className="flex flex-col gap-2">
+						<form.Field name="email">
+							{(field) => (
+								<Field className="flex flex-col gap-2">
+									<Label htmlFor="email">Email</Label>
+									<Input
+										id="email"
+										type="email"
+										autoComplete="email"
+										placeholder="Enter your email"
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) => field.handleChange(e.target.value)}
+										aria-invalid={
+											field.state.meta.isTouched && !field.state.meta.isValid
+										}
+										aria-describedby={field.state.meta.errors?.join(" ")}
+									/>
+									{field.state.meta.isTouched && !field.state.meta.isValid && (
+										<FieldError errors={field.state.meta.errors} />
+									)}
+								</Field>
+							)}
+						</form.Field>
+					</FieldGroup>
+
+					<form.Field name="password">
 						{(field) => (
 							<Field className="flex flex-col gap-2">
-								<Label htmlFor="email">Email</Label>
-								<Input
-									id="email"
-									type="email"
-									autoComplete="email"
-									placeholder="Enter your email"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									aria-invalid={
-										field.state.meta.isTouched && !field.state.meta.isValid
-									}
-									aria-describedby={field.state.meta.errors?.join(" ")}
-								/>
+								<Label htmlFor="password">Password</Label>
+								<div className="relative">
+									<LockIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+									<Input
+										id="password"
+										type="password"
+										placeholder="Enter your password"
+										autoComplete="current-password"
+										className="pl-10"
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) => field.handleChange(e.target.value)}
+										aria-invalid={
+											field.state.meta.isTouched && !field.state.meta.isValid
+										}
+										aria-describedby={field.state.meta.errors?.join(" ")}
+									/>
+								</div>
 								{field.state.meta.isTouched && !field.state.meta.isValid && (
 									<FieldError errors={field.state.meta.errors} />
 								)}
 							</Field>
 						)}
 					</form.Field>
-				</FieldGroup>
-
-				<form.Field name="password">
-					{(field) => (
-						<Field className="flex flex-col gap-2">
-							<Label htmlFor="password">Password</Label>
-							<div className="relative">
-								<LockIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-								<Input
-									id="password"
-									type="password"
-									placeholder="Enter your password"
-									autoComplete="current-password"
-									className="pl-10"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-									aria-invalid={
-										field.state.meta.isTouched && !field.state.meta.isValid
-									}
-									aria-describedby={field.state.meta.errors?.join(" ")}
-								/>
-							</div>
-							{field.state.meta.isTouched && !field.state.meta.isValid && (
-								<FieldError errors={field.state.meta.errors} />
-							)}
-						</Field>
-					)}
-				</form.Field>
-				{formErrors.length > 0 && <FieldError errors={formErrors} />}
-				<div className="flex justify-end">
-					<Link
-						to="/forgot-password"
-						className="text-sm font-semibold text-foreground hover:underline"
-					>
-						Forgot password?
-					</Link>
-				</div>
-				<Field orientation="horizontal">
-					<Button
-						type="submit"
-						className="w-full cursor-pointer"
-						disabled={userLoginMutation.isPending}
-					>
-						Sign In
-						<ArrowRightIcon
-							className="size-4"
-							weight="bold"
-						/>
-					</Button>
-				</Field>
-			</form>
-		</AuthPageShell>
+					{formErrors.length > 0 && <FieldError errors={formErrors} />}
+					<div className="flex justify-end">
+						<Link
+							to="/forgot-password"
+							className="text-sm font-semibold text-foreground hover:underline"
+						>
+							Forgot password?
+						</Link>
+					</div>
+					<Field orientation="horizontal">
+						<Button
+							type="submit"
+							className="w-full cursor-pointer"
+							disabled={userLoginMutation.isPending}
+						>
+							Sign In
+							<ArrowRightIcon className="size-4" weight="bold" />
+						</Button>
+					</Field>
+				</form>
+			</AuthPageShell>
+			<AccountBlockedDialog open={blockedOpen} onOpenChange={setBlockedOpen} />
+		</>
 	);
 }
