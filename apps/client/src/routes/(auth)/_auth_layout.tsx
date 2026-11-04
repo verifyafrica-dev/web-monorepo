@@ -6,19 +6,6 @@ import {
 	useLocation,
 	useNavigate,
 } from "@tanstack/react-router";
-import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
-import { Loader2Icon } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
-import {
-	useMeV2Query,
-	useUserV2LogoutMutation,
-} from "#/api/http/v2/users/users.hooks";
-import { AppSidebar } from "#/components/app-sidebar";
-import { PresenceConnector } from "#/components/presence-connector";
-import { TestModeBanner } from "#/components/environment-mode-switcher";
-import { NoOrganizationState } from "#/components/no-organization-state";
-import { RequiredPasswordChange } from "#/components/required-password-change";
 import {
 	Avatar,
 	AvatarFallback,
@@ -37,13 +24,25 @@ import {
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
-import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
-import { useAuthStore } from "#/stores/auth-store";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { Loader2Icon } from "lucide-react";
+import { useEffect, useRef } from "react";
+import {
+	useMeV2Query,
+	useUserV2LogoutMutation,
+} from "#/api/http/v2/users/users.hooks";
+import { ACCOUNT_BLOCKED_STORAGE_KEY } from "#/components/account-blocked-dialog";
+import { AppSidebar } from "#/components/app-sidebar";
+import { TestModeBanner } from "#/components/environment-mode-switcher";
+import { NoOrganizationState } from "#/components/no-organization-state";
+import { PresenceConnector } from "#/components/presence-connector";
+import { RequiredPasswordChange } from "#/components/required-password-change";
+import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
 import {
 	getUserInitials,
 	normalizeUserTenants,
 } from "#/routes/(auth)/_auth_layout/app/team/-data";
+import { useAuthStore } from "#/stores/auth-store";
 
 const userMenuLinks = [
 	{ label: "Profile", to: "/app/profile" },
@@ -75,7 +74,9 @@ function AuthLayout() {
 		if (!getUserQuery.isError || blockedToastShown.current) return;
 		if (!isTestAccountBlockedError(getUserQuery.error)) return;
 		blockedToastShown.current = true;
-		toast.error(getV2ErrorMessage(getUserQuery.error), { duration: 12_000 });
+		if (typeof window !== "undefined") {
+			sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
+		}
 	}, [getUserQuery.isError, getUserQuery.error]);
 
 	if (getUserQuery.isLoading) {
@@ -89,12 +90,7 @@ function AuthLayout() {
 	if (getUserQuery.isError || !getUserQuery.data?.id) {
 		deleteAllCookies();
 		useAuthStore.getState().clearAuth();
-		return (
-			<Navigate
-				to={buildLoginRedirectUrl(location.href)}
-				replace
-			/>
-		);
+		return <Navigate to={buildLoginRedirectUrl(location.href)} replace />;
 	}
 
 	const user = getUserQuery.data;
@@ -149,10 +145,7 @@ function AuthLayout() {
 							>
 								<Avatar>
 									{user?.avatar_url ? (
-										<AvatarImage
-											src={user.avatar_url}
-											alt={displayName}
-										/>
+										<AvatarImage src={user.avatar_url} alt={displayName} />
 									) : null}
 									<AvatarFallback>{initials}</AvatarFallback>
 								</Avatar>
@@ -164,10 +157,7 @@ function AuthLayout() {
 								</div>
 							</button>
 						</PopoverTrigger>
-						<PopoverContent
-							align="end"
-							className="w-40 gap-0 p-1"
-						>
+						<PopoverContent align="end" className="w-40 gap-0 p-1">
 							<nav className="flex flex-col">
 								{userMenuLinks.map((item) => (
 									<Link
