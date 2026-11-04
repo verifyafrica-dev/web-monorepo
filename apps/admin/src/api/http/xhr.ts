@@ -47,6 +47,7 @@ async function mintTestAccessToken(): Promise<string> {
 		V2SuccessResponse<{ access_token: string }>
 	>(`${apiModeConfig.liveApiBaseUrl}/v2/users/test-mode/access-token/`, undefined, {
 		withCredentials: true,
+		timeout: 30000,
 		headers: {
 			[AUTH_APP_HEADER]: AUTH_APP,
 			Authorization: `Bearer ${liveToken}`,
@@ -72,6 +73,7 @@ async function refreshAccessTokenForActiveMode(): Promise<string> {
 		V2SuccessResponse<{ access_token: string }>
 	>(`${apiModeConfig.liveApiBaseUrl}/v2/users/refresh-token/`, undefined, {
 		withCredentials: true,
+		timeout: 30000,
 		headers: { [AUTH_APP_HEADER]: AUTH_APP },
 	});
 	return response.data.data.access_token;
@@ -90,9 +92,9 @@ const { http, getAccessTokenKey, setAccessToken, setTokens, getAccessToken } =
 			if (usesEphemeralTestToken && mode === "test") {
 				return useApiModeStore.getState().testAccessToken ?? "";
 			}
-			return (
-				getLiveAccessToken() || useAuthStore.getState().access_token || ""
-			);
+			// Cookie is source of truth. Do not fall back to persisted auth-store —
+			// that keeps half-dead sessions alive after cookies are cleared.
+			return getLiveAccessToken();
 		},
 		setAccessToken: (accessToken) => {
 			const mode = useApiModeStore.getState().mode;
@@ -122,7 +124,14 @@ const { http, getAccessTokenKey, setAccessToken, setTokens, getAccessToken } =
 			useApiModeStore.getState().clearTestSession();
 			useApiModeStore.getState().setMode(apiModeConfig.defaultMode);
 			useAuthStore.getState().clearAuth();
-			window.location.href = buildLoginRedirectUrl(location.pathname);
+			try {
+				localStorage.removeItem("auth-store");
+				localStorage.removeItem("admin-api-mode-store");
+				localStorage.removeItem("api-mode-store");
+			} catch {
+				// localStorage may be unavailable
+			}
+			window.location.assign(buildLoginRedirectUrl(location.pathname));
 		},
 	});
 

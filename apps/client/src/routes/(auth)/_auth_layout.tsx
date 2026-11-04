@@ -1,7 +1,6 @@
 import {
 	createFileRoute,
 	Link,
-	Navigate,
 	Outlet,
 	useLocation,
 	useNavigate,
@@ -63,12 +62,32 @@ export const Route = createFileRoute("/(auth)/_auth_layout")({
 	component: AuthLayout,
 });
 
+function forceLoginRedirect(redirectPath: string, markBlocked = false) {
+	if (markBlocked) {
+		try {
+			sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
+		} catch {
+			// sessionStorage may be unavailable
+		}
+	}
+	deleteAllCookies();
+	useAuthStore.getState().clearAuth();
+	try {
+		localStorage.removeItem("auth-store");
+		localStorage.removeItem("api-mode-store");
+	} catch {
+		// localStorage may be unavailable
+	}
+	window.location.assign(buildLoginRedirectUrl(redirectPath));
+}
+
 function AuthLayout() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const getUserQuery = useMeV2Query();
 	const { logout, isLoggingOut } = useUserV2LogoutMutation();
 	const blockedToastShown = useRef(false);
+	const loginRedirectStarted = useRef(false);
 
 	useEffect(() => {
 		if (!getUserQuery.isError || blockedToastShown.current) return;
@@ -81,7 +100,27 @@ function AuthLayout() {
 		}
 	}, [getUserQuery.isError, getUserQuery.error]);
 
-	if (getUserQuery.isLoading) {
+	useEffect(() => {
+		if (loginRedirectStarted.current) return;
+		if (getUserQuery.isPending && !getUserQuery.isError) return;
+		if (!getUserQuery.isError && getUserQuery.data?.id) return;
+		loginRedirectStarted.current = true;
+		forceLoginRedirect(
+			location.href,
+			Boolean(
+				getUserQuery.isError &&
+					isTestAccountBlockedError(getUserQuery.error),
+			),
+		);
+	}, [
+		getUserQuery.isPending,
+		getUserQuery.isError,
+		getUserQuery.error,
+		getUserQuery.data?.id,
+		location.href,
+	]);
+
+	if (getUserQuery.isPending && !getUserQuery.isError) {
 		return (
 			<div className="flex min-h-dvh items-center justify-center">
 				<Loader2Icon className="size-8 animate-spin text-primary" />
@@ -90,21 +129,11 @@ function AuthLayout() {
 	}
 
 	if (getUserQuery.isError || !getUserQuery.data?.id) {
-		if (
-			getUserQuery.isError &&
-			isTestAccountBlockedError(getUserQuery.error) &&
-			!blockedToastShown.current
-		) {
-			blockedToastShown.current = true;
-			try {
-				sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
-			} catch {
-				// sessionStorage may be unavailable
-			}
-		}
-		deleteAllCookies();
-		useAuthStore.getState().clearAuth();
-		return <Navigate to={buildLoginRedirectUrl(location.href)} replace />;
+		return (
+			<div className="flex min-h-dvh items-center justify-center">
+				<Loader2Icon className="size-8 animate-spin text-primary" />
+			</div>
+		);
 	}
 
 	const user = getUserQuery.data;
@@ -123,17 +152,15 @@ function AuthLayout() {
 
 	// All memberships restricted (e.g. Test access disabled) — same modal as login.
 	if (tenants.length > 0 && accessibleTenants.length === 0) {
-		if (!blockedToastShown.current) {
-			blockedToastShown.current = true;
-			try {
-				sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
-			} catch {
-				// sessionStorage may be unavailable
-			}
+		if (!loginRedirectStarted.current) {
+			loginRedirectStarted.current = true;
+			forceLoginRedirect(location.href, true);
 		}
-		deleteAllCookies();
-		useAuthStore.getState().clearAuth();
-		return <Navigate to={buildLoginRedirectUrl(location.href)} replace />;
+		return (
+			<div className="flex min-h-dvh items-center justify-center">
+				<Loader2Icon className="size-8 animate-spin text-primary" />
+			</div>
+		);
 	}
 
 	if (tenants.length === 0) {

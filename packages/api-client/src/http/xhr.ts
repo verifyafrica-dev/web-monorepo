@@ -72,7 +72,11 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 		const response = await axios.post<V2SuccessResponse<{ access_token: string }>>(
 			`${resolveRefreshBaseURL()}${REFRESH_TOKEN_ENDPOINT}`,
 			undefined,
-			{ withCredentials: true, headers: { [AUTH_APP_HEADER]: options.authApp } },
+			{
+				withCredentials: true,
+				timeout: 30000,
+				headers: { [AUTH_APP_HEADER]: options.authApp },
+			},
 		);
 		return response.data.data.access_token;
 	};
@@ -112,36 +116,59 @@ export function createHttpClient(options: CreateHttpClientOptions) {
 		(response) => response,
 		async (error) => {
 			const originalRequest = error.config;
+			const status = error?.response?.status;
+			const responseData = error?.response?.data;
+			const errorCode =
+				typeof responseData?.code === "string"
+					? responseData.code
+					: undefined;
+			const errorMessage =
+				typeof responseData?.message === "string"
+					? responseData.message
+					: "";
 			const tokenExpired =
-				error?.response?.status === StatusCodes.UNAUTHORIZED ||
-				error?.response?.data?.code === "token_not_valid";
+				status === StatusCodes.UNAUTHORIZED ||
+				errorCode === "token_not_valid" ||
+				errorCode === "token_revoked";
+			// Refresh cookie missing / session dead often surfaces as 403 on refresh;
+			// also force logout when a protected call is clearly unauthenticated.
+			const unauthenticated =
+				status === StatusCodes.FORBIDDEN &&
+				(/credentials were not provided|authentication failed|not authenticated|refresh token/i.test(
+					errorMessage,
+				) ||
+					errorCode === "not_authenticated");
 
 			if (
-				tokenExpired &&
+				(tokenExpired || unauthenticated) &&
 				originalRequest &&
 				!originalRequest._retry &&
 				shouldUseAccessToken(originalRequest.url ?? "")
 			) {
 				originalRequest._retry = true;
+				if (unauthenticated && !tokenExpired) {
+					clearTokensAndLogout();
+					return Promise.reject(error);
+				}
 				if (!isRefreshing) {
 					isRefreshing = true;
 					try {
 						const accessToken = await refreshAccessToken();
 						setAccessToken(accessToken);
-						isRefreshing = false;
 						failedRequestsQueue.forEach((request) =>
 							request.resolve(http(request.config)),
 						);
 						failedRequestsQueue = [];
 						return http(originalRequest);
 					} catch (refreshError) {
-						isRefreshing = false;
 						failedRequestsQueue.forEach((request) =>
 							request.reject(refreshError),
 						);
 						failedRequestsQueue = [];
 						clearTokensAndLogout();
 						return Promise.reject(refreshError);
+					} finally {
+						isRefreshing = false;
 					}
 				}
 
