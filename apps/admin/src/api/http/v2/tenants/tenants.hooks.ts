@@ -294,8 +294,29 @@ export const useUpdateTenantTestAccessV2Mutation = (tenantId: string) => {
 			TENANTS_V2_API.UPDATE_TEST_ACCESS(tenantId, payload),
 		onSuccess: (data) => {
 			queryClient.setQueryData(TENANTS_V2_QUERY_KEYS.testAccess(tenantId), data);
+			// Keep all-tenants toggles in sync with Advanced without waiting on refetch.
+			queryClient.setQueriesData<PaginatedTenantAllListResult>(
+				{ queryKey: ["tenants-v2", "all"] },
+				(current) => {
+					if (!current?.items) return current;
+					return {
+						...current,
+						items: current.items.map((item) =>
+							item.id === tenantId
+								? {
+										...item,
+										test_access_enabled: data.test_access_enabled,
+									}
+								: item,
+						),
+					};
+				},
+			);
 			void queryClient.invalidateQueries({
 				queryKey: TENANTS_V2_QUERY_KEYS.all,
+			});
+			void queryClient.invalidateQueries({
+				queryKey: TENANTS_V2_QUERY_KEYS.testAccess(tenantId),
 			});
 		},
 	});

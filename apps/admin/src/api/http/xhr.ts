@@ -24,6 +24,9 @@ const LIVE_ACCESS_TOKEN_KEY = () =>
 
 const liveAccessExpiresDays = env.isDevelopment ? 1 : 5 / 60 / 24;
 
+/** Production Live↔Test switcher uses an in-memory mint token for Test mode. */
+const usesEphemeralTestToken = apiModeConfig.switcherEnabled;
+
 function getLiveAccessToken() {
 	if (typeof window === "undefined") return "";
 	return getCookie(LIVE_ACCESS_TOKEN_KEY()) ?? "";
@@ -59,7 +62,7 @@ async function mintTestAccessToken(): Promise<string> {
 
 async function refreshAccessTokenForActiveMode(): Promise<string> {
 	const mode = useApiModeStore.getState().mode;
-	if (mode === "test") {
+	if (usesEphemeralTestToken && mode === "test") {
 		const token = await mintTestAccessToken();
 		useApiModeStore.getState().setTestAccessToken(token);
 		return token;
@@ -84,14 +87,16 @@ const { http, getAccessTokenKey, setAccessToken, setTokens, getAccessToken } =
 		getTokenPrefix: getAuthTokenPrefix,
 		getAccessToken: () => {
 			const mode = useApiModeStore.getState().mode;
-			if (mode === "test") {
+			if (usesEphemeralTestToken && mode === "test") {
 				return useApiModeStore.getState().testAccessToken ?? "";
 			}
-			return getLiveAccessToken();
+			return (
+				getLiveAccessToken() || useAuthStore.getState().access_token || ""
+			);
 		},
 		setAccessToken: (accessToken) => {
 			const mode = useApiModeStore.getState().mode;
-			if (mode === "test") {
+			if (usesEphemeralTestToken && mode === "test") {
 				useApiModeStore.getState().setTestAccessToken(accessToken);
 				return;
 			}
@@ -128,5 +133,6 @@ export {
 	setTokens,
 	getAccessToken,
 	mintTestAccessToken,
+	getLiveAccessToken,
 };
 export default http;

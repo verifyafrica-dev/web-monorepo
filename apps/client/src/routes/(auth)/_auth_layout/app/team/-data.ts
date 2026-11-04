@@ -63,8 +63,8 @@ export function getUserTenantMembership(
 	const accessibleMemberships = allMemberships.filter(
 		(tenant) => !tenant.access_restricted,
 	);
-	const memberships =
-		accessibleMemberships.length > 0 ? accessibleMemberships : allMemberships;
+	// Never fall back to restricted memberships — that re-opens disabled Test twins.
+	const memberships = accessibleMemberships;
 
 	if (tenantId) {
 		return (

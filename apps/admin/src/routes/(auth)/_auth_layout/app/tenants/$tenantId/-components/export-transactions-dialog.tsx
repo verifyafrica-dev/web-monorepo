@@ -18,6 +18,7 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 
 type ExportTransactionsDialogProps = ComponentProps<typeof Dialog> & {
 	tenantId: string;
+	tenantCreatedAt?: Date;
 };
 
 function formatIsoDate(value: Date) {
@@ -28,8 +29,12 @@ export function ExportTransactionsDialog({
 	open,
 	onOpenChange,
 	tenantId,
+	tenantCreatedAt,
 }: ExportTransactionsDialogProps) {
 	const today = startOfDay(new Date());
+	const minDate = tenantCreatedAt
+		? startOfDay(tenantCreatedAt)
+		: undefined;
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
 		from: subDays(today, 7),
 		to: today,
@@ -38,11 +43,14 @@ export function ExportTransactionsDialog({
 
 	useEffect(() => {
 		if (!open) return;
+		const nextToday = startOfDay(new Date());
+		const fromCandidate = subDays(nextToday, 7);
 		setDateRange({
-			from: subDays(startOfDay(new Date()), 7),
-			to: startOfDay(new Date()),
+			from:
+				minDate && fromCandidate < minDate ? minDate : fromCandidate,
+			to: nextToday,
 		});
-	}, [open]);
+	}, [open, minDate]);
 
 	async function handleExport() {
 		if (!dateRange?.from || !dateRange?.to) {
@@ -95,10 +103,19 @@ export function ExportTransactionsDialog({
 							selected={dateRange}
 							onSelect={setDateRange}
 							defaultMonth={dateRange?.from}
-							disabled={{ after: today }}
+							disabled={{
+								...(minDate ? { before: minDate } : {}),
+								after: today,
+							}}
 							captionLayout="dropdown"
 						/>
 					</div>
+					{minDate ? (
+						<p className="text-xs text-muted-foreground">
+							Available from {formatIsoDate(minDate)} to{" "}
+							{formatIsoDate(today)}
+						</p>
+					) : null}
 				</div>
 
 				<DialogFooter>

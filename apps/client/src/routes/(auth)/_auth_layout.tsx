@@ -114,11 +114,27 @@ function AuthLayout() {
 	}
 
 	const tenants = user ? normalizeUserTenants(user.tenants) : [];
+	const accessibleTenants = tenants.filter((tenant) => !tenant.access_restricted);
 	const displayName =
 		[user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() ||
 		user?.email ||
 		"";
 	const initials = getUserInitials(displayName);
+
+	// All memberships restricted (e.g. Test access disabled) — same modal as login.
+	if (tenants.length > 0 && accessibleTenants.length === 0) {
+		if (!blockedToastShown.current) {
+			blockedToastShown.current = true;
+			try {
+				sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
+			} catch {
+				// sessionStorage may be unavailable
+			}
+		}
+		deleteAllCookies();
+		useAuthStore.getState().clearAuth();
+		return <Navigate to={buildLoginRedirectUrl(location.href)} replace />;
+	}
 
 	if (tenants.length === 0) {
 		return (

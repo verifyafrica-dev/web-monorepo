@@ -43,6 +43,7 @@ import {
 	useTenantBillingInformationV2Query,
 	useTenantInvoicesV2Query,
 } from "#/api/http/v2/billing/billing.hooks";
+import { useTenantV2DetailQuery } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	useTenantTransactionsV2Query,
 	useWalletBalanceV2Query,
@@ -88,9 +89,13 @@ export const Route = createFileRoute("/(auth)/_auth_layout/app/billing/")({
 function BillingPage() {
 	const queryClient = useQueryClient();
 	const { user, tenant, tenantId, isTenantAdmin } = useCurrentTenant();
+	const tenantDetailQuery = useTenantV2DetailQuery(tenantId, Boolean(tenantId));
 	const accountCreatedAt = useMemo(
-		() => parseValidDate(user?.created_at),
-		[user?.created_at],
+		() =>
+			parseValidDate(
+				tenantDetailQuery.data?.created_at ?? user?.created_at,
+			),
+		[tenantDetailQuery.data?.created_at, user?.created_at],
 	);
 
 	const [transactionPage, setTransactionPage] = useState(1);
