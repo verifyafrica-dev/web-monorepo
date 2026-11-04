@@ -2,17 +2,23 @@ import {
 	ArrowClockwiseIcon,
 	BuildingsIcon,
 	CalendarBlankIcon,
-	CaretRightIcon,
 	DownloadSimpleIcon,
 	FunnelIcon,
 	MagnifyingGlassIcon,
 	PlusIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
+import type { TenantAllListItem } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePlatformAnalyticsV2Query } from "#/api/http/v2/analytics/analytics.hooks";
-import { useTenantsAllV2Query } from "#/api/http/v2/tenants/tenants.hooks";
+import {
+	useTenantsAllV2Query,
+	useUpdateTenantTestAccessV2Mutation,
+} from "#/api/http/v2/tenants/tenants.hooks";
+import { env } from "#/config/env";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import {
 	TablePagination,
 	TablePaginationSkeleton,
@@ -31,6 +37,7 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
+import { Switch } from "@verifyafrica/ui/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -61,6 +68,9 @@ import {
 	type KycStatusFilter,
 	mapPlatformAnalyticsToTenantStats,
 	mergeTenantsSearchParams,
+	resolveTestAccessFilter,
+	TEST_ACCESS_FILTER_OPTIONS,
+	type TestAccessFilter,
 	type TenantsSearchParams,
 	tenantsSearchSchema,
 } from "./-data";
@@ -86,6 +96,7 @@ function TenantsPage() {
 	const page = urlSearch.page ?? 1;
 	const billingPlanFilter = (urlSearch.billing_plan ?? "all") as BillingPlanFilter;
 	const kycStatusFilter = (urlSearch.kyc_status ?? "all") as KycStatusFilter;
+	const testAccessFilter = resolveTestAccessFilter(urlSearch);
 
 	const [searchDraft, setSearchDraft] = useState(urlSearch.search ?? "");
 	const [addTenantOpen, setAddTenantOpen] = useState(false);
@@ -118,6 +129,16 @@ function TenantsPage() {
 		});
 	}, [debouncedSearch, urlSearch.search, updateSearchParams]);
 
+	// Migrate legacy `tab=test_access_disabled` bookmarks to `test_access=disabled`.
+	useEffect(() => {
+		if (urlSearch.tab === "test_access_disabled" && !urlSearch.test_access) {
+			updateSearchParams({
+				test_access: "disabled",
+				tab: undefined,
+			});
+		}
+	}, [urlSearch.tab, urlSearch.test_access, updateSearchParams]);
+
 	const tenantListQuery = useMemo(
 		() =>
 			buildTenantAllListQuery({
@@ -126,8 +147,9 @@ function TenantsPage() {
 				search: debouncedSearch,
 				billingPlanFilter,
 				kycStatusFilter,
+				testAccessFilter,
 			}),
-		[page, debouncedSearch, billingPlanFilter, kycStatusFilter],
+		[page, debouncedSearch, billingPlanFilter, kycStatusFilter, testAccessFilter],
 	);
 
 	const tenantsQuery = useTenantsAllV2Query(tenantListQuery);
@@ -160,10 +182,19 @@ function TenantsPage() {
 		}
 	};
 
+	const openTenant = (tenantId: string) => {
+		void navigate({
+			to: "/app/tenants/$tenantId",
+			params: { tenantId },
+			search: { tab: "overview" },
+		});
+	};
+
 	const hasActiveFilters =
 		debouncedSearch.trim().length > 0 ||
 		billingPlanFilter !== "all" ||
-		kycStatusFilter !== "all";
+		kycStatusFilter !== "all" ||
+		testAccessFilter !== "all";
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -204,7 +235,7 @@ function TenantsPage() {
 						<span className="text-sm font-medium">Filters:</span>
 					</div>
 
-					<div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-xl">
+					<div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-3xl">
 						<Select
 							value={billingPlanFilter}
 							onValueChange={(value) =>
@@ -246,6 +277,28 @@ function TenantsPage() {
 								))}
 							</SelectContent>
 						</Select>
+
+						<Select
+							value={testAccessFilter}
+							onValueChange={(value) =>
+								updateSearchParams({
+									test_access: value as TestAccessFilter,
+									tab: undefined,
+									page: undefined,
+								})
+							}
+						>
+							<SelectTrigger className="w-full">
+								<SelectValue placeholder="Test access" />
+							</SelectTrigger>
+							<SelectContent>
+								{TEST_ACCESS_FILTER_OPTIONS.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					{hasActiveFilters ? (
@@ -257,6 +310,8 @@ function TenantsPage() {
 									search: undefined,
 									billing_plan: "all",
 									kyc_status: "all",
+									test_access: "all",
+									tab: undefined,
 									page: undefined,
 								});
 							}}
@@ -326,79 +381,22 @@ function TenantsPage() {
 										<TableHead className="text-center">
 											KYC Status
 										</TableHead>
+										<TableHead className="min-w-[180px] text-center">
+											Test Access
+										</TableHead>
 										<TableHead className="min-w-[220px]">
 											Created Date
 										</TableHead>
-										<TableHead className="text-center">Actions</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{tenants.map((tenant) => {
-										const avatarColor = getTenantAvatarColor(tenant.name);
-
-										return (
-											<TableRow key={tenant.id}>
-												<TableCell>
-													<div className="flex items-center gap-3">
-														<Avatar className="size-10 rounded-lg">
-															<AvatarFallback
-																className={cn(
-																	"rounded-lg text-sm font-semibold",
-																	avatarColor.bg,
-																	avatarColor.text,
-																)}
-															>
-																{getUserInitials(tenant.name).slice(0, 1)}
-															</AvatarFallback>
-														</Avatar>
-														<div className="min-w-0">
-															<p className="truncate font-medium">
-																{tenant.name}
-															</p>
-															<p className="truncate text-xs text-muted-foreground">
-																ID: {tenant.slug}
-															</p>
-														</div>
-													</div>
-												</TableCell>
-												<TableCell className="text-center">
-													<Badge
-														variant="outline"
-														className="border-blue-200 bg-blue-50 font-semibold text-blue-700"
-													>
-														{getBillingPlanLabel(tenant.billing?.billing_plan)}
-													</Badge>
-												</TableCell>
-												<TableCell className="text-center">
-													<KycStatusBadge
-														status={getKycDisplayStatus(tenant)}
-													/>
-												</TableCell>
-												<TableCell>
-													<div className="flex items-center gap-2 text-sm">
-														<CalendarBlankIcon className="size-4 text-muted-foreground" />
-														<span>{formatTenantDate(tenant.created_at)}</span>
-													</div>
-												</TableCell>
-												<TableCell className="text-center">
-													<Button
-														variant="link"
-														className="h-auto px-0"
-														asChild
-													>
-														<Link
-															to="/app/tenants/$tenantId"
-															params={{ tenantId: tenant.id }}
-															search={{ tab: "overview" }}
-														>
-															View Details
-															<CaretRightIcon />
-														</Link>
-													</Button>
-												</TableCell>
-											</TableRow>
-										);
-									})}
+									{tenants.map((tenant) => (
+										<TenantRow
+											key={tenant.id}
+											tenant={tenant}
+											onOpen={() => openTenant(tenant.id)}
+										/>
+									))}
 								</TableBody>
 							</Table>
 						</div>
@@ -425,6 +423,104 @@ function TenantsPage() {
 	);
 }
 
+function TenantRow({
+	tenant,
+	onOpen,
+}: {
+	tenant: TenantAllListItem;
+	onOpen: () => void;
+}) {
+	const apiMode = useApiModeStore((s) => s.mode);
+	const canManage = env.envState === "production" && apiMode === "live";
+	const mutation = useUpdateTenantTestAccessV2Mutation(tenant.id);
+	const enabled = Boolean(tenant.test_access_enabled);
+	const avatarColor = getTenantAvatarColor(tenant.name);
+
+	async function handleToggle(next: boolean) {
+		if (!canManage || mutation.isPending) return;
+		try {
+			await mutation.mutateAsync({ test_access_enabled: next });
+			toast.success(
+				next
+					? `Test access enabled for ${tenant.name}`
+					: `Test access disabled for ${tenant.name}`,
+			);
+		} catch (error) {
+			toast.error(getV2ErrorMessage(error) || "Failed to update test access");
+		}
+	}
+
+	return (
+		<TableRow
+			className="cursor-pointer"
+			onClick={onOpen}
+			onKeyDown={(event) => {
+				if (event.key === "Enter" || event.key === " ") {
+					event.preventDefault();
+					onOpen();
+				}
+			}}
+			tabIndex={0}
+		>
+			<TableCell>
+				<div className="flex items-center gap-3">
+					<Avatar className="size-10 rounded-lg">
+						<AvatarFallback
+							className={cn(
+								"rounded-lg text-sm font-semibold",
+								avatarColor.bg,
+								avatarColor.text,
+							)}
+						>
+							{getUserInitials(tenant.name).slice(0, 1)}
+						</AvatarFallback>
+					</Avatar>
+					<div className="min-w-0">
+						<p className="truncate font-medium">{tenant.name}</p>
+						<p className="truncate text-xs text-muted-foreground">
+							ID: {tenant.slug}
+						</p>
+					</div>
+				</div>
+			</TableCell>
+			<TableCell className="text-center">
+				<Badge
+					variant="outline"
+					className="border-blue-200 bg-blue-50 font-semibold text-blue-700"
+				>
+					{getBillingPlanLabel(tenant.billing?.billing_plan)}
+				</Badge>
+			</TableCell>
+			<TableCell className="text-center">
+				<KycStatusBadge status={getKycDisplayStatus(tenant)} />
+			</TableCell>
+			<TableCell
+				className="text-center"
+				onClick={(event) => event.stopPropagation()}
+				onKeyDown={(event) => event.stopPropagation()}
+			>
+				<div className="inline-flex items-center gap-2">
+					<Switch
+						checked={enabled}
+						disabled={!canManage || mutation.isPending}
+						onCheckedChange={(checked) => void handleToggle(checked)}
+						aria-label={`Toggle test access for ${tenant.name}`}
+					/>
+					<span className="text-xs text-muted-foreground">
+						{enabled ? "On" : "Off"}
+					</span>
+				</div>
+			</TableCell>
+			<TableCell>
+				<div className="flex items-center gap-2 text-sm">
+					<CalendarBlankIcon className="size-4 text-muted-foreground" />
+					<span>{formatTenantDate(tenant.created_at)}</span>
+				</div>
+			</TableCell>
+		</TableRow>
+	);
+}
+
 function TenantsTableSkeleton() {
 	return (
 		<div className="space-y-3">
@@ -437,8 +533,8 @@ function TenantsTableSkeleton() {
 					</div>
 					<Skeleton className="h-6 w-16" />
 					<Skeleton className="h-6 w-24" />
+					<Skeleton className="h-6 w-16" />
 					<Skeleton className="h-4 w-40" />
-					<Skeleton className="h-4 w-24" />
 				</div>
 			))}
 		</div>

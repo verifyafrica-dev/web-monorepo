@@ -113,6 +113,7 @@ export const TenantAllListQuerySchema = TenantListQuerySchema.extend({
 	search: z.string().optional(),
 	billing_plan: z.enum(["payg", "enterprise"]).optional(),
 	kyc_status: TenantAllListKycStatusFilterSchema.optional(),
+	test_access_enabled: z.enum(["true", "false"]).optional(),
 });
 
 export type TenantAllListQuery = z.infer<typeof TenantAllListQuerySchema>;
@@ -244,7 +245,21 @@ export interface TenantAllListItem {
 	stripe_customer_id?: string;
 	created_at: string;
 	billing: TenantAllListBilling | null;
+	test_access_enabled?: boolean;
+	environment_link_id?: string | null;
 }
+
+export interface TenantTestAccess {
+	test_access_enabled: boolean;
+}
+
+export const TenantTestAccessUpdateSchema = z.object({
+	test_access_enabled: z.boolean(),
+});
+
+export type TenantTestAccessUpdatePayload = z.infer<
+	typeof TenantTestAccessUpdateSchema
+>;
 
 export interface TenantAPIKey {
 	key: string;
@@ -611,6 +626,7 @@ export type SupportedCountryListResponse = V2SuccessResponse<
 export type TenantAPIKeyResponse = V2SuccessResponse<TenantAPIKey>;
 export type TenantAccessRestrictionResponse =
 	V2SuccessResponse<TenantAccessRestriction>;
+export type TenantTestAccessResponse = V2SuccessResponse<TenantTestAccess>;
 export type TenantWebhookResponse = V2SuccessResponse<TenantWebhook>;
 export type TenantWebhookEventListResponse =
 	V2PaginatedSuccessResponse<TenantWebhookEvent>;

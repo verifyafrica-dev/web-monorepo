@@ -86,6 +86,7 @@ export const useMeV2Query = (
 		queryFn: USERS_V2_API.ME,
 		enabled: isEnabled,
 		staleTime: 60_000,
+		retry: false,
 	});
 
 	useEffect(() => {
@@ -133,8 +134,14 @@ export const useUserV2AdminLoginMutation = () =>
 				user: toAuthStoreUser(data.user),
 			});
 
-			const user = await USERS_V2_API.ME();
-			useAuthStore.setState({ user: toAuthStoreUser(user) });
+			try {
+				const user = await USERS_V2_API.ME();
+				useAuthStore.setState({ user: toAuthStoreUser(user) });
+			} catch (error) {
+				deleteAllCookies();
+				useAuthStore.getState().clearAuth();
+				throw error;
+			}
 		},
 	});
 

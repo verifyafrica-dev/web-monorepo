@@ -9,15 +9,31 @@ import type {
 
 export type BillingPlanFilter = "all" | BillingPlan;
 export type KycStatusFilter = "all" | "verified" | "pending" | "not_started";
+export type TestAccessFilter = "all" | "enabled" | "disabled";
 
 export const tenantsSearchSchema = z.object({
 	page: z.coerce.number().int().positive().optional(),
 	search: z.string().optional(),
 	billing_plan: z.enum(["all", "payg", "enterprise"]).optional(),
 	kyc_status: z.enum(["all", "verified", "pending", "not_started"]).optional(),
+	test_access: z.enum(["all", "enabled", "disabled"]).optional(),
+	/** @deprecated Prefer `test_access=disabled`. Kept so old bookmarked URLs still work. */
+	tab: z.enum(["all", "test_access_disabled"]).optional(),
 });
 
 export type TenantsSearchParams = z.infer<typeof tenantsSearchSchema>;
+
+export function resolveTestAccessFilter(
+	search: TenantsSearchParams,
+): TestAccessFilter {
+	if (search.test_access) {
+		return search.test_access;
+	}
+	if (search.tab === "test_access_disabled") {
+		return "disabled";
+	}
+	return "all";
+}
 
 export function mergeTenantsSearchParams(
 	current: TenantsSearchParams,
@@ -37,6 +53,11 @@ export function mergeTenantsSearchParams(
 	}
 	if (next.kyc_status && next.kyc_status !== "all") {
 		result.kyc_status = next.kyc_status;
+	}
+
+	const testAccess = resolveTestAccessFilter(next);
+	if (testAccess !== "all") {
+		result.test_access = testAccess;
 	}
 
 	return result;
@@ -104,12 +125,14 @@ export function buildTenantAllListQuery({
 	search,
 	billingPlanFilter,
 	kycStatusFilter,
+	testAccessFilter,
 }: {
 	page: number;
 	perPage: number;
 	search: string;
 	billingPlanFilter: BillingPlanFilter;
 	kycStatusFilter: KycStatusFilter;
+	testAccessFilter?: TestAccessFilter;
 }) {
 	const trimmedSearch = search.trim();
 
@@ -121,6 +144,11 @@ export function buildTenantAllListQuery({
 			? { billing_plan: billingPlanFilter }
 			: {}),
 		...(kycStatusFilter !== "all" ? { kyc_status: kycStatusFilter } : {}),
+		...(testAccessFilter === "enabled"
+			? { test_access_enabled: "true" as const }
+			: testAccessFilter === "disabled"
+				? { test_access_enabled: "false" as const }
+				: {}),
 	};
 }
 
@@ -197,6 +225,15 @@ export const KYC_STATUS_FILTER_OPTIONS: {
 	{ value: "verified", label: "Verified" },
 	{ value: "pending", label: "Pending" },
 	{ value: "not_started", label: "Not Started" },
+];
+
+export const TEST_ACCESS_FILTER_OPTIONS: {
+	value: TestAccessFilter;
+	label: string;
+}[] = [
+	{ value: "all", label: "All test access" },
+	{ value: "enabled", label: "Test access enabled" },
+	{ value: "disabled", label: "Test access disabled" },
 ];
 
 export type KycDisplayStatus = ReturnType<typeof getKycDisplayStatus>;

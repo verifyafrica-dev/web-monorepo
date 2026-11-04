@@ -7,11 +7,14 @@ import {
 	useApiModeStore,
 } from "#/stores/api-mode-store";
 import { mintTestAccessToken } from "#/api/http/xhr";
-import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
+import {
+	isTestAccessDisabledError,
+	isTestAccountBlockedError,
+} from "#/lib/test-account-blocked";
 
 export type SwitchApiModeResult =
 	| { ok: true }
-	| { ok: false; reason: "blocked" | "error" | "unavailable" };
+	| { ok: false; reason: "blocked" | "request_access" | "error" | "unavailable" };
 
 /**
  * Entity-id routes are environment-specific. After Live↔Test switch, leave them
@@ -71,6 +74,10 @@ export function useSwitchApiMode() {
 			} catch (error) {
 				clearTestSession();
 				setMode(apiModeConfig.defaultMode);
+				if (isTestAccessDisabledError(error)) {
+					toast.dismiss(toastId);
+					return { ok: false, reason: "request_access" };
+				}
 				if (isTestAccountBlockedError(error)) {
 					toast.dismiss(toastId);
 					return { ok: false, reason: "blocked" };

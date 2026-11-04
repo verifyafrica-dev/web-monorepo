@@ -40,6 +40,7 @@ async function mintTestAccessToken(): Promise<string> {
 		throw new Error("Missing live session. Please sign in again.");
 	}
 
+	const selectedTenantId = useAuthStore.getState().selectedTenantId;
 	const response = await axios.post<
 		V2SuccessResponse<{ access_token: string }>
 	>(`${apiModeConfig.liveApiBaseUrl}/v2/users/test-mode/access-token/`, undefined, {
@@ -47,6 +48,7 @@ async function mintTestAccessToken(): Promise<string> {
 		headers: {
 			[AUTH_APP_HEADER]: AUTH_APP,
 			Authorization: `Bearer ${liveToken}`,
+			...(selectedTenantId ? { "X-TENANT-ID": selectedTenantId } : {}),
 		},
 	});
 
