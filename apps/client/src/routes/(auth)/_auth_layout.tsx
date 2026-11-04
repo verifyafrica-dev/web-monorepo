@@ -33,6 +33,7 @@ import {
 import { ACCOUNT_BLOCKED_STORAGE_KEY } from "#/components/account-blocked-dialog";
 import { AppSidebar } from "#/components/app-sidebar";
 import { TestModeBanner } from "#/components/environment-mode-switcher";
+import { EnvironmentSwitchOverlay } from "#/components/environment-switch-overlay";
 import { NoOrganizationState } from "#/components/no-organization-state";
 import { PresenceConnector } from "#/components/presence-connector";
 import { RequiredPasswordChange } from "#/components/required-password-change";
@@ -188,6 +189,7 @@ function AuthLayout() {
 
 	return (
 		<SidebarProvider>
+			<EnvironmentSwitchOverlay />
 			<PresenceConnector enabled={Boolean(user?.id)} />
 			<AppSidebar />
 			<SidebarInset className="min-w-0">

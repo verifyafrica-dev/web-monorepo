@@ -18,6 +18,7 @@ import {
 	useUpdateTenantTestAccessV2Mutation,
 } from "#/api/http/v2/tenants/tenants.hooks";
 import { env } from "#/config/env";
+import { useEnvironmentQueryLoading } from "#/hooks/use-environment-query-loading";
 import { useApiModeStore } from "#/stores/api-mode-store";
 import {
 	TablePagination,
@@ -163,7 +164,10 @@ function TenantsPage() {
 	);
 
 	const totalTenants = tenantsQuery.data?.meta.pagination.total ?? 0;
-	const isLoading = tenantsQuery.isPending || (tenantsQuery.isFetching && !tenantsQuery.data);
+	const isLoading = useEnvironmentQueryLoading(
+		tenantsQuery,
+		analyticsQuery.isPending || (analyticsQuery.isFetching && !analyticsQuery.data),
+	);
 	const isRefreshing = tenantsQuery.isFetching || analyticsQuery.isFetching;
 
 	const handleRefresh = () => {

@@ -20,11 +20,17 @@ export const apiModeConfig: ApiModeConfig = resolveApiModeConfig(
 type ApiModeStoreState = {
 	mode: ApiMode;
 	testAccessToken: string | null;
+	/** True while Live↔Test switch is in flight (blocks UI + shows overlay). */
+	isEnvironmentSwitching: boolean;
+	/** Target mode while switching; null when idle. */
+	environmentSwitchTarget: ApiMode | null;
 };
 
 type ApiModeStoreActions = {
 	setMode: (mode: ApiMode) => void;
 	setTestAccessToken: (token: string | null) => void;
+	beginEnvironmentSwitch: (target: ApiMode) => void;
+	endEnvironmentSwitch: () => void;
 	getApiBaseUrl: () => string;
 	clearTestSession: () => void;
 };
@@ -40,6 +46,8 @@ export const useApiModeStore = create<ApiModeStore>()(
 		(set, get) => ({
 			mode: initialMode,
 			testAccessToken: null,
+			isEnvironmentSwitching: false,
+			environmentSwitchTarget: null,
 			setMode: (mode) => {
 				if (!apiModeConfig.switcherEnabled && mode !== apiModeConfig.defaultMode) {
 					return;
@@ -47,6 +55,16 @@ export const useApiModeStore = create<ApiModeStore>()(
 				set({ mode });
 			},
 			setTestAccessToken: (token) => set({ testAccessToken: token }),
+			beginEnvironmentSwitch: (target) =>
+				set({
+					isEnvironmentSwitching: true,
+					environmentSwitchTarget: target,
+				}),
+			endEnvironmentSwitch: () =>
+				set({
+					isEnvironmentSwitching: false,
+					environmentSwitchTarget: null,
+				}),
 			getApiBaseUrl: () => getApiBaseUrlForMode(get().mode, apiModeConfig),
 			clearTestSession: () => set({ testAccessToken: null }),
 		}),
@@ -63,6 +81,8 @@ export const useApiModeStore = create<ApiModeStore>()(
 				if (!apiModeConfig.switcherEnabled) {
 					state.mode = apiModeConfig.defaultMode;
 				}
+				state.isEnvironmentSwitching = false;
+				state.environmentSwitchTarget = null;
 			},
 		},
 	),

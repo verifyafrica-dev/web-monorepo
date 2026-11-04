@@ -17,10 +17,11 @@ import {
 	TEST_ACCESS_REQUEST_TITLE,
 	TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL,
 } from "#/lib/test-account-blocked";
+import { useApiModeStore } from "#/stores/api-mode-store";
 
 export function EnvironmentModeSwitcher({ className }: { className?: string }) {
 	const { mode, switchApiMode, switcherEnabled } = useSwitchApiMode();
-	const [isSwitching, setIsSwitching] = useState(false);
+	const isSwitching = useApiModeStore((state) => state.isEnvironmentSwitching);
 	const [blockedOpen, setBlockedOpen] = useState(false);
 	const [requestAccessOpen, setRequestAccessOpen] = useState(false);
 
@@ -28,16 +29,11 @@ export function EnvironmentModeSwitcher({ className }: { className?: string }) {
 
 	async function handleSwitch(next: "live" | "test") {
 		if (isSwitching || next === mode) return;
-		setIsSwitching(true);
-		try {
-			const result = await switchApiMode(next);
-			if (!result.ok && result.reason === "request_access") {
-				setRequestAccessOpen(true);
-			} else if (!result.ok && result.reason === "blocked") {
-				setBlockedOpen(true);
-			}
-		} finally {
-			setIsSwitching(false);
+		const result = await switchApiMode(next);
+		if (!result.ok && result.reason === "request_access") {
+			setRequestAccessOpen(true);
+		} else if (!result.ok && result.reason === "blocked") {
+			setBlockedOpen(true);
 		}
 	}
 

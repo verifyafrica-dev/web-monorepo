@@ -126,6 +126,12 @@ export function useSwitchApiMode() {
 		}
 	}
 
+	async function refreshActiveQueriesForNewMode() {
+		// Drop active cache so pages show skeletons instead of the previous env's data.
+		await queryClient.cancelQueries({ type: "active" });
+		await queryClient.resetQueries({ type: "active" });
+	}
+
 	async function switchApiMode(next: ApiMode): Promise<SwitchApiModeResult> {
 		if (!apiModeConfig.switcherEnabled) {
 			toast.message("Environment switching is not available on this host.");
@@ -136,16 +142,19 @@ export function useSwitchApiMode() {
 		const authStore = useAuthStore.getState();
 		const previousTenantId = authStore.selectedTenantId;
 		const previousTenants = normalizeUserTenants(authStore.user?.tenants ?? null);
+		const { beginEnvironmentSwitch, endEnvironmentSwitch } =
+			useApiModeStore.getState();
 
 		// Leave id routes immediately so the UI feels responsive, then switch.
 		await leaveEntityIdRouteIfNeeded();
 		const toastId = toast.loading(`Switching to ${modeLabel(next)} mode…`);
+		beginEnvironmentSwitch(next);
 
 		if (next === "test") {
 			try {
 				const token = await mintTestAccessToken();
 				// Pause tenant-scoped queries before flipping the API base URL so we
-				// never hit Test with a Live tenant id (and never wipe good cache via clear()).
+				// never hit Test with a Live tenant id.
 				authStore.setSelectedTenantId(null);
 				setTestAccessToken(token);
 				setMode("test");
@@ -162,7 +171,7 @@ export function useSwitchApiMode() {
 					resolveTwinTenantId(previousTenants, previousTenantId, nextTenants),
 				);
 
-				await queryClient.invalidateQueries({ type: "active" });
+				await refreshActiveQueriesForNewMode();
 				toast.success("Switched to Test mode", { id: toastId });
 				return { ok: true };
 			} catch (error) {
@@ -196,26 +205,32 @@ export function useSwitchApiMode() {
 					{ id: toastId },
 				);
 				return { ok: false, reason: "error" };
+			} finally {
+				endEnvironmentSwitch();
 			}
 		}
 
-		authStore.setSelectedTenantId(null);
-		clearTestSession();
-		setMode("live");
 		try {
-			await syncAuthSessionForActiveMode();
-		} catch {
-			authStore.setSelectedTenantId(
-				resolveTwinTenantId(
-					previousTenants,
-					previousTenantId,
-					normalizeUserTenants(authStore.user?.tenants ?? null),
-				) ?? previousTenantId,
-			);
+			authStore.setSelectedTenantId(null);
+			clearTestSession();
+			setMode("live");
+			try {
+				await syncAuthSessionForActiveMode();
+			} catch {
+				authStore.setSelectedTenantId(
+					resolveTwinTenantId(
+						previousTenants,
+						previousTenantId,
+						normalizeUserTenants(authStore.user?.tenants ?? null),
+					) ?? previousTenantId,
+				);
+			}
+			await refreshActiveQueriesForNewMode();
+			toast.success("Switched to Live mode", { id: toastId });
+			return { ok: true };
+		} finally {
+			endEnvironmentSwitch();
 		}
-		await queryClient.invalidateQueries({ type: "active" });
-		toast.success("Switched to Live mode", { id: toastId });
-		return { ok: true };
 	}
 
 	return {
