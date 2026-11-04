@@ -31,6 +31,7 @@ import {
 import { AppSidebar } from "#/components/app-sidebar";
 import { PresenceConnector } from "#/components/presence-connector";
 import { TestModeBanner } from "#/components/environment-mode-switcher";
+import { EnvironmentSwitchOverlay } from "#/components/environment-switch-overlay";
 import { deleteAllCookies } from "@verifyafrica/ui/lib/cookies";
 import { buildLoginRedirectUrl } from "@verifyafrica/ui/lib/redirect";
 import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
@@ -116,6 +117,7 @@ function AuthLayout() {
 
 	return (
 		<SidebarProvider>
+			<EnvironmentSwitchOverlay />
 			<PresenceConnector
 				enabled={Boolean(user?.id)}
 				listenForAdminUpdates

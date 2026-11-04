@@ -8,6 +8,7 @@ import {
 	TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL,
 	TEST_ACCOUNT_BLOCKED_TITLE,
 } from "#/lib/test-account-blocked";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
 	AlertDialog,
@@ -25,7 +26,7 @@ export function EnvironmentModeSwitcher({
 	className?: string;
 }) {
 	const { mode, switchApiMode, switcherEnabled } = useSwitchApiMode();
-	const [isSwitching, setIsSwitching] = useState(false);
+	const isSwitching = useApiModeStore((state) => state.isEnvironmentSwitching);
 	const [blockedOpen, setBlockedOpen] = useState(false);
 	const [requestAccessOpen, setRequestAccessOpen] = useState(false);
 
@@ -33,16 +34,11 @@ export function EnvironmentModeSwitcher({
 
 	async function handleSwitch(next: "live" | "test") {
 		if (isSwitching || next === mode) return;
-		setIsSwitching(true);
-		try {
-			const result = await switchApiMode(next);
-			if (!result.ok && result.reason === "request_access") {
-				setRequestAccessOpen(true);
-			} else if (!result.ok && result.reason === "blocked") {
-				setBlockedOpen(true);
-			}
-		} finally {
-			setIsSwitching(false);
+		const result = await switchApiMode(next);
+		if (!result.ok && result.reason === "request_access") {
+			setRequestAccessOpen(true);
+		} else if (!result.ok && result.reason === "blocked") {
+			setBlockedOpen(true);
 		}
 	}
 

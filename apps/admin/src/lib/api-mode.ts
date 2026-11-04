@@ -50,6 +50,12 @@ export function useSwitchApiMode() {
 		}
 	}
 
+	async function refreshActiveQueriesForNewMode() {
+		// Drop active cache so pages show skeletons instead of the previous env's data.
+		await queryClient.cancelQueries({ type: "active" });
+		await queryClient.resetQueries({ type: "active" });
+	}
+
 	async function switchApiMode(next: ApiMode): Promise<SwitchApiModeResult> {
 		if (!apiModeConfig.switcherEnabled) {
 			toast.message("Environment switching is not available on this host.");
@@ -57,18 +63,20 @@ export function useSwitchApiMode() {
 		}
 		if (next === mode) return { ok: true };
 
+		const { beginEnvironmentSwitch, endEnvironmentSwitch } =
+			useApiModeStore.getState();
+
 		// Leave id routes immediately so the UI feels responsive, then switch.
 		await leaveEntityIdRouteIfNeeded();
 		const toastId = toast.loading(`Switching to ${modeLabel(next)} mode…`);
+		beginEnvironmentSwitch(next);
 
 		if (next === "test") {
 			try {
 				const token = await mintTestAccessToken();
 				setTestAccessToken(token);
 				setMode("test");
-				// Mode is part of query keys — invalidate active queries instead of
-				// clear(), which can leave observers stuck in a pending skeleton state.
-				await queryClient.invalidateQueries({ type: "active" });
+				await refreshActiveQueriesForNewMode();
 				toast.success("Switched to Test mode", { id: toastId });
 				return { ok: true };
 			} catch (error) {
@@ -99,14 +107,20 @@ export function useSwitchApiMode() {
 					{ id: toastId },
 				);
 				return { ok: false, reason: "error" };
+			} finally {
+				endEnvironmentSwitch();
 			}
 		}
 
-		clearTestSession();
-		setMode("live");
-		await queryClient.invalidateQueries({ type: "active" });
-		toast.success("Switched to Live mode", { id: toastId });
-		return { ok: true };
+		try {
+			clearTestSession();
+			setMode("live");
+			await refreshActiveQueriesForNewMode();
+			toast.success("Switched to Live mode", { id: toastId });
+			return { ok: true };
+		} finally {
+			endEnvironmentSwitch();
+		}
 	}
 
 	return {

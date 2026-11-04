@@ -49,6 +49,7 @@ import {
 	useWalletBalanceV2Query,
 	WALLET_V2_QUERY_KEYS,
 } from "#/api/http/v2/wallet/wallet.hooks";
+import { useEnvironmentQueryLoading } from "#/hooks/use-environment-query-loading";
 import { useCurrentTenant } from "../team/-data";
 import { AddCreditsDialog } from "./-components/add-credits-dialog";
 import { ExportTransactionsDialog } from "./-components/export-transactions-dialog";
@@ -159,14 +160,14 @@ function BillingPage() {
 	const invoiceTotal =
 		invoicesQuery.data?.meta.pagination.total ?? invoices.length;
 
-	// Use isLoading (pending + fetching) so background refetches after mode switch
-	// keep showing existing data instead of permanent skeletons.
-	const isSummaryLoading =
-		walletBalanceQuery.isLoading || billingInformationQuery.isLoading;
-
-	const isTransactionsLoading = transactionsQuery.isLoading;
-
-	const isInvoicesLoading = invoicesQuery.isLoading;
+	// After Live↔Test switch, resetQueries clears cache — treat pending/fetching
+	// (and the global switch flag) as loading so skeletons replace stale env data.
+	const isSummaryLoading = useEnvironmentQueryLoading(
+		walletBalanceQuery,
+		billingInformationQuery,
+	);
+	const isTransactionsLoading = useEnvironmentQueryLoading(transactionsQuery);
+	const isInvoicesLoading = useEnvironmentQueryLoading(invoicesQuery);
 
 	const isRefreshing =
 		walletBalanceQuery.isFetching ||
