@@ -1,7 +1,6 @@
 import {
 	createFileRoute,
 	Link,
-	Navigate,
 	Outlet,
 	useLocation,
 } from "@tanstack/react-router";
@@ -52,11 +51,25 @@ export const Route = createFileRoute("/(auth)/_auth_layout")({
 	component: AuthLayout,
 });
 
+function forceLoginRedirect(pathname: string) {
+	deleteAllCookies();
+	useAuthStore.getState().clearAuth();
+	try {
+		localStorage.removeItem("auth-store");
+		localStorage.removeItem("admin-api-mode-store");
+		localStorage.removeItem("api-mode-store");
+	} catch {
+		// localStorage may be unavailable
+	}
+	window.location.assign(buildLoginRedirectUrl(pathname));
+}
+
 function AuthLayout() {
 	const location = useLocation();
 	const getUserQuery = useMeV2Query();
 	const { logout, isLoggingOut } = useUserV2LogoutMutation();
 	const blockedToastShown = useRef(false);
+	const loginRedirectStarted = useRef(false);
 
 	useEffect(() => {
 		if (!getUserQuery.isError || blockedToastShown.current) return;
@@ -65,7 +78,20 @@ function AuthLayout() {
 		toast.error(getV2ErrorMessage(getUserQuery.error), { duration: 12_000 });
 	}, [getUserQuery.isError, getUserQuery.error]);
 
-	if (getUserQuery.isLoading) {
+	useEffect(() => {
+		if (loginRedirectStarted.current) return;
+		if (getUserQuery.isPending && !getUserQuery.isError) return;
+		if (!getUserQuery.isError && getUserQuery.data?.id) return;
+		loginRedirectStarted.current = true;
+		forceLoginRedirect(location.pathname);
+	}, [
+		getUserQuery.isPending,
+		getUserQuery.isError,
+		getUserQuery.data?.id,
+		location.pathname,
+	]);
+
+	if (getUserQuery.isPending && !getUserQuery.isError) {
 		return (
 			<div className="flex min-h-dvh items-center justify-center">
 				<Loader2Icon className="size-8 animate-spin text-primary" />
@@ -74,13 +100,10 @@ function AuthLayout() {
 	}
 
 	if (getUserQuery.isError || !getUserQuery.data?.id) {
-		deleteAllCookies();
-		useAuthStore.getState().clearAuth();
 		return (
-			<Navigate
-				to={buildLoginRedirectUrl(location.pathname)}
-				replace
-			/>
+			<div className="flex min-h-dvh items-center justify-center">
+				<Loader2Icon className="size-8 animate-spin text-primary" />
+			</div>
 		);
 	}
 
