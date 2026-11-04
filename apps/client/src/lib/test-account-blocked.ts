@@ -1,4 +1,7 @@
-import type { V2AxiosError, V2ErrorResponse } from "@verifyafrica/api-client/http/shared";
+import type {
+	V2AxiosError,
+	V2ErrorResponse,
+} from "@verifyafrica/api-client/http/shared";
 
 export const TEST_ACCOUNT_BLOCKED_SUPPORT_EMAIL = "support@verifyafrica.io";
 
@@ -31,15 +34,20 @@ function readErrorPayload(error: unknown): V2ErrorResponse | undefined {
 	return undefined;
 }
 
-function isForbidden(error: unknown, data: V2ErrorResponse | undefined): boolean {
-	const statusCode = data?.status_code ?? (error as V2AxiosError).response?.status;
-	return statusCode === 403;
+function isBlockedAuthStatus(
+	error: unknown,
+	data: V2ErrorResponse | undefined,
+): boolean {
+	const statusCode =
+		data?.status_code ?? (error as V2AxiosError).response?.status;
+	// Login may surface as 401 AuthenticationFailed; protected routes use 403.
+	return statusCode === 401 || statusCode === 403;
 }
 
 /** True when Live→Test mint failed because test access was never enabled. */
 export function isTestAccessDisabledError(error: unknown): boolean {
 	const data = readErrorPayload(error);
-	if (!data || !isForbidden(error, data)) return false;
+	if (!data || !isBlockedAuthStatus(error, data)) return false;
 
 	if (data.errors?.some((item) => String(item) === TEST_ACCESS_DISABLED_CODE)) {
 		return true;
@@ -49,12 +57,12 @@ export function isTestAccessDisabledError(error: unknown): boolean {
 	return /test access is not enabled|request a test account/i.test(haystack);
 }
 
-/** True when Live→Test mint failed because the Test twin is disabled/restricted. */
+/** True when Test twin / account is disabled or restricted (login, /me, mint, org switch). */
 export function isTestAccountBlockedError(error: unknown): boolean {
 	if (isTestAccessDisabledError(error)) return false;
 
 	const data = readErrorPayload(error);
-	if (!data || !isForbidden(error, data)) return false;
+	if (!data || !isBlockedAuthStatus(error, data)) return false;
 
 	if (data.errors?.some((item) => BLOCKED_ERROR_CODES.has(String(item)))) {
 		return true;
