@@ -24,6 +24,7 @@ import { getPostLoginPath } from "@verifyafrica/ui/lib/redirect";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getAccessToken } from "#/api/http/xhr";
 import { useUserV2LoginMutation } from "#/api/http/v2/users/users.hooks";
 import {
 	ACCOUNT_BLOCKED_STORAGE_KEY,
@@ -64,7 +65,7 @@ function LoginPage() {
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 	const [blockedOpen, setBlockedOpen] = useState(false);
 	const isAlreadyAuthenticated =
-		Boolean(accessToken) &&
+		Boolean(getAccessToken()) &&
 		Boolean(user?.is_active) &&
 		!user?.must_change_password;
 
@@ -74,6 +75,13 @@ function LoginPage() {
 		sessionStorage.removeItem(ACCOUNT_BLOCKED_STORAGE_KEY);
 		setBlockedOpen(true);
 	}, []);
+
+	// Stale persisted auth without a cookie/token usable by $http → clear so we
+	// do not bounce login ↔ /app with unauthenticated /me calls.
+	useEffect(() => {
+		if (!accessToken || getAccessToken()) return;
+		useAuthStore.getState().clearAuth();
+	}, [accessToken]);
 
 	const form = useForm({
 		defaultValues: {

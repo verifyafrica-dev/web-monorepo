@@ -306,7 +306,10 @@ function TenantDetailPage() {
 				</TabsContent>
 
 				<TabsContent value={TENANT_DETAIL_TABS.TRANSACTIONS}>
-					<TransactionsTab tenantId={tenantId} />
+					<TransactionsTab
+						tenantId={tenantId}
+						tenantCreatedAt={tenant?.created_at}
+					/>
 				</TabsContent>
 
 				<TabsContent value={TENANT_DETAIL_TABS.ACTIVITY_LOGS}>

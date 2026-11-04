@@ -507,7 +507,11 @@ function TenantRow({
 						aria-label={`Toggle test access for ${tenant.name}`}
 					/>
 					<span className="text-xs text-muted-foreground">
-						{enabled ? "On" : "Off"}
+						{!canManage && env.envState === "production" && apiMode === "test"
+							? "Live only"
+							: enabled
+								? "On"
+								: "Off"}
 					</span>
 				</div>
 			</TableCell>

@@ -72,13 +72,24 @@ function getTransactionTableHeadClassName(index: number, total: number) {
 	return "text-xs font-semibold tracking-wide uppercase";
 }
 
-export function TransactionsTab({ tenantId }: { tenantId: string }) {
+export function TransactionsTab({
+	tenantId,
+	tenantCreatedAt,
+}: {
+	tenantId: string;
+	tenantCreatedAt?: string | null;
+}) {
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTransaction, setSelectedTransaction] =
 		useState<WalletTransaction | null>(null);
 	const [exportOpen, setExportOpen] = useState(false);
 	const debouncedSearch = useDebouncedValue(searchQuery, 300);
+	const minExportDate = useMemo(() => {
+		if (!tenantCreatedAt) return undefined;
+		const parsed = new Date(tenantCreatedAt);
+		return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+	}, [tenantCreatedAt]);
 
 	const transactionsQuery = useTenantTransactionsV2Query(tenantId, {
 		page,
@@ -170,7 +181,11 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 											const productKey = getTransactionProductKey(transaction);
 
 											return (
-												<TableRow key={transaction.id}>
+												<TableRow
+													key={transaction.id}
+													className="cursor-pointer"
+													onClick={() => setSelectedTransaction(transaction)}
+												>
 													<TableCell className="pl-4 font-medium sm:pl-6">
 														{transaction.reference}
 													</TableCell>
@@ -209,7 +224,10 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 													>
 														{transaction.reason}
 													</TableCell>
-													<TableCell className="pr-4 text-right sm:pr-6">
+													<TableCell
+														className="pr-4 text-right sm:pr-6"
+														onClick={(event) => event.stopPropagation()}
+													>
 														<Button
 															variant="ghost"
 															size="icon-sm"
@@ -305,6 +323,7 @@ export function TransactionsTab({ tenantId }: { tenantId: string }) {
 				open={exportOpen}
 				onOpenChange={setExportOpen}
 				tenantId={tenantId}
+				tenantCreatedAt={minExportDate}
 			/>
 		</>
 	);

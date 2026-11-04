@@ -491,7 +491,10 @@ function TopUpRow({
 	onViewDetails: () => void;
 }) {
 	return (
-		<TableRow>
+		<TableRow
+			className="cursor-pointer"
+			onClick={onViewDetails}
+		>
 			<TableCell className="pl-4 font-medium sm:pl-6">
 				{formatTopUpId(topUp)}
 			</TableCell>
@@ -507,7 +510,10 @@ function TopUpRow({
 				</Badge>
 			</TableCell>
 			<TableCell>{formatTenantDate(topUp.created_at)}</TableCell>
-			<TableCell className="pr-4 text-right sm:pr-6">
+			<TableCell
+				className="pr-4 text-right sm:pr-6"
+				onClick={(event) => event.stopPropagation()}
+			>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="ghost" size="icon-sm">

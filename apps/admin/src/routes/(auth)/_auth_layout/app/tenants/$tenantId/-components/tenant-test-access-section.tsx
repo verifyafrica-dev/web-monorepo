@@ -27,7 +27,10 @@ export function TenantTestAccessSection({
 	const apiMode = useApiModeStore((s) => s.mode);
 	// Live API is the source of truth; Test-mode updates would only flip the twin.
 	const canManage = env.envState === "production" && apiMode === "live";
-	const query = useTenantTestAccessV2Query(tenantId, canManage);
+	// Always load the Live/SoT value on production (including while browsing Test mode)
+	// so Advanced matches the all-tenants toggle instead of forcing Off.
+	const canRead = env.envState === "production" && apiMode === "live";
+	const query = useTenantTestAccessV2Query(tenantId, canRead);
 	const mutation = useUpdateTenantTestAccessV2Mutation(tenantId);
 
 	const enabled = query.data?.test_access_enabled ?? false;
@@ -53,7 +56,7 @@ export function TenantTestAccessSection({
 				<div className="min-w-0 flex-1 space-y-1">
 					<div className="flex flex-wrap items-center gap-2">
 						<h3 className="text-sm font-semibold">Test account access</h3>
-						{canManage ? (
+						{canRead ? (
 							<Badge variant={enabled ? "default" : "secondary"}>
 								{enabled ? "Enabled" : "Disabled"}
 							</Badge>
@@ -86,7 +89,7 @@ export function TenantTestAccessSection({
 				</div>
 			</div>
 
-			{query.isPending && canManage ? (
+			{query.isPending && canRead ? (
 				<Skeleton className="h-10 w-full" />
 			) : (
 				<Field orientation="horizontal" className="items-center justify-between">
@@ -97,12 +100,12 @@ export function TenantTestAccessSection({
 						<FieldDescription>
 							{canManage
 								? "Members see a request-access message when this is off."
-								: "Greyed out outside production."}
+								: "Greyed out outside production Live mode."}
 						</FieldDescription>
 					</FieldContent>
 					<Switch
 						id={`test-access-${tenantId}`}
-						checked={canManage ? enabled : false}
+						checked={canRead ? enabled : false}
 						disabled={!canManage || mutation.isPending || query.isPending}
 						onCheckedChange={(checked) => void handleToggle(checked)}
 					/>
