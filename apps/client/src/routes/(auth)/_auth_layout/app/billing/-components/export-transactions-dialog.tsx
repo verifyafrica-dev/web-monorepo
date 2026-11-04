@@ -18,10 +18,8 @@ import { Label } from "@verifyafrica/ui/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@verifyafrica/ui/components/ui/radio-group";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import {
-	downloadTransactionsCsv,
 	EXPORT_DURATION_OPTIONS,
 	type ExportDurationPreset,
-	filterTransactionsByDateRange,
 	formatIsoDate,
 	getDefaultExportDateRange,
 	getExportDateRangeForPreset,
@@ -31,7 +29,6 @@ import {
 type ExportTransactionsDialogProps = ComponentProps<typeof Dialog> & {
 	accountCreatedAt: Date;
 	tenantId?: string;
-	currency?: string;
 };
 
 export function ExportTransactionsDialog({
@@ -39,7 +36,6 @@ export function ExportTransactionsDialog({
 	onOpenChange,
 	accountCreatedAt,
 	tenantId,
-	currency = "USD",
 }: ExportTransactionsDialogProps) {
 	const [preset, setPreset] = useState<ExportDurationPreset>("custom");
 	const [dateRange, setDateRange] = useState<DateRange | undefined>(() =>
@@ -89,20 +85,13 @@ export function ExportTransactionsDialog({
 		}
 
 		try {
-			const allTransactions = await exportMutation.mutateAsync({ tenantId });
-			const transactions = filterTransactionsByDateRange(
-				allTransactions,
-				queryDates.from_date,
-				queryDates.to_date,
-			);
-
-			if (transactions.length === 0) {
-				toast.info("No transactions found for the selected date range");
-				return;
-			}
-
-			const filename = `transactions-${queryDates.from_date}-to-${queryDates.to_date}.csv`;
-			downloadTransactionsCsv(transactions, filename, currency);
+			await exportMutation.mutateAsync({
+				tenantId,
+				params: {
+					created_from: queryDates.from_date,
+					created_to: queryDates.to_date,
+				},
+			});
 			toast.success("Transactions exported successfully");
 			onOpenChange?.(false);
 		} catch {

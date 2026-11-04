@@ -74,8 +74,10 @@ function AuthLayout() {
 		if (!getUserQuery.isError || blockedToastShown.current) return;
 		if (!isTestAccountBlockedError(getUserQuery.error)) return;
 		blockedToastShown.current = true;
-		if (typeof window !== "undefined") {
+		try {
 			sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
+		} catch {
+			// sessionStorage may be unavailable
 		}
 	}, [getUserQuery.isError, getUserQuery.error]);
 
@@ -88,6 +90,18 @@ function AuthLayout() {
 	}
 
 	if (getUserQuery.isError || !getUserQuery.data?.id) {
+		if (
+			getUserQuery.isError &&
+			isTestAccountBlockedError(getUserQuery.error) &&
+			!blockedToastShown.current
+		) {
+			blockedToastShown.current = true;
+			try {
+				sessionStorage.setItem(ACCOUNT_BLOCKED_STORAGE_KEY, "1");
+			} catch {
+				// sessionStorage may be unavailable
+			}
+		}
 		deleteAllCookies();
 		useAuthStore.getState().clearAuth();
 		return <Navigate to={buildLoginRedirectUrl(location.href)} replace />;

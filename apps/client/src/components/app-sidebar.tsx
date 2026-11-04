@@ -16,9 +16,6 @@ import {
 	WebhooksLogoIcon,
 } from "@phosphor-icons/react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ComponentType, SVGProps } from "react";
-import * as React from "react";
-import { CreateOrganizationDialog } from "#/components/create-organization-dialog";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -46,13 +43,17 @@ import {
 	useSidebar,
 } from "@verifyafrica/ui/components/ui/sidebar";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import type { ComponentType, SVGProps } from "react";
+import * as React from "react";
+import { toast } from "sonner";
+import { AccountBlockedDialog } from "#/components/account-blocked-dialog";
+import { CreateOrganizationDialog } from "#/components/create-organization-dialog";
+import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
 import {
 	getUserInitials,
 	ROLE_LABELS,
 	useCurrentTenant,
 } from "#/routes/(auth)/_auth_layout/app/team/-data";
-import { toast } from "sonner";
-import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
 import { useApiModeStore } from "#/stores/api-mode-store";
 
 const teamSubItems = [
@@ -183,10 +184,7 @@ function SidebarTeamNav() {
 
 							return (
 								<SidebarMenuSubItem key={item.to}>
-									<SidebarMenuSubButton
-										asChild
-										isActive={isActive}
-									>
+									<SidebarMenuSubButton asChild isActive={isActive}>
 										<Link to={item.to}>{item.title}</Link>
 									</SidebarMenuSubButton>
 								</SidebarMenuSubItem>
@@ -205,6 +203,7 @@ function OrganizationSwitcher() {
 		useCurrentTenant();
 	const [open, setOpen] = React.useState(false);
 	const [createOpen, setCreateOpen] = React.useState(false);
+	const [blockedOpen, setBlockedOpen] = React.useState(false);
 
 	if (!tenant) {
 		return null;
@@ -215,10 +214,7 @@ function OrganizationSwitcher() {
 
 	return (
 		<>
-			<Popover
-				open={open}
-				onOpenChange={setOpen}
-			>
+			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<SidebarMenuButton
 						size="lg"
@@ -234,10 +230,7 @@ function OrganizationSwitcher() {
 									{tenantInitials}
 								</span>
 							) : (
-								<BuildingsIcon
-									className="size-4"
-									weight="bold"
-								/>
+								<BuildingsIcon className="size-4" weight="bold" />
 							)}
 						</div>
 						<div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -279,9 +272,8 @@ function OrganizationSwitcher() {
 									)}
 									onClick={() => {
 										if (isRestricted) {
-											toast.error(
-												`${membership.name} has been deactivated, kindly contact support@verifyafrica.io`,
-											);
+											setOpen(false);
+											setBlockedOpen(true);
 											return;
 										}
 
@@ -340,10 +332,7 @@ function OrganizationSwitcher() {
 								}}
 							>
 								<div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-dashed bg-background">
-									<PlusIcon
-										className="size-4"
-										weight="bold"
-									/>
+									<PlusIcon className="size-4" weight="bold" />
 								</div>
 								<span className="font-medium">Create organization</span>
 							</button>
@@ -356,6 +345,7 @@ function OrganizationSwitcher() {
 				open={createOpen}
 				onOpenChange={setCreateOpen}
 			/>
+			<AccountBlockedDialog open={blockedOpen} onOpenChange={setBlockedOpen} />
 		</>
 	);
 }
@@ -397,10 +387,7 @@ export function AppSidebar() {
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{visibleNavItems.map((item) => (
-								<SidebarNavItem
-									key={item.to}
-									item={item}
-								/>
+								<SidebarNavItem key={item.to} item={item} />
 							))}
 							<SidebarTeamNav />
 						</SidebarMenu>

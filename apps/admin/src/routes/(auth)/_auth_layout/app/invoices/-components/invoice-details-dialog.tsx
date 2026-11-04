@@ -1,5 +1,6 @@
 import { DownloadSimpleIcon } from "@phosphor-icons/react";
 import type { Invoice } from "@verifyafrica/api-client/http/v2/billing/billing.types";
+import { toast } from "sonner";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -52,9 +53,9 @@ export function InvoiceDetailsDialog({
 	const invoiceLabel = getInvoiceLabel(invoice);
 
 	const handleDownload = () => {
-		if (!downloadInvoice(invoice)) {
-			return;
-		}
+		void downloadInvoice(invoice).catch(() => {
+			toast.error("Unable to download invoice");
+		});
 	};
 
 	return (
@@ -192,7 +193,7 @@ export function InvoiceDetailsDialog({
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
 						Close
 					</Button>
-					<Button onClick={handleDownload} disabled={!invoice.file_attachment}>
+					<Button onClick={handleDownload}>
 						<DownloadSimpleIcon />
 						Download Invoice
 					</Button>

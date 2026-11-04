@@ -435,27 +435,25 @@ function InvoiceRow({
 						</TooltipTrigger>
 						<TooltipContent side="top">View invoice</TooltipContent>
 					</Tooltip>
-					{invoice.file_attachment ? (
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<span className="inline-flex">
-									<Button
-										variant="ghost"
-										size="icon-sm"
-										onClick={() => {
-											if (!downloadInvoice(invoice)) {
-												toast.error("Unable to download invoice");
-											}
-										}}
-									>
-										<DownloadSimpleIcon className="size-4" />
-										<span className="sr-only">Download invoice</span>
-									</Button>
-								</span>
-							</TooltipTrigger>
-							<TooltipContent side="top">Download invoice</TooltipContent>
-						</Tooltip>
-					) : null}
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="inline-flex">
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									onClick={() => {
+										void downloadInvoice(invoice).catch(() => {
+											toast.error("Unable to download invoice");
+										});
+									}}
+								>
+									<DownloadSimpleIcon className="size-4" />
+									<span className="sr-only">Download invoice</span>
+								</Button>
+							</span>
+						</TooltipTrigger>
+						<TooltipContent side="top">Download invoice</TooltipContent>
+					</Tooltip>
 				</div>
 			</TableCell>
 		</TableRow>

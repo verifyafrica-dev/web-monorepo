@@ -98,6 +98,7 @@ export type Transaction = {
 	currency: string;
 	meta: Record<string, unknown>;
 	product: string | null;
+	productKey: string | null;
 };
 
 const PRODUCT_LABEL_BY_VERIFICATION_TYPE = new Map<string, string>(
@@ -295,6 +296,11 @@ export function mapWalletTransaction(
 		transactionId: id,
 		currency,
 		meta: transaction.metadata ?? {},
+		productKey:
+			transaction.verification_type ??
+			(typeof transaction.metadata?.type === "string"
+				? transaction.metadata.type
+				: null),
 		product: getTransactionProductLabel(
 			transaction.verification_type ??
 				(typeof transaction.metadata?.type === "string"
