@@ -30,6 +30,9 @@ function Calendar({
   const isDropdownCaption = captionLayout !== "label"
   // Dropdown captions paint over the absolute edge nav; put chevrons beside labels.
   const resolvedNavLayout = navLayout ?? (isDropdownCaption ? "around" : undefined)
+  // "around" renders prev / caption / next as sibling children of the month, so
+  // they need a 3-column grid to share one row instead of stacking vertically.
+  const isAroundNav = resolvedNavLayout === "around"
 
   return (
     <DayPicker
@@ -54,7 +57,13 @@ function Calendar({
           "relative flex flex-col gap-4 md:flex-row",
           defaultClassNames.months
         ),
-        month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
+        month: cn(
+          isAroundNav
+            ? "grid w-full grid-cols-[var(--cell-size)_1fr_var(--cell-size)] items-center gap-x-1 gap-y-4"
+            : "flex w-full flex-col gap-4",
+          defaultClassNames.month
+        ),
+        month_grid: cn(isAroundNav && "col-span-3", defaultClassNames.month_grid),
         nav: cn(
           "absolute inset-x-0 top-0 z-20 flex w-full items-center justify-between gap-1",
           defaultClassNames.nav
@@ -62,15 +71,18 @@ function Calendar({
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
           "relative z-20 size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          isAroundNav && "col-start-1 row-start-1",
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
           "relative z-20 size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          isAroundNav && "col-start-3 row-start-1",
           defaultClassNames.button_next
         ),
         month_caption: cn(
-          "relative z-0 flex h-(--cell-size) w-full items-center justify-center px-(--cell-size)",
+          "relative z-0 flex h-(--cell-size) w-full items-center justify-center",
+          isAroundNav ? "col-start-2 row-start-1" : "px-(--cell-size)",
           defaultClassNames.month_caption
         ),
         dropdowns: cn(
