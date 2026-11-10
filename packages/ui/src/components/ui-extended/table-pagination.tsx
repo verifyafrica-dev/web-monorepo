@@ -1,7 +1,10 @@
+import { useState } from "react";
+import { DotsThreeIcon } from "@phosphor-icons/react";
+import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
 	Pagination,
 	PaginationContent,
-	PaginationEllipsis,
 	PaginationItem,
 	PaginationLink,
 	PaginationNext,
@@ -29,6 +32,54 @@ function getVisiblePages(
 	return [1, "ellipsis", currentPage, "ellipsis", totalPages];
 }
 
+function PageJumpPopover({
+	from,
+	to,
+	currentPage,
+	onSelect,
+}: {
+	from: number;
+	to: number;
+	currentPage: number;
+	onSelect: (page: number) => void;
+}) {
+	const [open, setOpen] = useState(false);
+	const pages = Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon"
+					aria-label={`Jump to a page between ${from} and ${to}`}
+				>
+					<DotsThreeIcon />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent align="center" className="w-56 p-2">
+				<div className="grid max-h-56 grid-cols-4 gap-1 overflow-y-auto">
+					{pages.map((pageNumber) => (
+						<Button
+							key={pageNumber}
+							type="button"
+							size="sm"
+							variant={pageNumber === currentPage ? "outline" : "ghost"}
+							onClick={() => {
+								onSelect(pageNumber);
+								setOpen(false);
+							}}
+						>
+							{pageNumber}
+						</Button>
+					))}
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
 type TablePaginationProps = {
 	page: number;
 	pageSize: number;
@@ -48,6 +99,7 @@ export function TablePagination({
 	const safePage = Math.min(page, totalPages);
 	const start = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
 	const end = Math.min(safePage * pageSize, total);
+	const visiblePages = getVisiblePages(safePage, totalPages);
 
 	return (
 		<div
@@ -77,12 +129,17 @@ export function TablePagination({
 								}}
 							/>
 						</PaginationItem>
-						{getVisiblePages(safePage, totalPages).map((pageNumber, index) =>
+						{visiblePages.map((pageNumber, index) =>
 							pageNumber === "ellipsis" ? (
 								<PaginationItem
 									key={`ellipsis-${index === 1 ? "start" : "end"}`}
 								>
-									<PaginationEllipsis />
+									<PageJumpPopover
+										from={(visiblePages[index - 1] as number) + 1}
+										to={(visiblePages[index + 1] as number) - 1}
+										currentPage={safePage}
+										onSelect={onPageChange}
+									/>
 								</PaginationItem>
 							) : (
 								<PaginationItem key={pageNumber}>
