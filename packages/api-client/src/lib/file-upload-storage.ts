@@ -52,11 +52,15 @@ export function validateUploadFile(
 	return { valid: true as const };
 }
 
-export function buildVerificationStorageFolder(
+/**
+ * Staging folder for dashboard proofs. The verification does not exist yet, so the
+ * backend moves these to `verifications/{product}/{file}_{verification_id}` on create.
+ */
+export function buildPendingVerificationStorageFolder(
 	tenantSlug: string,
 	verificationName: VerificationStorageName,
 ) {
-	return `tenants/${tenantSlug}/verifications/${verificationName}`;
+	return `tenants/${tenantSlug}/pending/${verificationName}`;
 }
 
 export function buildKycStorageFolder(tenantSlug: string) {

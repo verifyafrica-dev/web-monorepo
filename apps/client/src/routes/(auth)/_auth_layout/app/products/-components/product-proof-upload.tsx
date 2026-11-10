@@ -13,7 +13,7 @@ type ProductProofUploadProps = {
 	 */
 	label: string;
 	/**
-	 * Product folder used when storing the file in tenant verification storage.
+	 * Product folder the file is staged under until the verification is created.
 	 */
 	verificationName: VerificationStorageName;
 	/**
@@ -53,7 +53,8 @@ type ProductProofUploadProps = {
 
 /**
  * Tenant-scoped proof dropzone for dashboard product verifications.
- * Uploads to the current organization's verification storage folder.
+ * Uploads to the organization's pending folder; the backend files it under the
+ * verification ID once the verification is created.
  */
 export function ProductProofUpload({
 	label,

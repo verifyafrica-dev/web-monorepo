@@ -213,12 +213,12 @@ function SortableStepCard({
 			value={step.id}
 			style={{
 				transform: [
-					CSS.Transform.toString(transform),
+					CSS.Translate.toString(transform),
 					isDragging ? "rotate(3deg)" : null,
 				]
 					.filter(Boolean)
 					.join(" "),
-				transition,
+				transition: isDragging ? undefined : transition,
 			}}
 			className={cn(
 				"rounded-lg border bg-background px-0 flex-1",
