@@ -1,5 +1,5 @@
 import {
-	buildVerificationStorageFolder,
+	buildPendingVerificationStorageFolder,
 	IMAGE_UPLOAD_MIME_TYPES,
 	UPLOAD_ALLOWED_MIME_TYPES,
 	UPLOAD_MAX_FILE_SIZE,
@@ -48,7 +48,7 @@ export async function uploadProductProofFile({
 
 	const uploadedFile = await uploadFileToStorage({
 		file,
-		folder: buildVerificationStorageFolder(tenantSlug, verificationName),
+		folder: buildPendingVerificationStorageFolder(tenantSlug, verificationName),
 		tenantId,
 		onProgress,
 	});
