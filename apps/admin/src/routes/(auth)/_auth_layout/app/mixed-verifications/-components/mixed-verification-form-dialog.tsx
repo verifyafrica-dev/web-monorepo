@@ -222,12 +222,7 @@ function SortableStepCard({
 			ref={setNodeRef}
 			value={step.id}
 			style={{
-				transform: [
-					CSS.Transform.toString(transform),
-					isDragging ? "rotate(3deg)" : null,
-				]
-					.filter(Boolean)
-					.join(" "),
+				transform: CSS.Translate.toString(transform),
 				transition,
 			}}
 			className={cn(
