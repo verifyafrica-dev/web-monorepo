@@ -320,6 +320,11 @@ export interface TenantInvitationVerifyData {
 	role: TenantRole;
 	name: string;
 	tenant: TenantInvitationVerifyTenant;
+	/**
+	 * Whether the invited email already has an account. Returned to whoever holds the invitation
+	 * token; replaces the public `/users/lookup/` call. Absent on older backends.
+	 */
+	user_exists?: boolean;
 }
 
 export interface TenantInvitationAcceptData {
