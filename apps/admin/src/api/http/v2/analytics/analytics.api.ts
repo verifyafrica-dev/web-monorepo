@@ -14,6 +14,7 @@ const TENANT_ID_HEADER = "X-TENANT-ID";
 const ANALYTICS_V2_ENDPOINTS = {
 	root: "/v2/analytics/",
 	statements: "/v2/analytics/statements/",
+	statementsExport: "/v2/analytics/statements/export/",
 	tenant: "/v2/analytics/tenant/",
 } as const;
 
@@ -55,4 +56,13 @@ export const ANALYTICS_V2_API = {
 				...withTenantHeader(tenantId),
 			})
 			.then((res) => unwrapV2Paginated<Statement>(res)),
+
+	/** Excel workbook of every tenant's statement (superusers only). */
+	STATEMENTS_EXPORT: async (tenantId?: string): Promise<Blob> =>
+		await $http
+			.get<Blob>(ANALYTICS_V2_ENDPOINTS.statementsExport, {
+				responseType: "blob",
+				...withTenantHeader(tenantId),
+			})
+			.then((res) => res.data),
 };
