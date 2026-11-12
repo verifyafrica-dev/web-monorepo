@@ -175,11 +175,23 @@ export type AdminRequestPasswordOtpPayload = z.infer<
 	typeof AdminRequestPasswordOtpSchema
 >;
 
+export const SUPERUSER_OTP_LENGTH = 8;
+
+/** Superuser OTPs are upper-case letters and digits; input is normalised before sending. */
+export function normalizeSuperuserOtp(value: string) {
+	return value.replace(/\s+/g, "").toUpperCase().slice(0, SUPERUSER_OTP_LENGTH);
+}
+
+const SuperuserOtpSchema = z
+	.string()
+	.length(SUPERUSER_OTP_LENGTH, {
+		message: `OTP must be ${SUPERUSER_OTP_LENGTH} characters`,
+	})
+	.regex(/^[A-Z0-9]+$/, { message: "OTP can only contain letters and digits" });
+
 export const AdminResetPasswordWithOtpSchema = z.object({
 	email: z.email({ message: "Invalid email address" }),
-	otp: z
-		.string()
-		.length(5, { message: "OTP must be 5 characters" }),
+	otp: SuperuserOtpSchema,
 	new_password: z
 		.string()
 		.min(8, { message: "Password must be at least 8 characters long" }),
@@ -209,9 +221,7 @@ export const AdminChangePasswordWithOtpSchema = z.object({
 	old_password: z
 		.string()
 		.min(1, { message: "Current password is required" }),
-	otp: z
-		.string()
-		.length(5, { message: "OTP must be 5 characters" }),
+	otp: SuperuserOtpSchema,
 	new_password: z
 		.string()
 		.min(8, { message: "Password must be at least 8 characters long" }),

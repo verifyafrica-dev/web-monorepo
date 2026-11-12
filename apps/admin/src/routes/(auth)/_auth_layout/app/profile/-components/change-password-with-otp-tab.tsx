@@ -11,6 +11,8 @@ import {
 import {
 	AdminChangePasswordWithOtpFormSchema,
 	type AdminChangePasswordWithOtpFormValues,
+	normalizeSuperuserOtp,
+	SUPERUSER_OTP_LENGTH,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -126,10 +128,16 @@ export function ChangePasswordWithOtpTab({ email }: { email: string }) {
 							<FieldLabel htmlFor="otp">OTP</FieldLabel>
 							<Input
 								id="otp"
-								placeholder="Enter the 5-digit OTP"
+								placeholder={`Enter the ${SUPERUSER_OTP_LENGTH}-character OTP`}
+								autoComplete="one-time-code"
+								autoCapitalize="characters"
+								spellCheck={false}
+								maxLength={SUPERUSER_OTP_LENGTH}
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(event) => field.handleChange(event.target.value)}
+								onChange={(event) =>
+									field.handleChange(normalizeSuperuserOtp(event.target.value))
+								}
 								aria-invalid={field.state.meta.errors.length > 0}
 							/>
 							<FieldError errors={field.state.meta.errors} />
