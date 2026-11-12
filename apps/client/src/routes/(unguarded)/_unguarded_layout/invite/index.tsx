@@ -64,16 +64,22 @@ function AcceptInvitationPage() {
 	const tenantName = verifyQuery.data?.tenant.name;
 	const tenantId = verifyQuery.data?.tenant.id;
 
-	const lookupQuery = useUserV2LookupQuery(
-		{ email: email ?? "" },
-		Boolean(email && token),
-	);
-	const isNewUser = lookupQuery.data ? !lookupQuery.data.exists : null;
+	// The verify response says whether the invited email already has an account. Only fall back
+	// to the (now superuser-only) lookup endpoint when talking to an older backend that doesn't.
+	const userExists = verifyQuery.data?.user_exists;
+	const needsLookup =
+		verifyQuery.isSuccess && userExists === undefined && Boolean(email && token);
+	const lookupQuery = useUserV2LookupQuery({ email: email ?? "" }, needsLookup);
+	const isNewUser =
+		userExists !== undefined
+			? !userExists
+			: lookupQuery.data
+				? !lookupQuery.data.exists
+				: null;
 	const isLoading =
 		verifyQuery.isPending ||
 		verifyQuery.isFetching ||
-		lookupQuery.isPending ||
-		lookupQuery.isFetching ||
+		(needsLookup && (lookupQuery.isPending || lookupQuery.isFetching)) ||
 		isNewUser === null;
 
 	if (!token) {
@@ -111,7 +117,7 @@ function AcceptInvitationPage() {
 		);
 	}
 
-	if (lookupQuery.isError) {
+	if (needsLookup && lookupQuery.isError) {
 		const axiosError = lookupQuery.error as V2AxiosError;
 		const data = axiosError.response?.data;
 		const errors = data?.errors?.length
