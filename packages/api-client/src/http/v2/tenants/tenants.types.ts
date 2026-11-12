@@ -262,7 +262,13 @@ export type TenantTestAccessUpdatePayload = z.infer<
 >;
 
 export interface TenantAPIKey {
-	key: string;
+	/**
+	 * Full API key. Only the backend's first response after the key is created or
+	 * rotated includes it; every other read returns `null` (only a hash is stored).
+	 */
+	key: string | null;
+	/** Masked fragment (e.g. `VA-abcd...wxyz`) for identifying the key. */
+	key_hint?: string;
 	is_active: boolean;
 	last_used: string | null;
 	expires_at: string | null;

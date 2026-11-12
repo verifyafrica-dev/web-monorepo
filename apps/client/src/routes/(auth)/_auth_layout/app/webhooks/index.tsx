@@ -154,16 +154,25 @@ function ConfigurationTab() {
 	const rotateApiKeyMutation = useReplaceTenantApiKeyV2Mutation(tenantId ?? "");
 
 	const apiKey = apiKeyQuery.data;
+	// The backend only returns the full key right after it is created or rotated, and
+	// later responses (refetch, status toggle) carry `null`. Hold on to it locally so it
+	// stays copyable until the user leaves the page.
+	const [revealedKey, setRevealedKey] = useState<string | null>(null);
+	useEffect(() => {
+		if (apiKey?.key) {
+			setRevealedKey(apiKey.key);
+		}
+	}, [apiKey?.key]);
 	const isLoading = apiKeyQuery.isPending || apiKeyQuery.isFetching;
 	const isMutating =
 		updateApiKeyMutation.isPending || rotateApiKeyMutation.isPending;
 
 	async function handleCopy() {
-		if (!apiKey?.key) {
+		if (!revealedKey) {
 			return;
 		}
 
-		await copy(apiKey.key);
+		await copy(revealedKey);
 	}
 
 	function handleToggleActive(checked: boolean) {
@@ -188,7 +197,8 @@ function ConfigurationTab() {
 			{
 				onSuccess: () => {
 					toast.success("API key rotated successfully");
-					setIsKeyVisible(false);
+					// The new key is only available now, so show it.
+					setIsKeyVisible(true);
 				},
 				onError: () => {
 					toast.error("Failed to rotate key");
@@ -254,43 +264,62 @@ function ConfigurationTab() {
 								<Input
 									id="api-key"
 									readOnly
-									value={maskApiKey(apiKey.key, isKeyVisible)}
+									value={
+										revealedKey
+											? maskApiKey(revealedKey, isKeyVisible)
+											: (apiKey.key_hint ?? "")
+									}
 									className="font-mono text-sm"
 								/>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon"
-									onClick={() => setIsKeyVisible((visible) => !visible)}
-									aria-label={isKeyVisible ? "Hide API key" : "Reveal API key"}
-									className="cursor-pointer"
-									disabled={isMutating}
-								>
-									{isKeyVisible ? (
-										<EyeSlashIcon className="size-4" />
-									) : (
-										<EyeIcon className="size-4" />
-									)}
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon"
-									onClick={handleCopy}
-									aria-label="Copy API key"
-									className="cursor-pointer"
-									disabled={isMutating}
-								>
-									{copied ? (
-										<CheckIcon className="size-4 text-emerald-600" />
-									) : (
-										<CopyIcon className="size-4" />
-									)}
-								</Button>
+								{revealedKey ? (
+									<>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon"
+											onClick={() => setIsKeyVisible((visible) => !visible)}
+											aria-label={
+												isKeyVisible ? "Hide API key" : "Reveal API key"
+											}
+											className="cursor-pointer"
+											disabled={isMutating}
+										>
+											{isKeyVisible ? (
+												<EyeSlashIcon className="size-4" />
+											) : (
+												<EyeIcon className="size-4" />
+											)}
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon"
+											onClick={handleCopy}
+											aria-label="Copy API key"
+											className="cursor-pointer"
+											disabled={isMutating}
+										>
+											{copied ? (
+												<CheckIcon className="size-4 text-emerald-600" />
+											) : (
+												<CopyIcon className="size-4" />
+											)}
+										</Button>
+									</>
+								) : null}
 							</div>
-							{!isKeyVisible && (
+							{revealedKey ? (
 								<p className="text-xs text-muted-foreground">
-									Click the eye icon to reveal the full key before copying
+									Copy this key now. For security it won&apos;t be shown in
+									full again once you leave this page.
+								</p>
+							) : (
+								<p className="text-xs text-muted-foreground">
+									For security, your full API key is only shown when it is
+									created or rotated.
+									{isTenantAdmin
+										? " Rotate the key to generate a new one."
+										: " Ask a tenant admin to rotate it if you need a new one."}
 								</p>
 							)}
 						</div>
@@ -359,7 +388,7 @@ function ConfigurationTab() {
 			<WebhookFormCard />
 
 			<UsageInstructionsCard
-				keyPreview={getApiKeyPreview(apiKey?.key)}
+				keyPreview={getApiKeyPreview(revealedKey ?? undefined)}
 				webhookTokenPreview={getWebhookTokenPreview(
 					webhookQuery.data?.auth_token,
 				)}
