@@ -14,6 +14,8 @@ import { useAdminResetPasswordWithOtpV2Mutation } from "#/api/http/v2/users/user
 import {
 	AdminResetPasswordWithOtpFormSchema,
 	type AdminResetPasswordWithOtpFormValues,
+	normalizeSuperuserOtp,
+	SUPERUSER_OTP_LENGTH,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
@@ -124,10 +126,18 @@ function ResetPasswordPage() {
 								<Label htmlFor="otp">OTP</Label>
 								<Input
 									id="otp"
-									placeholder="Enter the 5-digit OTP"
+									placeholder={`Enter the ${SUPERUSER_OTP_LENGTH}-character OTP`}
+									autoComplete="one-time-code"
+									autoCapitalize="characters"
+									spellCheck={false}
+									maxLength={SUPERUSER_OTP_LENGTH}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
+									onChange={(event) =>
+										field.handleChange(
+											normalizeSuperuserOtp(event.target.value),
+										)
+									}
 								/>
 								{field.state.meta.isTouched && !field.state.meta.isValid && (
 									<FieldError errors={field.state.meta.errors} />

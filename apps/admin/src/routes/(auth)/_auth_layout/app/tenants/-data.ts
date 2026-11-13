@@ -1,5 +1,5 @@
 import { z } from "zod";
-import $http from "#/api/http/xhr";
+import { ANALYTICS_V2_API } from "#/api/http/v2/analytics/analytics.api";
 import type { BillingPlan } from "@verifyafrica/api-client/http/v2/billing/billing.types";
 import type { PlatformAnalyticsPayload } from "@verifyafrica/api-client/http/v2/analytics/analytics.types";
 import type {
@@ -194,10 +194,8 @@ export function mapPlatformAnalyticsToTenantStats(
 export async function downloadTenantStatements(
 	filename = "statements.xlsx",
 ) {
-	const response = await $http.get("/analytics/statements/", {
-		responseType: "blob",
-	});
-	const url = window.URL.createObjectURL(new Blob([response.data]));
+	const workbook = await ANALYTICS_V2_API.STATEMENTS_EXPORT();
+	const url = window.URL.createObjectURL(workbook);
 	const link = document.createElement("a");
 
 	link.href = url;
