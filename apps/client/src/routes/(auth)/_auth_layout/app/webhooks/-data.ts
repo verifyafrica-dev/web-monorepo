@@ -121,8 +121,10 @@ export function maskApiKey(key: string, isVisible: boolean) {
 		return key;
 	}
 
-	const prefix = key.slice(0, 8);
-	return `${prefix}${"•".repeat(Math.max(key.length - 8, 0))}`;
+	// Keep environment prefixes (VA_test_ / VA_prod_, both 8 chars) readable when masked.
+	const prefixLength = key.startsWith("VA_test_") || key.startsWith("VA_prod_") ? 8 : Math.min(8, key.length);
+	const prefix = key.slice(0, prefixLength);
+	return `${prefix}${"•".repeat(Math.max(key.length - prefixLength, 0))}`;
 }
 
 export function getApiKeyPreview(key: string | undefined) {

@@ -195,7 +195,7 @@ function ActivateAccountPage() {
 							</Label>
 							<InputOTP
 								id="verification-code"
-								maxLength={5}
+								maxLength={6}
 								value={field.state.value}
 								onChange={field.handleChange}
 								onBlur={field.handleBlur}
@@ -220,6 +220,10 @@ function ActivateAccountPage() {
 									/>
 									<InputOTPSlot
 										index={4}
+										className="size-12 text-base"
+									/>
+									<InputOTPSlot
+										index={5}
 										className="size-12 text-base"
 									/>
 								</InputOTPGroup>

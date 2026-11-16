@@ -261,14 +261,21 @@ export type TenantTestAccessUpdatePayload = z.infer<
 	typeof TenantTestAccessUpdateSchema
 >;
 
+export type TenantAPIKeyEnvironment = "test" | "prod" | "legacy";
+
 export interface TenantAPIKey {
 	/**
 	 * Full API key. Only the backend's first response after the key is created or
 	 * rotated includes it; every other read returns `null` (only a hash is stored).
 	 */
 	key: string | null;
-	/** Masked fragment (e.g. `VA-abcd...wxyz`) for identifying the key. */
+	/** Masked fragment (e.g. `VA_test_Ab12...wxyz`) for identifying the key. */
 	key_hint?: string;
+	/**
+	 * Environment the key was issued for: `test` (`VA_test_`), `prod` (`VA_prod_`),
+	 * or `legacy` (older keys without a prefix). Additive; older backends omit it.
+	 */
+	environment?: TenantAPIKeyEnvironment;
 	is_active: boolean;
 	last_used: string | null;
 	expires_at: string | null;
