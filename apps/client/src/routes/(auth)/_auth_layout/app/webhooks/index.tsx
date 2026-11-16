@@ -322,6 +322,14 @@ function ConfigurationTab() {
 										: " Ask a tenant admin to rotate it if you need a new one."}
 								</p>
 							)}
+							{apiKey.environment === "legacy" ? (
+								<p className="text-xs text-amber-700">
+									This is a legacy key without a VA_test_ / VA_prod_ prefix.
+									{isTenantAdmin
+										? " Rotate it to issue an environment-prefixed key for this API."
+										: " Ask a tenant admin to rotate it for an environment-prefixed key."}
+								</p>
+							) : null}
 						</div>
 
 						<div className="grid gap-3 sm:grid-cols-3">
