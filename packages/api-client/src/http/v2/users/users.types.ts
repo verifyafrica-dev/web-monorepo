@@ -65,7 +65,7 @@ export const UserActivateAccountSchema = z.object({
 	email: z.email({ message: "Invalid email address" }),
 	code: z
 		.string()
-		.length(5, { message: "Activation code must be 5 characters" }),
+		.length(6, { message: "Activation code must be 6 characters" }),
 });
 
 export type UserActivateAccountPayload = z.infer<
