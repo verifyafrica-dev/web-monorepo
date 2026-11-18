@@ -1,4 +1,4 @@
-import { FloppyDiskIcon } from "@phosphor-icons/react";
+import { FloppyDiskIcon, InfoIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -8,11 +8,13 @@ import {
 	type UserProfileUpdateFormValues,
 	type UserSession,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
+import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { cn } from "@verifyafrica/ui/lib/utils";
 import { getUserInitials } from "#/lib/user";
+import { useApiModeStore } from "#/stores/api-mode-store";
 import {
 	Field,
 	FieldError,
@@ -22,6 +24,9 @@ import {
 
 export function UpdateProfileTab({ user }: { user: UserSession }) {
 	const updateMeMutation = useUpdateMeV2Mutation();
+	const apiMode = useApiModeStore((state) => state.mode);
+	// The Test API refuses profile updates (403), so they are only possible in Live mode.
+	const canUpdate = apiMode !== "test";
 
 	const form = useForm({
 		defaultValues: {
@@ -33,6 +38,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 			onSubmit: UserProfileUpdateFormSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!canUpdate) return;
 			await updateMeMutation.mutateAsync(
 				{
 					first_name: value.first_name,
@@ -67,6 +73,15 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 				form.handleSubmit();
 			}}
 		>
+			{canUpdate ? null : (
+				<Alert className="border-blue-200 bg-blue-50 text-blue-900">
+					<InfoIcon />
+					<AlertDescription>
+						Your profile can only be updated in Live mode. Switch to Live mode
+						to change your name or phone number.
+					</AlertDescription>
+				</Alert>
+			)}
 			<div className="flex flex-col items-center gap-2 text-center">
 				<Avatar className="size-24">
 					{user.avatar_url ? (
@@ -94,6 +109,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 							<Input
 								id="first-name"
 								placeholder="Enter your first name"
+								disabled={!canUpdate}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(event) => field.handleChange(event.target.value)}
@@ -111,6 +127,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 							<Input
 								id="last-name"
 								placeholder="Enter your last name"
+								disabled={!canUpdate}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(event) => field.handleChange(event.target.value)}
@@ -135,7 +152,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 			<Button
 				type="submit"
 				className="w-full"
-				disabled={updateMeMutation.isPending}
+				disabled={updateMeMutation.isPending || !canUpdate}
 			>
 				<FloppyDiskIcon
 					className={cn(
