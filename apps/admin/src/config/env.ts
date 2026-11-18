@@ -32,6 +32,8 @@ export const env = {
   apiBaseUrl,
   liveApiBaseUrl,
   testApiBaseUrl,
+  /** Local runs only: show the Live↔Test switcher against the single local API. */
+  localSwitcherPreview: import.meta.env.VITE_LOCAL_ENV_SWITCHER_PREVIEW === 'true',
 
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'Verify Africa',

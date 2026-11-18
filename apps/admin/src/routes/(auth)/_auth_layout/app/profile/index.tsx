@@ -1,8 +1,10 @@
-import { ShieldCheckIcon, UserIcon } from "@phosphor-icons/react";
+import { InfoIcon, ShieldCheckIcon, UserIcon } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { z } from "zod";
 import { useMeV2Query } from "#/api/http/v2/users/users.hooks";
+import { useApiModeStore } from "#/stores/api-mode-store";
+import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import {
 	Card,
 	CardContent,
@@ -37,6 +39,9 @@ function ProfilePage() {
 	const user = meQuery.data;
 	const isLoading = meQuery.isPending || meQuery.isFetching;
 	const activeTab = tab ?? "profile";
+	const apiMode = useApiModeStore((state) => state.mode);
+	// The Test API refuses profile updates (403), so they are only possible in Live mode.
+	const profileUpdateAllowed = apiMode !== "test";
 
 	useEffect(() => {
 		if (!tab) {
@@ -69,6 +74,15 @@ function ProfilePage() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
+				{profileUpdateAllowed ? null : (
+					<Alert className="mb-6 border-blue-200 bg-blue-50 text-blue-900">
+						<InfoIcon />
+						<AlertDescription>
+							Your profile can only be updated in Live mode. Switch to Live mode
+							to change your name or phone number.
+						</AlertDescription>
+					</Alert>
+				)}
 				{isLoading || !user ? (
 					<ProfilePageSkeleton />
 				) : (
@@ -100,6 +114,7 @@ function ProfilePage() {
 							<UpdateProfileTab
 								key={user.id}
 								user={user}
+								canUpdate={profileUpdateAllowed}
 							/>
 						</TabsContent>
 						<TabsContent value="password">

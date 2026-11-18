@@ -14,6 +14,7 @@ export const apiModeConfig: ApiModeConfig = resolveApiModeConfig(
 	{
 		liveApiBaseUrl: env.liveApiBaseUrl,
 		testApiBaseUrl: env.testApiBaseUrl,
+		localSwitcherPreview: env.localSwitcherPreview,
 	},
 );
 

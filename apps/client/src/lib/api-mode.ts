@@ -139,6 +139,14 @@ export function useSwitchApiMode() {
 		}
 		if (next === mode) return { ok: true };
 
+		if (apiModeConfig.previewOnly) {
+			// Local preview: one API serves both modes, so there is no Test token to mint.
+			setMode(next);
+			await refreshActiveQueriesForNewMode();
+			toast.success(`Switched to ${modeLabel(next)} mode (local preview)`);
+			return { ok: true };
+		}
+
 		const authStore = useAuthStore.getState();
 		const previousTenantId = authStore.selectedTenantId;
 		const previousTenants = normalizeUserTenants(authStore.user?.tenants ?? null);

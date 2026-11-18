@@ -11,6 +11,8 @@ const envSchema = z.object({
 	/** Production Live↔Test switcher only — ignored on local/dev/test hosts. */
 	VITE_LIVE_API_BASE_URL: optionalUrl,
 	VITE_TEST_API_BASE_URL: optionalUrl,
+	/** Local runs only: show the Live↔Test switcher against the single local API. */
+	VITE_LOCAL_ENV_SWITCHER_PREVIEW: z.enum(["true", "false"]).optional().default("false"),
 	VITE_APP_NAME: z.string().default("Verify Africa"),
 	VITE_APP_ENVIRONMENT: z.string().default("development"),
 	/** Mirrors backend ENV_STATE. Unused in UI yet. */
@@ -50,6 +52,7 @@ export const env = {
 	apiBaseUrl: data.VITE_API_BASE_URL,
 	liveApiBaseUrl: data.VITE_LIVE_API_BASE_URL,
 	testApiBaseUrl: data.VITE_TEST_API_BASE_URL,
+	localSwitcherPreview: data.VITE_LOCAL_ENV_SWITCHER_PREVIEW === "true",
 	appName: data.VITE_APP_NAME,
 	appEnvironment: data.VITE_APP_ENVIRONMENT,
 	envState: data.VITE_ENV_STATE,

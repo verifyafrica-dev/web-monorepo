@@ -20,7 +20,13 @@ import {
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
 
-export function UpdateProfileTab({ user }: { user: UserSession }) {
+export function UpdateProfileTab({
+	user,
+	canUpdate,
+}: {
+	user: UserSession;
+	canUpdate: boolean;
+}) {
 	const updateMeMutation = useUpdateMeV2Mutation();
 
 	const form = useForm({
@@ -33,6 +39,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 			onSubmit: UserProfileUpdateFormSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!canUpdate) return;
 			await updateMeMutation.mutateAsync(
 				{
 					first_name: value.first_name,
@@ -94,6 +101,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 							<Input
 								id="first-name"
 								placeholder="Enter your first name"
+								disabled={!canUpdate}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(event) => field.handleChange(event.target.value)}
@@ -111,6 +119,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 							<Input
 								id="last-name"
 								placeholder="Enter your last name"
+								disabled={!canUpdate}
 								value={field.state.value}
 								onBlur={field.handleBlur}
 								onChange={(event) => field.handleChange(event.target.value)}
@@ -135,7 +144,7 @@ export function UpdateProfileTab({ user }: { user: UserSession }) {
 			<Button
 				type="submit"
 				className="w-full"
-				disabled={updateMeMutation.isPending}
+				disabled={updateMeMutation.isPending || !canUpdate}
 			>
 				<FloppyDiskIcon
 					className={cn(

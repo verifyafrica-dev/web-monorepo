@@ -3,6 +3,7 @@ import {
 	EyeIcon,
 	EyeSlashIcon,
 	FloppyDiskIcon,
+	InfoIcon,
 	LockIcon,
 	ShieldCheckIcon,
 	UserIcon,
@@ -24,6 +25,7 @@ import {
 	type UserProfileUpdateFormValues,
 	type UserSession,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
+import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -73,6 +75,8 @@ function ProfilePage() {
 	const isLoading = meQuery.isPending || meQuery.isFetching;
 	const apiMode = useApiModeStore((state) => state.mode);
 	const passwordChangeAllowed = apiMode !== "test";
+	// The Test API refuses profile updates (403), so they are only possible in Live mode.
+	const profileUpdateAllowed = apiMode !== "test";
 	const activeTab =
 		!passwordChangeAllowed && urlSearch.tab === "password"
 			? "profile"
@@ -108,10 +112,19 @@ function ProfilePage() {
 				<CardDescription>
 					{passwordChangeAllowed
 						? "Manage your personal information and security"
-						: "Manage your personal information. Switch to Live mode to change your password."}
+						: "View your personal information. Switch to Live mode to update your profile or change your password."}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
+				{profileUpdateAllowed ? null : (
+					<Alert className="mb-6 border-blue-200 bg-blue-50 text-blue-900">
+						<InfoIcon />
+						<AlertDescription>
+							Your profile can only be updated in Live mode. Switch to Live mode
+							to change your name or phone number.
+						</AlertDescription>
+					</Alert>
+				)}
 				{isLoading || !user ? (
 					<ProfilePageSkeleton />
 				) : (
@@ -134,7 +147,11 @@ function ProfilePage() {
 						</TabsList>
 
 						<TabsContent value="profile">
-							<UpdateProfileTab key={user.id} user={user} />
+							<UpdateProfileTab
+								key={user.id}
+								user={user}
+								canUpdate={profileUpdateAllowed}
+							/>
 						</TabsContent>
 						{passwordChangeAllowed ? (
 							<TabsContent value="password">
@@ -148,7 +165,13 @@ function ProfilePage() {
 	);
 }
 
-function UpdateProfileTab({ user }: { user: UserSession }) {
+function UpdateProfileTab({
+	user,
+	canUpdate,
+}: {
+	user: UserSession;
+	canUpdate: boolean;
+}) {
 	const updateMeMutation = useUpdateMeV2Mutation();
 
 	const form = useForm({
@@ -161,6 +184,7 @@ function UpdateProfileTab({ user }: { user: UserSession }) {
 			onSubmit: UserProfileUpdateFormSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!canUpdate) return;
 			await updateMeMutation.mutateAsync(
 				{
 					first_name: value.first_name,
@@ -226,6 +250,7 @@ function UpdateProfileTab({ user }: { user: UserSession }) {
 										id="first-name"
 										placeholder="Enter your first name"
 										className="pl-10"
+										disabled={!canUpdate}
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(event) => field.handleChange(event.target.value)}
@@ -250,6 +275,7 @@ function UpdateProfileTab({ user }: { user: UserSession }) {
 										id="last-name"
 										placeholder="Enter your last name"
 										className="pl-10"
+										disabled={!canUpdate}
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(event) => field.handleChange(event.target.value)}
@@ -284,6 +310,7 @@ function UpdateProfileTab({ user }: { user: UserSession }) {
 								<FieldLabel htmlFor="phone">Phone Number</FieldLabel>
 								<PhoneInput
 									id="phone"
+									disabled={!canUpdate}
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={field.handleChange}
@@ -294,7 +321,11 @@ function UpdateProfileTab({ user }: { user: UserSession }) {
 					</form.Field>
 				</FieldGroup>
 
-				<Button type="submit" className="w-full" disabled={isSubmitting}>
+				<Button
+					type="submit"
+					className="w-full"
+					disabled={isSubmitting || !canUpdate}
+				>
 					<FloppyDiskIcon
 						className={cn("size-4", isSubmitting && "animate-pulse")}
 						weight="fill"
