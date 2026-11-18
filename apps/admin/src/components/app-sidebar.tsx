@@ -5,6 +5,7 @@ import {
 	CreditCardIcon,
 	GearIcon,
 	HouseIcon,
+	PulseIcon,
 	ReceiptIcon,
 	SquaresFourIcon,
 	UserCircleIcon,
@@ -74,6 +75,11 @@ const navItems = [
 		title: "Mixed Verifications",
 		to: "/app/mixed-verifications",
 		icon: SquaresFourIcon,
+	},
+	{
+		title: "Transaction Monitoring",
+		to: "/app/transaction-monitoring",
+		icon: PulseIcon,
 	},
 	{
 		title: "Activity Logs",

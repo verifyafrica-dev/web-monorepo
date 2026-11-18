@@ -24,6 +24,7 @@ import { Route as authAuth_layoutAppMixedVerificationsIndexRouteImport } from '.
 import { Route as authAuth_layoutAppProfileIndexRouteImport } from './routes/(auth)/_auth_layout/app/profile/index'
 import { Route as authAuth_layoutAppTenantsIndexRouteImport } from './routes/(auth)/_auth_layout/app/tenants/index'
 import { Route as authAuth_layoutAppTopUpsIndexRouteImport } from './routes/(auth)/_auth_layout/app/top-ups/index'
+import { Route as authAuth_layoutAppTransactionMonitoringIndexRouteImport } from './routes/(auth)/_auth_layout/app/transaction-monitoring/index'
 import { Route as authAuth_layoutAppUsersIndexRouteImport } from './routes/(auth)/_auth_layout/app/users/index'
 import { Route as authAuth_layoutAppVerificationSettingsIndexRouteImport } from './routes/(auth)/_auth_layout/app/verification-settings/index'
 import { Route as authAuth_layoutAppWebhooksIndexRouteImport } from './routes/(auth)/_auth_layout/app/webhooks/index'
@@ -113,6 +114,12 @@ const authAuth_layoutAppTopUpsIndexRoute =
     path: '/app/top-ups/',
     getParentRoute: () => authAuth_layoutRoute,
   } as any)
+const authAuth_layoutAppTransactionMonitoringIndexRoute =
+  authAuth_layoutAppTransactionMonitoringIndexRouteImport.update({
+    id: '/app/transaction-monitoring/',
+    path: '/app/transaction-monitoring/',
+    getParentRoute: () => authAuth_layoutRoute,
+  } as any)
 const authAuth_layoutAppUsersIndexRoute =
   authAuth_layoutAppUsersIndexRouteImport.update({
     id: '/app/users/',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/app/profile/': typeof authAuth_layoutAppProfileIndexRoute
   '/app/tenants/': typeof authAuth_layoutAppTenantsIndexRoute
   '/app/top-ups/': typeof authAuth_layoutAppTopUpsIndexRoute
+  '/app/transaction-monitoring/': typeof authAuth_layoutAppTransactionMonitoringIndexRoute
   '/app/users/': typeof authAuth_layoutAppUsersIndexRoute
   '/app/verification-settings/': typeof authAuth_layoutAppVerificationSettingsIndexRoute
   '/app/webhooks/': typeof authAuth_layoutAppWebhooksIndexRoute
@@ -171,6 +179,7 @@ export interface FileRoutesByTo {
   '/app/profile': typeof authAuth_layoutAppProfileIndexRoute
   '/app/tenants': typeof authAuth_layoutAppTenantsIndexRoute
   '/app/top-ups': typeof authAuth_layoutAppTopUpsIndexRoute
+  '/app/transaction-monitoring': typeof authAuth_layoutAppTransactionMonitoringIndexRoute
   '/app/users': typeof authAuth_layoutAppUsersIndexRoute
   '/app/verification-settings': typeof authAuth_layoutAppVerificationSettingsIndexRoute
   '/app/webhooks': typeof authAuth_layoutAppWebhooksIndexRoute
@@ -193,6 +202,7 @@ export interface FileRoutesById {
   '/(auth)/_auth_layout/app/profile/': typeof authAuth_layoutAppProfileIndexRoute
   '/(auth)/_auth_layout/app/tenants/': typeof authAuth_layoutAppTenantsIndexRoute
   '/(auth)/_auth_layout/app/top-ups/': typeof authAuth_layoutAppTopUpsIndexRoute
+  '/(auth)/_auth_layout/app/transaction-monitoring/': typeof authAuth_layoutAppTransactionMonitoringIndexRoute
   '/(auth)/_auth_layout/app/users/': typeof authAuth_layoutAppUsersIndexRoute
   '/(auth)/_auth_layout/app/verification-settings/': typeof authAuth_layoutAppVerificationSettingsIndexRoute
   '/(auth)/_auth_layout/app/webhooks/': typeof authAuth_layoutAppWebhooksIndexRoute
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/app/profile/'
     | '/app/tenants/'
     | '/app/top-ups/'
+    | '/app/transaction-monitoring/'
     | '/app/users/'
     | '/app/verification-settings/'
     | '/app/webhooks/'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/tenants'
     | '/app/top-ups'
+    | '/app/transaction-monitoring'
     | '/app/users'
     | '/app/verification-settings'
     | '/app/webhooks'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/(auth)/_auth_layout/app/profile/'
     | '/(auth)/_auth_layout/app/tenants/'
     | '/(auth)/_auth_layout/app/top-ups/'
+    | '/(auth)/_auth_layout/app/transaction-monitoring/'
     | '/(auth)/_auth_layout/app/users/'
     | '/(auth)/_auth_layout/app/verification-settings/'
     | '/(auth)/_auth_layout/app/webhooks/'
@@ -374,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuth_layoutAppTopUpsIndexRouteImport
       parentRoute: typeof authAuth_layoutRoute
     }
+    '/(auth)/_auth_layout/app/transaction-monitoring/': {
+      id: '/(auth)/_auth_layout/app/transaction-monitoring/'
+      path: '/app/transaction-monitoring'
+      fullPath: '/app/transaction-monitoring/'
+      preLoaderRoute: typeof authAuth_layoutAppTransactionMonitoringIndexRouteImport
+      parentRoute: typeof authAuth_layoutRoute
+    }
     '/(auth)/_auth_layout/app/users/': {
       id: '/(auth)/_auth_layout/app/users/'
       path: '/app/users'
@@ -414,6 +434,7 @@ interface authAuth_layoutRouteChildren {
   authAuth_layoutAppProfileIndexRoute: typeof authAuth_layoutAppProfileIndexRoute
   authAuth_layoutAppTenantsIndexRoute: typeof authAuth_layoutAppTenantsIndexRoute
   authAuth_layoutAppTopUpsIndexRoute: typeof authAuth_layoutAppTopUpsIndexRoute
+  authAuth_layoutAppTransactionMonitoringIndexRoute: typeof authAuth_layoutAppTransactionMonitoringIndexRoute
   authAuth_layoutAppUsersIndexRoute: typeof authAuth_layoutAppUsersIndexRoute
   authAuth_layoutAppVerificationSettingsIndexRoute: typeof authAuth_layoutAppVerificationSettingsIndexRoute
   authAuth_layoutAppWebhooksIndexRoute: typeof authAuth_layoutAppWebhooksIndexRoute
@@ -431,6 +452,8 @@ const authAuth_layoutRouteChildren: authAuth_layoutRouteChildren = {
   authAuth_layoutAppProfileIndexRoute: authAuth_layoutAppProfileIndexRoute,
   authAuth_layoutAppTenantsIndexRoute: authAuth_layoutAppTenantsIndexRoute,
   authAuth_layoutAppTopUpsIndexRoute: authAuth_layoutAppTopUpsIndexRoute,
+  authAuth_layoutAppTransactionMonitoringIndexRoute:
+    authAuth_layoutAppTransactionMonitoringIndexRoute,
   authAuth_layoutAppUsersIndexRoute: authAuth_layoutAppUsersIndexRoute,
   authAuth_layoutAppVerificationSettingsIndexRoute:
     authAuth_layoutAppVerificationSettingsIndexRoute,

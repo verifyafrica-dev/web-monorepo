@@ -41,6 +41,7 @@ import { Route as authAuth_layoutAppProductsGovernmentRegistryChecksIndexRouteIm
 import { Route as authAuth_layoutAppProductsKybIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/kyb/index'
 import { Route as authAuth_layoutAppProductsMixedVerificationsIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/mixed-verifications/index'
 import { Route as authAuth_layoutAppProductsRiskAssessmentIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/risk-assessment/index'
+import { Route as authAuth_layoutAppProductsTransactionMonitoringIndexRouteImport } from './routes/(auth)/_auth_layout/app/products/transaction-monitoring/index'
 import { Route as authAuth_layoutAppReportsIdIndexRouteImport } from './routes/(auth)/_auth_layout/app/reports/$id/index'
 import { Route as authAuth_layoutAppTeamActiveUsersIndexRouteImport } from './routes/(auth)/_auth_layout/app/team/active-users/index'
 import { Route as authAuth_layoutAppTeamInvitationsIndexRouteImport } from './routes/(auth)/_auth_layout/app/team/invitations/index'
@@ -233,6 +234,12 @@ const authAuth_layoutAppProductsRiskAssessmentIndexRoute =
     path: '/app/products/risk-assessment/',
     getParentRoute: () => authAuth_layoutRoute,
   } as any)
+const authAuth_layoutAppProductsTransactionMonitoringIndexRoute =
+  authAuth_layoutAppProductsTransactionMonitoringIndexRouteImport.update({
+    id: '/app/products/transaction-monitoring/',
+    path: '/app/products/transaction-monitoring/',
+    getParentRoute: () => authAuth_layoutRoute,
+  } as any)
 const authAuth_layoutAppReportsIdIndexRoute =
   authAuth_layoutAppReportsIdIndexRouteImport.update({
     id: '/app/reports/$id/',
@@ -295,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/app/products/kyb/': typeof authAuth_layoutAppProductsKybIndexRoute
   '/app/products/mixed-verifications/': typeof authAuth_layoutAppProductsMixedVerificationsIndexRoute
   '/app/products/risk-assessment/': typeof authAuth_layoutAppProductsRiskAssessmentIndexRoute
+  '/app/products/transaction-monitoring/': typeof authAuth_layoutAppProductsTransactionMonitoringIndexRoute
   '/app/reports/$id/': typeof authAuth_layoutAppReportsIdIndexRoute
   '/app/team/active-users/': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/app/team/invitations/': typeof authAuth_layoutAppTeamInvitationsIndexRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/app/products/kyb': typeof authAuth_layoutAppProductsKybIndexRoute
   '/app/products/mixed-verifications': typeof authAuth_layoutAppProductsMixedVerificationsIndexRoute
   '/app/products/risk-assessment': typeof authAuth_layoutAppProductsRiskAssessmentIndexRoute
+  '/app/products/transaction-monitoring': typeof authAuth_layoutAppProductsTransactionMonitoringIndexRoute
   '/app/reports/$id': typeof authAuth_layoutAppReportsIdIndexRoute
   '/app/team/active-users': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/app/team/invitations': typeof authAuth_layoutAppTeamInvitationsIndexRoute
@@ -372,6 +381,7 @@ export interface FileRoutesById {
   '/(auth)/_auth_layout/app/products/kyb/': typeof authAuth_layoutAppProductsKybIndexRoute
   '/(auth)/_auth_layout/app/products/mixed-verifications/': typeof authAuth_layoutAppProductsMixedVerificationsIndexRoute
   '/(auth)/_auth_layout/app/products/risk-assessment/': typeof authAuth_layoutAppProductsRiskAssessmentIndexRoute
+  '/(auth)/_auth_layout/app/products/transaction-monitoring/': typeof authAuth_layoutAppProductsTransactionMonitoringIndexRoute
   '/(auth)/_auth_layout/app/reports/$id/': typeof authAuth_layoutAppReportsIdIndexRoute
   '/(auth)/_auth_layout/app/team/active-users/': typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   '/(auth)/_auth_layout/app/team/invitations/': typeof authAuth_layoutAppTeamInvitationsIndexRoute
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/app/products/kyb/'
     | '/app/products/mixed-verifications/'
     | '/app/products/risk-assessment/'
+    | '/app/products/transaction-monitoring/'
     | '/app/reports/$id/'
     | '/app/team/active-users/'
     | '/app/team/invitations/'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/app/products/kyb'
     | '/app/products/mixed-verifications'
     | '/app/products/risk-assessment'
+    | '/app/products/transaction-monitoring'
     | '/app/reports/$id'
     | '/app/team/active-users'
     | '/app/team/invitations'
@@ -487,6 +499,7 @@ export interface FileRouteTypes {
     | '/(auth)/_auth_layout/app/products/kyb/'
     | '/(auth)/_auth_layout/app/products/mixed-verifications/'
     | '/(auth)/_auth_layout/app/products/risk-assessment/'
+    | '/(auth)/_auth_layout/app/products/transaction-monitoring/'
     | '/(auth)/_auth_layout/app/reports/$id/'
     | '/(auth)/_auth_layout/app/team/active-users/'
     | '/(auth)/_auth_layout/app/team/invitations/'
@@ -727,6 +740,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuth_layoutAppProductsRiskAssessmentIndexRouteImport
       parentRoute: typeof authAuth_layoutRoute
     }
+    '/(auth)/_auth_layout/app/products/transaction-monitoring/': {
+      id: '/(auth)/_auth_layout/app/products/transaction-monitoring/'
+      path: '/app/products/transaction-monitoring'
+      fullPath: '/app/products/transaction-monitoring/'
+      preLoaderRoute: typeof authAuth_layoutAppProductsTransactionMonitoringIndexRouteImport
+      parentRoute: typeof authAuth_layoutRoute
+    }
     '/(auth)/_auth_layout/app/reports/$id/': {
       id: '/(auth)/_auth_layout/app/reports/$id/'
       path: '/app/reports/$id'
@@ -785,6 +805,7 @@ interface authAuth_layoutRouteChildren {
   authAuth_layoutAppProductsKybIndexRoute: typeof authAuth_layoutAppProductsKybIndexRoute
   authAuth_layoutAppProductsMixedVerificationsIndexRoute: typeof authAuth_layoutAppProductsMixedVerificationsIndexRoute
   authAuth_layoutAppProductsRiskAssessmentIndexRoute: typeof authAuth_layoutAppProductsRiskAssessmentIndexRoute
+  authAuth_layoutAppProductsTransactionMonitoringIndexRoute: typeof authAuth_layoutAppProductsTransactionMonitoringIndexRoute
   authAuth_layoutAppReportsIdIndexRoute: typeof authAuth_layoutAppReportsIdIndexRoute
   authAuth_layoutAppTeamActiveUsersIndexRoute: typeof authAuth_layoutAppTeamActiveUsersIndexRoute
   authAuth_layoutAppTeamInvitationsIndexRoute: typeof authAuth_layoutAppTeamInvitationsIndexRoute
@@ -822,6 +843,8 @@ const authAuth_layoutRouteChildren: authAuth_layoutRouteChildren = {
     authAuth_layoutAppProductsMixedVerificationsIndexRoute,
   authAuth_layoutAppProductsRiskAssessmentIndexRoute:
     authAuth_layoutAppProductsRiskAssessmentIndexRoute,
+  authAuth_layoutAppProductsTransactionMonitoringIndexRoute:
+    authAuth_layoutAppProductsTransactionMonitoringIndexRoute,
   authAuth_layoutAppReportsIdIndexRoute: authAuth_layoutAppReportsIdIndexRoute,
   authAuth_layoutAppTeamActiveUsersIndexRoute:
     authAuth_layoutAppTeamActiveUsersIndexRoute,

@@ -5,6 +5,7 @@ import {
 	FileMagnifyingGlassIcon,
 	FileTextIcon,
 	MapPinIcon,
+	PulseIcon,
 	ShieldCheckIcon,
 	StackIcon,
 	UserFocusIcon,
@@ -28,6 +29,7 @@ export const PRODUCT_SLUG = {
 	GOVERNMENT_REGISTRY_CHECKS: "government-registry-checks",
 	RISK_ASSESSMENT: "risk-assessment",
 	CRYPTO_WALLET_SCREENING: "crypto-wallet-screening",
+	TRANSACTION_MONITORING: "transaction-monitoring",
 } as const;
 
 export type ProductSlug = (typeof PRODUCT_SLUG)[keyof typeof PRODUCT_SLUG];
@@ -119,6 +121,14 @@ export const PRODUCTS: Product[] = [
 		description:
 			"Analyse blockchain wallet addresses for exposure to illicit activity, mixing services, and sanctioned entities.",
 		icon: WalletIcon,
+		iconWeight: PRODUCT_ICON_WEIGHT,
+	},
+	{
+		slug: PRODUCT_SLUG.TRANSACTION_MONITORING,
+		title: "Transaction Monitoring",
+		description:
+			"Score payments in real time for fraud and AML risk. Start from a template or build a monitor with your own weighted rules, then review cases and reports.",
+		icon: PulseIcon,
 		iconWeight: PRODUCT_ICON_WEIGHT,
 	},
 ];
