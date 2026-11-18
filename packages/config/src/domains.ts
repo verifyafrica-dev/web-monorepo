@@ -25,6 +25,11 @@ export type ApiModeConfig = {
 	testApiBaseUrl: string;
 	switcherEnabled: boolean;
 	defaultMode: ApiMode;
+	/**
+	 * Local preview only: the switcher is shown but one API serves both modes,
+	 * so switching flips the UI mode without minting a Test access token.
+	 */
+	previewOnly?: boolean;
 };
 
 export const DEPLOY_ENVIRONMENTS = ["local", "dev", "test", "production"] as const;
@@ -116,6 +121,11 @@ export type ResolveApiModeConfigOptions = {
 	liveApiBaseUrl?: string;
 	/** Production Test API override (`VITE_TEST_API_BASE_URL`). */
 	testApiBaseUrl?: string;
+	/**
+	 * Local runs only (`VITE_LOCAL_ENV_SWITCHER_PREVIEW`): show the Live↔Test switcher
+	 * against the single local API. Ignored on dev / test / production hosts.
+	 */
+	localSwitcherPreview?: boolean;
 };
 
 /**
@@ -135,6 +145,16 @@ export function resolveApiModeConfig(
 			liveApiBaseUrl: options.liveApiBaseUrl || API_BASE_URLS.production,
 			testApiBaseUrl: options.testApiBaseUrl || API_BASE_URLS.test,
 			switcherEnabled: true,
+			defaultMode: "live",
+		};
+	}
+
+	if (deployEnvironment === "local" && options.localSwitcherPreview) {
+		return {
+			liveApiBaseUrl: configuredApiBaseUrl,
+			testApiBaseUrl: configuredApiBaseUrl,
+			switcherEnabled: true,
+			previewOnly: true,
 			defaultMode: "live",
 		};
 	}

@@ -24,8 +24,12 @@ const LIVE_ACCESS_TOKEN_KEY = () =>
 
 const liveAccessExpiresDays = env.isDevelopment ? 1 : 5 / 60 / 24;
 
-/** Production Live↔Test switcher uses an in-memory mint token for Test mode. */
-const usesEphemeralTestToken = apiModeConfig.switcherEnabled;
+/**
+ * Production Live↔Test switcher uses an in-memory mint token for Test mode.
+ * The local preview has one API, so it keeps using the normal session token.
+ */
+const usesEphemeralTestToken =
+	apiModeConfig.switcherEnabled && !apiModeConfig.previewOnly;
 
 function getLiveAccessToken() {
 	if (typeof window === "undefined") return "";
