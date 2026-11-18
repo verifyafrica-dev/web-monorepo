@@ -116,6 +116,15 @@ function ProfilePage() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
+				{profileUpdateAllowed ? null : (
+					<Alert className="mb-6 border-blue-200 bg-blue-50 text-blue-900">
+						<InfoIcon />
+						<AlertDescription>
+							Your profile can only be updated in Live mode. Switch to Live mode
+							to change your name or phone number.
+						</AlertDescription>
+					</Alert>
+				)}
 				{isLoading || !user ? (
 					<ProfilePageSkeleton />
 				) : (
@@ -213,15 +222,6 @@ function UpdateProfileTab({
 					form.handleSubmit();
 				}}
 			>
-				{canUpdate ? null : (
-					<Alert className="border-blue-200 bg-blue-50 text-blue-900">
-						<InfoIcon />
-						<AlertDescription>
-							Your profile can only be updated in Live mode. Switch to Live mode
-							to change your name or phone number.
-						</AlertDescription>
-					</Alert>
-				)}
 				<div className="flex flex-col items-center gap-2 text-center">
 					<Avatar className="size-24">
 						{user.avatar_url ? (
