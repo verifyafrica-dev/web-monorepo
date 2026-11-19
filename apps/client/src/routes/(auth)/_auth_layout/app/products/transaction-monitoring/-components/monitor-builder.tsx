@@ -201,7 +201,7 @@ export function MonitorBuilder({
 					</h2>
 					<p className="text-sm text-muted-foreground">
 						{isStandardTemplate
-							? "Features are pre-selected from the template. Add, remove or re-weight them before you create."
+							? "The template's rules are pre-selected. You can switch rules off or re-weight them before you create; its event and industry are fixed."
 							: "Pick the rules you want and how much each one should count towards the risk score."}
 					</p>
 				</div>
@@ -249,7 +249,7 @@ export function MonitorBuilder({
 								<Select
 									value={form.event}
 									onValueChange={(value) => update("event", value)}
-									disabled={isSubmitting}
+									disabled={isSubmitting || isStandardTemplate}
 								>
 									<SelectTrigger id="tm-event" className="w-full">
 										<SelectValue />
@@ -269,7 +269,7 @@ export function MonitorBuilder({
 								<Select
 									value={form.industry}
 									onValueChange={(value) => update("industry", value)}
-									disabled={isSubmitting}
+									disabled={isSubmitting || isStandardTemplate}
 								>
 									<SelectTrigger id="tm-industry" className="w-full">
 										<SelectValue />

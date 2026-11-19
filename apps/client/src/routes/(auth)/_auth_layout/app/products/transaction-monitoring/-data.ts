@@ -44,21 +44,37 @@ export const TM_EVENT_OPTIONS = [
 	{ value: "payout", label: "Payout" },
 	{ value: "wallet_funding", label: "Wallet funding" },
 	{ value: "checkout", label: "Checkout" },
+	{ value: "login", label: "Login" },
+	{ value: "registration", label: "Registration" },
 ] as const;
 
-/**
- * NOTE: the backend accepts any string (default `fintech`). These values are the
- * UI's curated list; confirm the accepted Autogon industry slugs with backend.
- */
+/** Industry slugs Autogon (and the backend) use for the hardcoded templates. */
 export const TM_INDUSTRY_OPTIONS = [
-	{ value: "fintech", label: "Fintech / PSP" },
 	{ value: "banking", label: "Banking" },
-	{ value: "ecommerce", label: "E-commerce / Marketplace" },
-	{ value: "lending", label: "Lending / BNPL" },
+	{ value: "fintech", label: "Fintech / PSP" },
+	{ value: "igaming", label: "Sports betting / iGaming" },
+	{ value: "marketplace", label: "E-commerce / Marketplace" },
 	{ value: "crypto", label: "Crypto / Digital assets" },
+	{ value: "lending", label: "Lending / BNPL" },
 	{ value: "insurance", label: "Insurance" },
-	{ value: "betting", label: "Sports betting / iGaming" },
+	{ value: "ecommerce", label: "E-commerce" },
+	{ value: "card", label: "Card / Payments" },
+	{ value: "health", label: "Healthcare" },
+	{ value: "energy", label: "Energy / Utilities" },
+	{ value: "education", label: "Education / EdTech" },
+	{ value: "general", label: "General / other" },
 ] as const;
+
+export const TM_APP_LABELS: Record<string, string> = {
+	web: "Web",
+	mobile: "Mobile",
+	api: "API",
+};
+
+export function formatAppLabel(app: string | null | undefined) {
+	if (!app) return "—";
+	return TM_APP_LABELS[app] ?? titleCase(app);
+}
 
 export const TM_FEATURE_GROUP_META: Record<
 	string,
@@ -80,7 +96,11 @@ export const TM_FEATURE_GROUP_META: Record<
 	},
 	crypto: {
 		label: "Crypto",
-		description: "Risky counterparties and ramp layering.",
+		description: "Risky counterparties, mixers, drainers and ramp layering.",
+	},
+	identity: {
+		label: "Identity",
+		description: "Credential dumps and synthetic-identity signals.",
 	},
 };
 

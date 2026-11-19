@@ -1,4 +1,4 @@
-import { PlusIcon, SlidersHorizontalIcon } from "@phosphor-icons/react";
+import { PlusIcon } from "@phosphor-icons/react";
 import type {
 	TmMonitor,
 	TmTemplate,
@@ -20,10 +20,14 @@ import {
 	useTmFeaturesV2Query,
 	useTmTemplatesV2Query,
 } from "#/api/http/v2/transaction-monitoring/transaction-monitoring.hooks";
-import { formatEventLabel, formatIndustryLabel } from "../-data";
+import {
+	formatAppLabel,
+	formatEventLabel,
+	formatIndustryLabel,
+} from "../-data";
 import { MonitorBuilder } from "./monitor-builder";
 
-type BuilderState = { template: TmTemplate | null } | null;
+type BuilderState = { template: TmTemplate } | null;
 
 export function TemplatesTab({
 	tenantId,
@@ -33,7 +37,7 @@ export function TemplatesTab({
 	onCreated: (monitor: TmMonitor) => void;
 }) {
 	const [builder, setBuilder] = useState<BuilderState>(null);
-	const [eventFilter, setEventFilter] = useState<string>("all");
+	const [industryFilter, setIndustryFilter] = useState<string>("all");
 	const templatesQuery = useTmTemplatesV2Query(tenantId);
 	const featuresQuery = useTmFeaturesV2Query(tenantId);
 
@@ -46,20 +50,18 @@ export function TemplatesTab({
 		[featuresQuery.data?.features],
 	);
 
-	const events = useMemo(() => {
+	const industries = useMemo(() => {
 		const set = new Set<string>();
-		for (const template of templates) {
-			if (template.event) set.add(template.event);
-		}
+		for (const template of templates) set.add(template.industry);
 		return [...set];
 	}, [templates]);
 
 	const visibleTemplates = useMemo(
 		() =>
-			eventFilter === "all"
+			industryFilter === "all"
 				? templates
-				: templates.filter((template) => template.event === eventFilter),
-		[templates, eventFilter],
+				: templates.filter((template) => template.industry === industryFilter),
+		[templates, industryFilter],
 	);
 
 	const featureLabelByKey = useMemo(
@@ -68,12 +70,17 @@ export function TemplatesTab({
 	);
 
 	if (builder) {
+		// The backend only accepts rules that belong to the chosen template, so the
+		// builder's picker is limited to that template's own rule set.
+		const templateKeys = new Set(
+			builder.template.features.map((feature) => feature.key),
+		);
 		return (
 			<MonitorBuilder
-				key={builder.template?.id ?? "custom"}
+				key={builder.template.id}
 				tenantId={tenantId}
 				template={builder.template}
-				catalog={catalog}
+				catalog={catalog.filter((feature) => templateKeys.has(feature.key))}
 				onCancel={() => setBuilder(null)}
 				onCreated={(monitor) => {
 					setBuilder(null);
@@ -88,39 +95,33 @@ export function TemplatesTab({
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-				<div className="flex flex-col gap-1">
-					<h2 className="text-lg font-semibold tracking-tight">
-						Start from a template
-					</h2>
-					<p className="max-w-2xl text-sm text-muted-foreground">
-						Templates pre-select a sensible set of rules. You can still add,
-						remove and re-weight features before creating your monitor.
-					</p>
-				</div>
-				<Button
-					onClick={() => setBuilder({ template: null })}
-					disabled={isLoading || isError}
-				>
-					<PlusIcon weight="bold" />
-					Create custom monitor
-				</Button>
+			<div className="flex flex-col gap-1">
+				<h2 className="text-lg font-semibold tracking-tight">
+					Start from a template
+				</h2>
+				<p className="max-w-2xl text-sm text-muted-foreground">
+					These are the industry templates from our monitoring engine. Pick the
+					one that matches your product and channel, then switch individual
+					rules off or re-weight the rest before you create your monitor.
+				</p>
 			</div>
 
-			{events.length > 1 && (
+			{industries.length > 1 && (
 				<fieldset
 					className="flex flex-wrap gap-2 border-0 p-0"
-					aria-label="Filter by event"
+					aria-label="Filter by industry"
 				>
-					{["all", ...events].map((event) => (
+					{["all", ...industries].map((industry) => (
 						<Button
-							key={event}
+							key={industry}
 							type="button"
 							size="sm"
-							variant={eventFilter === event ? "default" : "outline"}
-							onClick={() => setEventFilter(event)}
+							variant={industryFilter === industry ? "default" : "outline"}
+							onClick={() => setIndustryFilter(industry)}
 						>
-							{event === "all" ? "All events" : formatEventLabel(event)}
+							{industry === "all"
+								? "All industries"
+								: formatIndustryLabel(industry)}
 						</Button>
 					))}
 				</fieldset>
@@ -140,19 +141,8 @@ export function TemplatesTab({
 				</Card>
 			) : visibleTemplates.length === 0 ? (
 				<Card>
-					<CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-						<p className="text-sm text-muted-foreground">
-							{templates.length === 0
-								? "No templates are available yet. You can still build a monitor from scratch."
-								: "No templates match this event."}
-						</p>
-						<Button
-							variant="outline"
-							onClick={() => setBuilder({ template: null })}
-						>
-							<SlidersHorizontalIcon />
-							Create custom monitor
-						</Button>
+					<CardContent className="py-12 text-center text-sm text-muted-foreground">
+						No templates are available yet.
 					</CardContent>
 				</Card>
 			) : (
@@ -181,7 +171,8 @@ function TemplateCard({
 	onUse: () => void;
 }) {
 	const preview = template.features.slice(0, 3);
-	const remaining = template.features.length - preview.length;
+	const ruleCount = template.rule_count ?? template.features.length;
+	const remaining = ruleCount - preview.length;
 
 	return (
 		<Card className="h-full">
@@ -189,18 +180,18 @@ function TemplateCard({
 				<div className="flex items-start justify-between gap-3">
 					<CardTitle className="text-base">{template.name}</CardTitle>
 					<Badge variant="outline" className="shrink-0 tabular-nums">
-						{template.features.length} rules
+						{ruleCount} rules
 					</Badge>
 				</div>
 				<div className="flex flex-wrap gap-1.5">
 					<Badge variant="secondary" className="font-normal">
-						{formatEventLabel(template.event)}
+						{formatAppLabel(template.app)} · {formatEventLabel(template.event)}
 					</Badge>
 					<Badge variant="outline" className="font-normal">
 						{template.region}
 					</Badge>
 					<Badge variant="outline" className="font-normal">
-						{formatIndustryLabel(template.industry)}
+						{template.industry_label ?? formatIndustryLabel(template.industry)}
 					</Badge>
 				</div>
 				{template.description && (

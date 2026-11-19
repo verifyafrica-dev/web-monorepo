@@ -14,6 +14,8 @@ export const TM_EVENTS = [
 	"payout",
 	"wallet_funding",
 	"checkout",
+	"login",
+	"registration",
 ] as const;
 export type TmEvent = (typeof TM_EVENTS)[number];
 
@@ -75,8 +77,11 @@ export interface TmFeatureSelection {
 	weight: number;
 }
 
+export const TM_APPS = ["web", "mobile", "api"] as const;
+export type TmApp = (typeof TM_APPS)[number];
+
 export interface TmTemplate {
-	/** Slug, e.g. `tmpl_ng_transfer_aml`. This is what `template_id` expects. */
+	/** Slug, e.g. `tmpl_banking_mobile_transfer`. This is what `template_id` expects. */
 	id: string;
 	/** DB uuid; only present for DB-backed platform templates. */
 	template_id?: string;
@@ -86,6 +91,16 @@ export interface TmTemplate {
 	event: string | null;
 	region: string;
 	industry: string;
+	/** Human label for `industry` (e.g. "Fintech / PSP"). */
+	industry_label?: string;
+	/** Channel the Autogon function is created for. */
+	app?: TmApp | (string & {});
+	/** Autogon rule packs the template is built from (e.g. `core`, `aml`, `fintech`). */
+	packs?: string[];
+	/** Rules the template really seeds (the union of its packs). */
+	rule_count?: number;
+	/** The "N rules" figure the Autogon console shows on its card. */
+	console_rule_count?: number;
 	features: TmFeatureSelection[];
 	sort_order?: number;
 	/** Present on admin responses (and DB templates). */
@@ -295,29 +310,6 @@ export interface TmAdminTemplateListQuery {
 	event?: string;
 	/** Backend default is true for admin. */
 	include_inactive?: boolean;
-}
-
-export interface TmCreatePlatformTemplatePayload {
-	slug: string;
-	name: string;
-	description?: string;
-	event?: string;
-	region?: string;
-	industry?: string;
-	features: TmFeatureSelection[];
-	is_active?: boolean;
-	sort_order?: number;
-}
-
-export interface TmUpdatePlatformTemplatePayload {
-	name?: string;
-	description?: string;
-	event?: string;
-	region?: string;
-	industry?: string;
-	features?: TmFeatureSelection[];
-	is_active?: boolean;
-	sort_order?: number;
 }
 
 /* -------------------------------------------------------------------------- */
