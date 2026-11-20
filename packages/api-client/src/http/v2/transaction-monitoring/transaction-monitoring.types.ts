@@ -129,6 +129,17 @@ export interface TmFeatureListQuery {
 
 export interface TmMonitorFeature extends TmFeatureSelection {
 	active: boolean;
+	omniguard_signal?: string | null;
+	omniguard_rule_id?: string | null;
+}
+
+export interface TmOmniguardRulesSync {
+	status: "seeded_only" | "partial" | "linked" | (string & {});
+	linked_features: number;
+	selected_features: number;
+	/** Upstream ``rulesSeeded`` from Omniguard create (live API currently ~16). */
+	omniguard_rules_seeded?: number | null;
+	note?: string;
 }
 
 export interface TmMonitorSummary {
@@ -162,6 +173,7 @@ export interface TmMonitor {
 	alert_email: string | null;
 	features: TmMonitorFeature[];
 	data_contract: string[];
+	omniguard_rules_sync?: TmOmniguardRulesSync;
 	status: TmMonitorStatus;
 	is_default: boolean;
 	created_at: string;

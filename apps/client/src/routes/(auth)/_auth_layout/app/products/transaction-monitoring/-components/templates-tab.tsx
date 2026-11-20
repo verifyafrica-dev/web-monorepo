@@ -199,6 +199,10 @@ function TemplateCard({
 						{template.description}
 					</CardDescription>
 				)}
+				<p className="text-xs text-muted-foreground">
+					Omniguard currently seeds ~16 rules on create; this pack ({ruleCount})
+					is stored locally for weights until their rules API is live.
+				</p>
 			</CardHeader>
 			<CardContent className="mt-auto flex flex-1 flex-col justify-between gap-4">
 				<ul

@@ -80,7 +80,11 @@ export const TRANSACTION_MONITORING_V2_API = {
 		data: TmCreateMonitorPayload,
 	): Promise<TmMonitor> =>
 		await $http
-			.post(TM_V2_ENDPOINTS.monitors, data, withTenantHeader(tenantId))
+			.post(TM_V2_ENDPOINTS.monitors, data, {
+				...withTenantHeader(tenantId),
+				// Omniguard create + optional rule probe can exceed the default 30s.
+				timeout: 90_000,
+			})
 			.then((res) => unwrapV2Data<TmMonitor>(res)),
 
 	UPDATE_MONITOR: async (

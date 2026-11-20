@@ -314,7 +314,18 @@ export function MonitorDetailSheet({
 							</section>
 
 							<section className="flex flex-col gap-4">
-								<h3 className="text-sm font-semibold">Features</h3>
+								<div className="flex flex-col gap-1">
+									<h3 className="text-sm font-semibold">Rules</h3>
+									{monitor.omniguard_rules_sync?.note ? (
+										<p className="text-xs text-muted-foreground">
+											{monitor.omniguard_rules_sync.note}
+											{typeof monitor.omniguard_rules_sync
+												.omniguard_rules_seeded === "number"
+												? ` Upstream seeded ${monitor.omniguard_rules_sync.omniguard_rules_seeded}.`
+												: null}
+										</p>
+									) : null}
+								</div>
 								{featuresQuery.isPending ? (
 									<Skeleton className="h-64 rounded-md" />
 								) : featuresQuery.isError ? (
