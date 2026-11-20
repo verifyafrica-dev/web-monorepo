@@ -57,9 +57,29 @@ export function isTestAccessDisabledError(error: unknown): boolean {
 	return /test access is not enabled|request a test account/i.test(haystack);
 }
 
+/**
+ * True when login failed because the user never activated their account (the backend
+ * answers 401 `account_disabled` / "Your account is not active"). This is a different
+ * problem from a blocked or restricted account, so it gets its own dialog.
+ */
+export function isAccountNotActivatedError(error: unknown): boolean {
+	const data = readErrorPayload(error);
+	if (!data) return false;
+	const statusCode =
+		data.status_code ?? (error as V2AxiosError).response?.status;
+	if (statusCode !== 401) return false;
+
+	const items = [data.message, ...(data.errors ?? [])].map(String);
+	return (
+		items.some((item) => /account_disabled/i.test(item)) &&
+		items.some((item) => /not active/i.test(item))
+	);
+}
+
 /** True when Test twin / account is disabled or restricted (login, /me, mint, org switch). */
 export function isTestAccountBlockedError(error: unknown): boolean {
 	if (isTestAccessDisabledError(error)) return false;
+	if (isAccountNotActivatedError(error)) return false;
 
 	const data = readErrorPayload(error);
 	if (!data || !isBlockedAuthStatus(error, data)) return false;
