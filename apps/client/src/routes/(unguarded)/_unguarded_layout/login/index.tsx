@@ -30,8 +30,12 @@ import {
 	ACCOUNT_BLOCKED_STORAGE_KEY,
 	AccountBlockedDialog,
 } from "#/components/account-blocked-dialog";
+import { AccountNotActivatedDialog } from "#/components/account-not-activated-dialog";
 import { env } from "#/config/env";
-import { isTestAccountBlockedError } from "#/lib/test-account-blocked";
+import {
+	isAccountNotActivatedError,
+	isTestAccountBlockedError,
+} from "#/lib/test-account-blocked";
 import { normalizeUserTenants } from "#/routes/(auth)/_auth_layout/app/team/-data";
 import { useAuthStore } from "#/stores/auth-store";
 import { AuthPageShell } from "../-components";
@@ -64,6 +68,9 @@ function LoginPage() {
 	const userLoginMutation = useUserV2LoginMutation();
 	const [formErrors, setFormErrors] = useState<Array<{ message: string }>>([]);
 	const [blockedOpen, setBlockedOpen] = useState(false);
+	const [notActivatedEmail, setNotActivatedEmail] = useState<string | null>(
+		null,
+	);
 	const isAlreadyAuthenticated =
 		Boolean(getAccessToken()) &&
 		Boolean(user?.is_active) &&
@@ -135,6 +142,12 @@ function LoginPage() {
 						navigate({ href: postLoginPath });
 					},
 					onError: (error) => {
+						if (isAccountNotActivatedError(error)) {
+							setNotActivatedEmail(value.email.trim());
+							setFormErrors([]);
+							return;
+						}
+
 						if (isTestAccountBlockedError(error)) {
 							setBlockedOpen(true);
 							setFormErrors([]);
@@ -280,6 +293,13 @@ function LoginPage() {
 				</form>
 			</AuthPageShell>
 			<AccountBlockedDialog open={blockedOpen} onOpenChange={setBlockedOpen} />
+			<AccountNotActivatedDialog
+				open={notActivatedEmail !== null}
+				email={notActivatedEmail ?? ""}
+				onOpenChange={(open) => {
+					if (!open) setNotActivatedEmail(null);
+				}}
+			/>
 		</>
 	);
 }
