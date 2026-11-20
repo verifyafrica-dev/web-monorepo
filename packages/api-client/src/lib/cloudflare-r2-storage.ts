@@ -32,7 +32,7 @@ function getUploadErrorMessage(error: unknown) {
 		return error.message;
 	}
 
-	return "Failed to upload file to Cloudflare R2.";
+	return "Failed to upload file";
 }
 
 export function putFileToPresignedUrl({
@@ -78,7 +78,7 @@ export function putFileToPresignedUrl({
 		};
 
 		xhr.onerror = () => {
-			reject(new Error("Failed to upload file to Cloudflare R2."));
+			reject(new Error("Failed to upload file"));
 		};
 
 		xhr.send(file);
@@ -126,7 +126,7 @@ export async function uploadFileToR2(
 	} catch (error) {
 		throw error instanceof Error
 			? error
-			: new Error("Failed to upload file to Cloudflare R2.");
+			: new Error("Failed to upload file");
 	}
 
 	return {
