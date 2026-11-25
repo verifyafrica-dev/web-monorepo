@@ -7,18 +7,10 @@ import {
 	UsersIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { USERS_V2_API } from "#/api/http/v2/users/users.api";
-import { useUsersV2ListQuery } from "#/api/http/v2/users/users.hooks";
 import type {
 	AdminUser,
 	UserListSortBy,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
-import {
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
@@ -47,11 +39,20 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
+import {
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
-import { getUserInitials } from "#/lib/user.ts";
-import { cn } from "@verifyafrica/ui/lib/utils";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { cn } from "@verifyafrica/ui/lib/utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { USERS_V2_API } from "#/api/http/v2/users/users.api";
+import { useUsersV2ListQuery } from "#/api/http/v2/users/users.hooks";
+import { RosterManagedOnLiveNotice } from "#/components/roster-managed-on-live";
 import { env } from "#/config/env";
+import { getUserInitials } from "#/lib/user.ts";
 import { useApiModeStore } from "#/stores/api-mode-store";
 import { useAuthStore } from "#/stores/auth-store";
 import { getTenantAvatarColor } from "../tenants/-data";
@@ -278,13 +279,15 @@ function UsersPage() {
 						Refresh
 					</Button>
 					{canCreateTestAccount ? (
-						<Button onClick={() => setCreateTestAccountOpen(true)}>
+						<Button disabled>
 							<UserPlusIcon weight="bold" />
 							Create Test Account
 						</Button>
 					) : null}
 				</div>
 			</div>
+
+			{canCreateTestAccount ? <RosterManagedOnLiveNotice /> : null}
 
 			<Card className="gap-0 py-0">
 				<div className="border-b p-4 sm:p-6">
@@ -326,10 +329,7 @@ function UsersPage() {
 							</SelectTrigger>
 							<SelectContent>
 								{USER_ROLE_FILTER_OPTIONS.map((option) => (
-									<SelectItem
-										key={option.value}
-										value={option.value}
-									>
+									<SelectItem key={option.value} value={option.value}>
 										{option.label}
 									</SelectItem>
 								))}
@@ -352,10 +352,7 @@ function UsersPage() {
 								</SelectTrigger>
 								<SelectContent>
 									{USER_TENANT_ROLE_FILTER_OPTIONS.map((option) => (
-										<SelectItem
-											key={option.value}
-											value={option.value}
-										>
+										<SelectItem key={option.value} value={option.value}>
 											{option.label}
 										</SelectItem>
 									))}
@@ -377,10 +374,7 @@ function UsersPage() {
 							</SelectTrigger>
 							<SelectContent>
 								{USER_SORT_OPTIONS.map((option) => (
-									<SelectItem
-										key={option.value}
-										value={option.value}
-									>
+									<SelectItem key={option.value} value={option.value}>
 										{option.label}
 									</SelectItem>
 								))}
@@ -655,10 +649,7 @@ function UserRow({
 			>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-						>
+						<Button variant="ghost" size="icon-sm">
 							<DotsThreeVerticalIcon className="size-4" />
 							<span className="sr-only">Open actions</span>
 						</Button>
@@ -713,10 +704,7 @@ function UsersTableSkeleton() {
 	return (
 		<div className="space-y-3">
 			{createSkeletonKeys(5, "user-row").map((key) => (
-				<div
-					key={key}
-					className="flex items-center gap-4 px-2"
-				>
+				<div key={key} className="flex items-center gap-4 px-2">
 					<Skeleton className="size-9 rounded-full" />
 					<div className="flex-1 space-y-2">
 						<Skeleton className="h-4 w-40" />

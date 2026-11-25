@@ -6,6 +6,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@verifyafrica/ui/components/ui/card";
+import { useRosterChangesAllowed } from "#/components/roster-managed-on-live";
 import { TenantAccessRestrictionSection } from "./tenant-access-restriction-section";
 import { TenantTestAccessSection } from "./tenant-test-access-section";
 
@@ -18,6 +19,8 @@ export function AdvancedTab({
 	tenantName: string;
 	onDeleteTenant: () => void;
 }) {
+	const rosterChangesAllowed = useRosterChangesAllowed();
+
 	return (
 		<Card>
 			<CardHeader>
@@ -50,7 +53,11 @@ export function AdvancedTab({
 									restored from the dashboard.
 								</p>
 							</div>
-							<Button variant="destructive" onClick={onDeleteTenant}>
+							<Button
+								variant="destructive"
+								onClick={onDeleteTenant}
+								disabled={!rosterChangesAllowed}
+							>
 								<TrashIcon />
 								Delete Tenant
 							</Button>

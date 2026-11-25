@@ -1,5 +1,5 @@
-import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { type InvitationStatus, STATUS_LABELS } from "../-data";
 
 export { UserRoleBadge as InvitationRoleBadge } from "../../-components/user-role-badge";

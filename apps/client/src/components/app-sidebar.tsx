@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { AccountBlockedDialog } from "#/components/account-blocked-dialog";
 import { CreateOrganizationDialog } from "#/components/create-organization-dialog";
 import { EnvironmentModeSwitcher } from "#/components/environment-mode-switcher";
+import { useRosterChangesAllowed } from "#/routes/(auth)/_auth_layout/app/team/-components/roster-managed-on-live";
 import {
 	getUserInitials,
 	ROLE_LABELS,
@@ -204,6 +205,7 @@ function OrganizationSwitcher() {
 	const [open, setOpen] = React.useState(false);
 	const [createOpen, setCreateOpen] = React.useState(false);
 	const [blockedOpen, setBlockedOpen] = React.useState(false);
+	const rosterChangesAllowed = useRosterChangesAllowed();
 
 	if (!tenant) {
 		return null;
@@ -320,13 +322,18 @@ function OrganizationSwitcher() {
 							<div className="my-1 h-px bg-border" />
 							<button
 								type="button"
+								disabled={!rosterChangesAllowed}
 								className={cn(
 									"flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm outline-none",
 									"transition-[background-color,color,transform] active:scale-[0.96]",
 									"hover:bg-accent hover:text-accent-foreground",
 									"focus-visible:ring-2 focus-visible:ring-ring",
+									"disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
 								)}
 								onClick={() => {
+									if (!rosterChangesAllowed) {
+										return;
+									}
 									setOpen(false);
 									setCreateOpen(true);
 								}}
@@ -334,7 +341,14 @@ function OrganizationSwitcher() {
 								<div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-dashed bg-background">
 									<PlusIcon className="size-4" weight="bold" />
 								</div>
-								<span className="font-medium">Create organization</span>
+								<span className="flex min-w-0 flex-col">
+									<span className="font-medium">Create organization</span>
+									{rosterChangesAllowed ? null : (
+										<span className="text-xs text-muted-foreground">
+											Available in Live mode
+										</span>
+									)}
+								</span>
 							</button>
 						</>
 					) : null}

@@ -5,21 +5,15 @@ import {
 	UserCheckIcon,
 	UserMinusIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import {
-	useTenantInvitationsV2Query,
-	useTenantUsersV2Query,
-	useTenantV2DetailQuery,
-} from "#/api/http/v2/tenants/tenants.hooks";
-import {
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import {
@@ -37,14 +31,28 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
+import {
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { useEffect, useMemo, useState } from "react";
+import {
+	useTenantInvitationsV2Query,
+	useTenantUsersV2Query,
+	useTenantV2DetailQuery,
+} from "#/api/http/v2/tenants/tenants.hooks";
 import { DashboardOnboarding } from "../../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../../-data";
 import {
 	DeleteUserDialog,
 	type DeleteUserDialogTarget,
 } from "../-components/delete-user-dialog";
+import {
+	RosterManagedOnLiveNotice,
+	useRosterChangesAllowed,
+} from "../-components/roster-managed-on-live";
 import { TeamIconActionButton } from "../-components/team-icon-action-button";
 import {
 	type TeamMemberDetails,
@@ -91,7 +99,10 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Active Users | VerifyAfrica" },
-			{ name: "description", content: "View currently active team users and recent access activity." },
+			{
+				name: "description",
+				content: "View currently active team users and recent access activity.",
+			},
 		],
 	}),
 	component: ActiveUsersPage,
@@ -99,6 +110,7 @@ export const Route = createFileRoute(
 
 function ActiveUsersPage() {
 	const { user, tenantId, isTenantAdmin } = useCurrentTenant();
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const tenantQuery = useTenantV2DetailQuery(tenantId, Boolean(tenantId));
 	const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -210,11 +222,15 @@ function ActiveUsersPage() {
 				<Button
 					className="cursor-pointer tracking-wide"
 					onClick={() => setInviteDialogOpen(true)}
-					disabled={!tenantId || !isTenantAdmin || isLoading}
+					disabled={
+						!rosterChangesAllowed || !tenantId || !isTenantAdmin || isLoading
+					}
 				>
 					Invite User
 				</Button>
 			</div>
+
+			<RosterManagedOnLiveNotice />
 
 			{showOnboarding && <DashboardOnboarding />}
 
@@ -255,10 +271,7 @@ function ActiveUsersPage() {
 								/>
 							</div>
 							<div className="flex flex-wrap items-center gap-2">
-								<Label
-									htmlFor="user-status-filter"
-									className="sr-only"
-								>
+								<Label htmlFor="user-status-filter" className="sr-only">
 									Status
 								</Label>
 								<Select
@@ -268,28 +281,19 @@ function ActiveUsersPage() {
 									}}
 									disabled={isLoading}
 								>
-									<SelectTrigger
-										id="user-status-filter"
-										className="w-[150px]"
-									>
+									<SelectTrigger id="user-status-filter" className="w-[150px]">
 										<SelectValue placeholder="Status: All" />
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">Status: All</SelectItem>
 										{ACTIVE_USER_STATUSES.map((status) => (
-											<SelectItem
-												key={status}
-												value={status}
-											>
+											<SelectItem key={status} value={status}>
 												{ACTIVE_USER_STATUS_LABELS[status]}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
-								<Label
-									htmlFor="user-role-filter"
-									className="sr-only"
-								>
+								<Label htmlFor="user-role-filter" className="sr-only">
 									Role
 								</Label>
 								<Select
@@ -299,19 +303,13 @@ function ActiveUsersPage() {
 									}}
 									disabled={isLoading}
 								>
-									<SelectTrigger
-										id="user-role-filter"
-										className="w-[150px]"
-									>
+									<SelectTrigger id="user-role-filter" className="w-[150px]">
 										<SelectValue placeholder="Role: All" />
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">Role: All</SelectItem>
 										{TEAM_ROLES.map((role) => (
-											<SelectItem
-												key={role}
-												value={role}
-											>
+											<SelectItem key={role} value={role}>
 												{ROLE_LABELS[role]}
 											</SelectItem>
 										))}
@@ -412,7 +410,10 @@ function ActiveUsersPage() {
 																	label="Deactivate user"
 																	icon={UserMinusIcon}
 																	variant="outline"
-																	disabled={activeUser.isCurrentUser}
+																	disabled={
+																		!rosterChangesAllowed ||
+																		activeUser.isCurrentUser
+																	}
 																	onClick={(event) => {
 																		event.stopPropagation();
 																		openMembershipDialog(
@@ -425,9 +426,13 @@ function ActiveUsersPage() {
 																<TeamIconActionButton
 																	label="Reactivate user"
 																	icon={UserCheckIcon}
+																	disabled={!rosterChangesAllowed}
 																	onClick={(event) => {
 																		event.stopPropagation();
-																		openMembershipDialog(activeUser, "activate");
+																		openMembershipDialog(
+																			activeUser,
+																			"activate",
+																		);
 																	}}
 																/>
 															)}
@@ -435,7 +440,10 @@ function ActiveUsersPage() {
 																label="Remove user"
 																icon={TrashIcon}
 																variant="destructive"
-																disabled={activeUser.isCurrentUser}
+																disabled={
+																	!rosterChangesAllowed ||
+																	activeUser.isCurrentUser
+																}
 																onClick={(event) => {
 																	event.stopPropagation();
 																	openDeleteDialog(activeUser);

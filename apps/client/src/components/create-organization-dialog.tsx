@@ -1,17 +1,12 @@
 import { BuildingsIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2Icon } from "lucide-react";
-import { type ComponentProps, useEffect } from "react";
-import { toast } from "sonner";
-
 import type { V2AxiosError } from "@verifyafrica/api-client/http/shared";
-import { useCreateTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import { TenantSelfServiceCreateSchema } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
-import { USER_V2_QUERY_KEYS } from "#/api/http/v2/users/users.hooks";
-import { USERS_V2_API } from "#/api/http/v2/users/users.api";
-import type { UserSession } from "@verifyafrica/api-client/http/v2/users/users.types";
-import type { UserDetail } from "@verifyafrica/api-client/http/v2/users/users.types";
+import type {
+	UserDetail,
+	UserSession,
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Dialog,
@@ -21,14 +16,21 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
-import { Input } from "@verifyafrica/ui/components/ui/input";
-import { useAuthStore } from "#/stores/auth-store";
 import {
 	Field,
 	FieldError,
 	FieldGroup,
 	FieldLabel,
 } from "@verifyafrica/ui/components/ui/field";
+import { Input } from "@verifyafrica/ui/components/ui/input";
+import { Loader2Icon } from "lucide-react";
+import { type ComponentProps, useEffect } from "react";
+import { toast } from "sonner";
+import { useCreateTenantV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
+import { USERS_V2_API } from "#/api/http/v2/users/users.api";
+import { USER_V2_QUERY_KEYS } from "#/api/http/v2/users/users.hooks";
+import { useRosterChangesAllowed } from "#/routes/(auth)/_auth_layout/app/team/-components/roster-managed-on-live";
+import { useAuthStore } from "#/stores/auth-store";
 
 type CreateOrganizationDialogProps = ComponentProps<typeof Dialog> & {
 	onCreated?: (tenantId: string) => void;
@@ -48,6 +50,7 @@ export function CreateOrganizationDialog({
 }: CreateOrganizationDialogProps) {
 	const queryClient = useQueryClient();
 	const createTenantMutation = useCreateTenantV2Mutation();
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const userEmail = useAuthStore((state) => state.user?.email ?? "");
 
 	const form = useForm({
@@ -58,6 +61,10 @@ export function CreateOrganizationDialog({
 			onSubmit: TenantSelfServiceCreateSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!rosterChangesAllowed) {
+				return;
+			}
+
 			const payload = TenantSelfServiceCreateSchema.parse(value);
 
 			try {
@@ -103,7 +110,9 @@ export function CreateOrganizationDialog({
 						Create organization
 					</DialogTitle>
 					<DialogDescription>
-						Set up your own organization to continue using VerifyAfrica.
+						{rosterChangesAllowed
+							? "Set up your own organization to continue using VerifyAfrica."
+							: "Organizations are created in Live mode and then copied to Test. Switch to Live to continue."}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -181,7 +190,11 @@ export function CreateOrganizationDialog({
 					<Button
 						type="submit"
 						form="create-organization-form"
-						disabled={createTenantMutation.isPending || !userEmail}
+						disabled={
+							createTenantMutation.isPending ||
+							!userEmail ||
+							!rosterChangesAllowed
+						}
 					>
 						{createTenantMutation.isPending ? (
 							<>

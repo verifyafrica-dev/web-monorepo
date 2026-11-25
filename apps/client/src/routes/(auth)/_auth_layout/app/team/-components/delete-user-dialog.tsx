@@ -1,6 +1,3 @@
-import { toast } from "sonner";
-import { useDeleteTenantInvitationMutation } from "#/api/http/v2/tenants/tenants.hooks";
-import { useRemoveTenantUserV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,6 +8,12 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@verifyafrica/ui/components/ui/alert-dialog";
+import { toast } from "sonner";
+import {
+	useDeleteTenantInvitationMutation,
+	useRemoveTenantUserV2Mutation,
+} from "#/api/http/v2/tenants/tenants.hooks";
+import { useRosterChangesAllowed } from "./roster-managed-on-live";
 
 export type DeleteUserDialogTarget = {
 	id: string;
@@ -39,6 +42,7 @@ export function DeleteUserDialog({
 	const deleteInvitationMutation = useDeleteTenantInvitationMutation(
 		tenantId ?? "",
 	);
+	const rosterChangesAllowed = useRosterChangesAllowed();
 
 	if (!target) {
 		return null;
@@ -50,6 +54,10 @@ export function DeleteUserDialog({
 		removeUserMutation.isPending || deleteInvitationMutation.isPending;
 
 	async function handleConfirm() {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		if (!tenantId || !target) {
 			toast.error("Tenant information is unavailable");
 			return;
@@ -111,7 +119,7 @@ export function DeleteUserDialog({
 					</AlertDialogCancel>
 					<AlertDialogAction
 						variant="destructive"
-						disabled={isDeleting || !tenantId}
+						disabled={isDeleting || !tenantId || !rosterChangesAllowed}
 						onClick={(event) => {
 							event.preventDefault();
 							void handleConfirm();

@@ -1,6 +1,3 @@
-import { toast } from "sonner";
-
-import { useUpdateTenantUserMembershipV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,7 +8,11 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@verifyafrica/ui/components/ui/alert-dialog";
+import { toast } from "sonner";
+
+import { useUpdateTenantUserMembershipV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import type { ActiveUser } from "../active-users/-data";
+import { useRosterChangesAllowed } from "./roster-managed-on-live";
 
 export type TeamMembershipAction = "activate" | "deactivate";
 
@@ -35,6 +36,7 @@ export function TeamMembershipDialog({
 	const updateMembershipMutation = useUpdateTenantUserMembershipV2Mutation(
 		tenantId ?? "",
 	);
+	const rosterChangesAllowed = useRosterChangesAllowed();
 
 	if (!user || !action) {
 		return null;
@@ -45,6 +47,10 @@ export function TeamMembershipDialog({
 	const isPending = updateMembershipMutation.isPending;
 
 	async function handleConfirm() {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		if (!tenantId || !user) {
 			toast.error("Tenant information is unavailable");
 			return;
@@ -103,7 +109,7 @@ export function TeamMembershipDialog({
 					<AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
 					<AlertDialogAction
 						variant={isDeactivating ? "destructive" : "default"}
-						disabled={isPending || !tenantId}
+						disabled={isPending || !tenantId || !rosterChangesAllowed}
 						onClick={(event) => {
 							event.preventDefault();
 							void handleConfirm();

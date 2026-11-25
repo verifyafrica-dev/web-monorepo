@@ -4,7 +4,11 @@ export const Route = createFileRoute("/(auth)/_auth_layout/app/team/")({
 	head: () => ({
 		meta: [
 			{ title: "Team | VerifyAfrica" },
-			{ name: "description", content: "Manage your team members, access, and collaboration settings." },
+			{
+				name: "description",
+				content:
+					"Manage your team members, access, and collaboration settings.",
+			},
 		],
 	}),
 	beforeLoad: () => {

@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
-
 import { cn } from "@verifyafrica/ui/lib/utils";
+import type { ReactNode } from "react";
 
 export function TeamTableShell({ children }: { children: ReactNode }) {
 	return (

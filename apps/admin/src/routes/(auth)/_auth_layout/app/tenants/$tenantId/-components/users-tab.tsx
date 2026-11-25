@@ -3,20 +3,8 @@ import {
 	MagnifyingGlassIcon,
 	UsersIcon,
 } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
-import {
-	useRemoveTenantUserV2Mutation,
-	useTenantUsersV2Query,
-	useUpdateTenantUserMembershipV2Mutation,
-} from "#/api/http/v2/tenants/tenants.hooks";
 import type { TenantUser } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
-import {
-	paginateItems,
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -30,7 +18,12 @@ import {
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -48,10 +41,26 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
+import {
+	paginateItems,
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
-import { getUserInitials } from "#/lib/user.ts";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
+	useRemoveTenantUserV2Mutation,
+	useTenantUsersV2Query,
+	useUpdateTenantUserMembershipV2Mutation,
+} from "#/api/http/v2/tenants/tenants.hooks";
+import {
+	RosterManagedOnLiveNotice,
+	useRosterChangesAllowed,
+} from "#/components/roster-managed-on-live";
+import { getUserInitials } from "#/lib/user.ts";
 import { getTenantAvatarColor } from "../../-data";
 import { formatTenantDate } from "../-data";
 import { PendingInvitationsCard } from "./pending-invitations-card";
@@ -116,6 +125,7 @@ export function UsersTab({
 	tenantId: string;
 	onInviteUser: () => void;
 }) {
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [userToRemove, setUserToRemove] = useState<TenantUser | null>(null);
@@ -139,7 +149,11 @@ export function UsersTab({
 		);
 	}, [debouncedSearch, usersQuery.data?.items]);
 
-	const { items: paginatedUsers, total, safePage } = useMemo(
+	const {
+		items: paginatedUsers,
+		total,
+		safePage,
+	} = useMemo(
 		() => paginateItems(filteredUsers, page, PAGE_SIZE),
 		[filteredUsers, page],
 	);
@@ -151,6 +165,10 @@ export function UsersTab({
 	const hasActiveSearch = debouncedSearch.trim().length > 0;
 
 	const handleMembershipToggle = async (user: TenantUser) => {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		try {
 			await updateMembershipMutation.mutateAsync({
 				userId: user.id,
@@ -167,7 +185,7 @@ export function UsersTab({
 	};
 
 	const handleRemoveUser = async () => {
-		if (!userToRemove) {
+		if (!rosterChangesAllowed || !userToRemove) {
 			return;
 		}
 
@@ -182,6 +200,7 @@ export function UsersTab({
 
 	return (
 		<div className="flex flex-col gap-6">
+			<RosterManagedOnLiveNotice />
 			<Card>
 				<CardHeader className="gap-4 border-b">
 					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -197,7 +216,11 @@ export function UsersTab({
 									disabled={isLoading || isMutating}
 								/>
 							</div>
-							<Button size="sm" onClick={onInviteUser} disabled={isMutating}>
+							<Button
+								size="sm"
+								onClick={onInviteUser}
+								disabled={isMutating || !rosterChangesAllowed}
+							>
 								Invite User
 							</Button>
 						</div>
@@ -301,6 +324,7 @@ export function UsersTab({
 															</DropdownMenuTrigger>
 															<DropdownMenuContent align="end">
 																<DropdownMenuItem
+																	disabled={!rosterChangesAllowed}
 																	onClick={() =>
 																		void handleMembershipToggle(user)
 																	}
@@ -312,6 +336,7 @@ export function UsersTab({
 																<DropdownMenuSeparator />
 																<DropdownMenuItem
 																	variant="destructive"
+																	disabled={!rosterChangesAllowed}
 																	onClick={() => setUserToRemove(user)}
 																>
 																	Remove User
@@ -350,7 +375,9 @@ export function UsersTab({
 						<AlertDialogTitle>Remove user from tenant?</AlertDialogTitle>
 						<AlertDialogDescription>
 							This removes{" "}
-							<strong>{userToRemove ? getUserDisplayName(userToRemove) : ""}</strong>{" "}
+							<strong>
+								{userToRemove ? getUserDisplayName(userToRemove) : ""}
+							</strong>{" "}
 							from the tenant. They will lose access until invited again.
 						</AlertDialogDescription>
 					</AlertDialogHeader>

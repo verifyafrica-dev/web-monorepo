@@ -1,11 +1,10 @@
-import type { ComponentProps, ComponentType } from "react";
-
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@verifyafrica/ui/components/ui/tooltip";
+import type { ComponentProps, ComponentType } from "react";
 
 type TeamIconActionButtonProps = {
 	label: string;

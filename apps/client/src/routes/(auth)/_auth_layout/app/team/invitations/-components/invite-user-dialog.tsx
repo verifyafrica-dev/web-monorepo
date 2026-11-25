@@ -3,12 +3,6 @@ import {
 	IdentificationCardIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { Loader2Icon } from "lucide-react";
-import { type ComponentProps, type ComponentType, useEffect } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { useCreateTenantInvitationV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
 	TenantInvitationCreateSchema,
 	TenantRoleSchema,
@@ -21,6 +15,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
+import {
+	Field,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+} from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import {
 	Select,
@@ -30,12 +30,12 @@ import {
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
 import { cn } from "@verifyafrica/ui/lib/utils";
-import {
-	Field,
-	FieldError,
-	FieldGroup,
-	FieldLabel,
-} from "@verifyafrica/ui/components/ui/field";
+import { Loader2Icon } from "lucide-react";
+import { type ComponentProps, type ComponentType, useEffect } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useCreateTenantInvitationV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
+import { useRosterChangesAllowed } from "../../-components/roster-managed-on-live";
 import { INVITATION_ROLES, ROLE_LABELS, type TenantUserRole } from "../-data";
 
 const InviteUserFormSchema = z.object({
@@ -81,6 +81,7 @@ export function InviteUserDialog({
 	tenantId,
 }: InviteUserDialogProps) {
 	const inviteMutation = useCreateTenantInvitationV2Mutation(tenantId ?? "");
+	const rosterChangesAllowed = useRosterChangesAllowed();
 
 	const form = useForm({
 		defaultValues: {
@@ -91,6 +92,10 @@ export function InviteUserDialog({
 			onSubmit: InviteUserFormSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!rosterChangesAllowed) {
+				return;
+			}
+
 			if (!tenantId) {
 				toast.error("Tenant information is unavailable");
 				return;
@@ -119,10 +124,7 @@ export function InviteUserDialog({
 	const isSubmitting = inviteMutation.isPending;
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={onOpenChange}
-		>
+		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<div className="relative flex flex-col gap-6">
 					{isSubmitting ? (
@@ -199,10 +201,7 @@ export function InviteUserDialog({
 												</SelectTrigger>
 												<SelectContent>
 													{INVITATION_ROLES.map((option) => (
-														<SelectItem
-															key={option}
-															value={option}
-														>
+														<SelectItem key={option} value={option}>
 															{ROLE_LABELS[option]}
 														</SelectItem>
 													))}
@@ -227,7 +226,7 @@ export function InviteUserDialog({
 							</Button>
 							<Button
 								type="submit"
-								disabled={isSubmitting || !tenantId}
+								disabled={isSubmitting || !tenantId || !rosterChangesAllowed}
 								className="cursor-pointer tracking-wide"
 							>
 								{isSubmitting ? "Sending..." : "Send Invitation"}

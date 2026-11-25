@@ -6,20 +6,14 @@ import {
 	UserIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import {
-	useResendTenantInvitationV2Mutation,
-	useTenantInvitationsV2Query,
-	useTenantV2DetailQuery,
-} from "#/api/http/v2/tenants/tenants.hooks";
-import {
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
 import {
@@ -37,14 +31,29 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
+import {
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { cn } from "@verifyafrica/ui/lib/utils";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
+	useResendTenantInvitationV2Mutation,
+	useTenantInvitationsV2Query,
+	useTenantV2DetailQuery,
+} from "#/api/http/v2/tenants/tenants.hooks";
 import { DashboardOnboarding } from "../../-components/dashboard-onboarding";
 import { shouldShowDashboardOnboarding } from "../../-data";
 import {
 	DeleteUserDialog,
 	type DeleteUserDialogTarget,
 } from "../-components/delete-user-dialog";
+import {
+	RosterManagedOnLiveNotice,
+	useRosterChangesAllowed,
+} from "../-components/roster-managed-on-live";
 import { TeamIconActionButton } from "../-components/team-icon-action-button";
 import {
 	type TeamMemberDetails,
@@ -87,7 +96,10 @@ export const Route = createFileRoute(
 	head: () => ({
 		meta: [
 			{ title: "Invitations | VerifyAfrica" },
-			{ name: "description", content: "Manage pending invitations and invite new team members." },
+			{
+				name: "description",
+				content: "Manage pending invitations and invite new team members.",
+			},
 		],
 	}),
 	component: InvitationsPage,
@@ -95,6 +107,7 @@ export const Route = createFileRoute(
 
 function InvitationsPage() {
 	const { tenantId, isTenantAdmin } = useCurrentTenant();
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const tenantQuery = useTenantV2DetailQuery(tenantId, Boolean(tenantId));
 	const navigate = useNavigate();
 	const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -181,6 +194,10 @@ function InvitationsPage() {
 	}
 
 	async function handleResendInvitation(invitation: UserInvitation) {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		if (!tenantId) {
 			toast.error("Tenant information is unavailable");
 			return;
@@ -212,11 +229,15 @@ function InvitationsPage() {
 				<Button
 					className="cursor-pointer tracking-wide"
 					onClick={() => setInviteDialogOpen(true)}
-					disabled={!tenantId || !isTenantAdmin || isLoading}
+					disabled={
+						!rosterChangesAllowed || !tenantId || !isTenantAdmin || isLoading
+					}
 				>
 					Invite User
 				</Button>
 			</div>
+
+			<RosterManagedOnLiveNotice />
 
 			{showOnboarding && <DashboardOnboarding />}
 
@@ -332,7 +353,9 @@ function InvitationsPage() {
 											>
 												{hasActiveFilters
 													? "No invitations match your search or filters."
-													: 'No invitations yet. Click "Invite User" to send one.'}
+													: rosterChangesAllowed
+														? 'No invitations yet. Click "Invite User" to send one.'
+														: "No invitations yet. Switch to Live mode to invite someone."}
 											</TableCell>
 										</TableRow>
 									) : (
@@ -376,6 +399,7 @@ function InvitationsPage() {
 																	}
 																	icon={PaperPlaneTiltIcon}
 																	disabled={
+																		!rosterChangesAllowed ||
 																		resendingInvitationId === invitation.id
 																	}
 																	onClick={(event) => {
@@ -388,6 +412,7 @@ function InvitationsPage() {
 																label="Cancel invitation"
 																icon={TrashIcon}
 																variant="destructive"
+																disabled={!rosterChangesAllowed}
 																onClick={(event) => {
 																	event.stopPropagation();
 																	openDeleteDialog(invitation);

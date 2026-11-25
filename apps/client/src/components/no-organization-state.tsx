@@ -1,8 +1,8 @@
 import { BuildingsIcon, WarningCircleIcon } from "@phosphor-icons/react";
-import { useState } from "react";
-
-import { CreateOrganizationDialog } from "#/components/create-organization-dialog";
 import { Button } from "@verifyafrica/ui/components/ui/button";
+import { useState } from "react";
+import { CreateOrganizationDialog } from "#/components/create-organization-dialog";
+import { useRosterChangesAllowed } from "#/routes/(auth)/_auth_layout/app/team/-components/roster-managed-on-live";
 
 const SUPPORT_EMAIL = "support@verifyafrica.io";
 
@@ -12,14 +12,12 @@ type NoOrganizationStateProps = {
 
 export function NoOrganizationState({ onCreated }: NoOrganizationStateProps) {
 	const [createOpen, setCreateOpen] = useState(false);
+	const rosterChangesAllowed = useRosterChangesAllowed();
 
 	return (
 		<div className="flex min-h-[60vh] flex-1 items-center justify-center px-4 py-12">
 			<div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
-				<WarningCircleIcon
-					className="size-14 text-primary"
-					weight="regular"
-				/>
+				<WarningCircleIcon className="size-14 text-primary" weight="regular" />
 				<div className="flex flex-col gap-2">
 					<h1 className="text-2xl font-semibold tracking-tight">
 						Account membership deactivated
@@ -33,13 +31,17 @@ export function NoOrganizationState({ onCreated }: NoOrganizationStateProps) {
 						>
 							{SUPPORT_EMAIL}
 						</a>{" "}
-						for help, or create your own organization to continue.
+						for help
+						{rosterChangesAllowed
+							? ", or create your own organization to continue."
+							: ". Switch to Live mode to create your own organization."}
 					</p>
 				</div>
 				<div className="mt-2 flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
 					<Button
 						type="button"
 						className="cursor-pointer"
+						disabled={!rosterChangesAllowed}
 						onClick={() => setCreateOpen(true)}
 					>
 						<BuildingsIcon className="size-4" weight="bold" />
