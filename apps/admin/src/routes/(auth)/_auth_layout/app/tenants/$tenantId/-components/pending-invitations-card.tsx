@@ -4,20 +4,8 @@ import {
 	PaperPlaneTiltIcon,
 	TrashIcon,
 } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
-import {
-	useDeleteTenantInvitationV2Mutation,
-	useResendTenantInvitationV2Mutation,
-	useTenantInvitationsV2Query,
-} from "#/api/http/v2/tenants/tenants.hooks";
 import type { TenantInvitation } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
-import {
-	paginateItems,
-	TablePagination,
-	TablePaginationSkeleton,
-} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -30,7 +18,12 @@ import {
 } from "@verifyafrica/ui/components/ui/alert-dialog";
 import { Badge } from "@verifyafrica/ui/components/ui/badge";
 import { Button } from "@verifyafrica/ui/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@verifyafrica/ui/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@verifyafrica/ui/components/ui/card";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Skeleton } from "@verifyafrica/ui/components/ui/skeleton";
 import {
@@ -41,8 +34,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@verifyafrica/ui/components/ui/table";
+import {
+	paginateItems,
+	TablePagination,
+	TablePaginationSkeleton,
+} from "@verifyafrica/ui/components/ui-extended/table-pagination";
 import { useDebouncedValue } from "@verifyafrica/ui/hooks/use-debounced-value";
 import { createSkeletonKeys } from "@verifyafrica/ui/lib/skeleton-keys";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
+	useDeleteTenantInvitationV2Mutation,
+	useResendTenantInvitationV2Mutation,
+	useTenantInvitationsV2Query,
+} from "#/api/http/v2/tenants/tenants.hooks";
+import { useRosterChangesAllowed } from "#/components/roster-managed-on-live";
 import { formatTenantDate } from "../-data";
 
 const PAGE_SIZE = 10;
@@ -83,6 +89,7 @@ function getStatusBadgeClassName(status: string) {
 }
 
 export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [invitationToCancel, setInvitationToCancel] =
@@ -116,7 +123,11 @@ export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
 		);
 	}, [actionableInvitations, debouncedSearch]);
 
-	const { items: paginatedInvitations, total, safePage } = useMemo(
+	const {
+		items: paginatedInvitations,
+		total,
+		safePage,
+	} = useMemo(
 		() => paginateItems(filteredInvitations, page, PAGE_SIZE),
 		[filteredInvitations, page],
 	);
@@ -128,6 +139,10 @@ export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
 	const hasActiveSearch = debouncedSearch.trim().length > 0;
 
 	const handleResend = async (invitation: TenantInvitation) => {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		setResendingInvitationId(invitation.id);
 		try {
 			await resendMutation.mutateAsync(invitation.id);
@@ -140,7 +155,7 @@ export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
 	};
 
 	const handleCancel = async () => {
-		if (!invitationToCancel) {
+		if (!rosterChangesAllowed || !invitationToCancel) {
 			return;
 		}
 
@@ -264,6 +279,7 @@ export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
 																	variant="ghost"
 																	size="icon-sm"
 																	disabled={
+																		!rosterChangesAllowed ||
 																		isMutating ||
 																		resendingInvitationId === invitation.id
 																	}
@@ -276,7 +292,7 @@ export function PendingInvitationsCard({ tenantId }: { tenantId: string }) {
 															<Button
 																variant="ghost"
 																size="icon-sm"
-																disabled={isMutating}
+																disabled={isMutating || !rosterChangesAllowed}
 																onClick={() =>
 																	setInvitationToCancel(invitation)
 																}

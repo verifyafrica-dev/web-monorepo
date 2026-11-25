@@ -1,6 +1,4 @@
 import { UserIcon } from "@phosphor-icons/react";
-import type { ReactNode } from "react";
-
 import { Avatar, AvatarFallback } from "@verifyafrica/ui/components/ui/avatar";
 import {
 	Dialog,
@@ -9,6 +7,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
+import type { ReactNode } from "react";
 import { formatTeamDate, getUserInitials } from "../-data";
 import { ActiveUserStatusBadge } from "../active-users/-components/user-status-badge";
 import type { ActiveUser } from "../active-users/-data";

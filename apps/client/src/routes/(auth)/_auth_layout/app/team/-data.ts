@@ -1,6 +1,8 @@
-import type { UserTenantMembership } from "@verifyafrica/api-client/http/v2/users/users.types";
-import type { UserDetail } from "@verifyafrica/api-client/http/v2/users/users.types";
 import type { TenantRole } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
+import type {
+	UserDetail,
+	UserTenantMembership,
+} from "@verifyafrica/api-client/http/v2/users/users.types";
 import { useAuthStore } from "#/stores/auth-store";
 
 export type TenantUserRole = TenantRole;

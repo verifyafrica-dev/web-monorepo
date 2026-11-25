@@ -5,14 +5,11 @@ import {
 	UserIcon,
 	UserPlusIcon,
 } from "@phosphor-icons/react";
-import { type ReactNode, useState } from "react";
-import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
 import {
-	AdminTestAccountCreateSchema,
 	type AdminTestAccountCreatePayload,
+	AdminTestAccountCreateSchema,
 } from "@verifyafrica/api-client/http/v2/users/users.types";
-import { useAdminCreateTestAccountV2Mutation } from "#/api/http/v2/users/users.hooks";
 import { Alert, AlertDescription } from "@verifyafrica/ui/components/ui/alert";
 import { Button } from "@verifyafrica/ui/components/ui/button";
 import {
@@ -25,6 +22,10 @@ import {
 } from "@verifyafrica/ui/components/ui/dialog";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import { Label } from "@verifyafrica/ui/components/ui/label";
+import { type ReactNode, useState } from "react";
+import { toast } from "sonner";
+import { useAdminCreateTestAccountV2Mutation } from "#/api/http/v2/users/users.hooks";
+import { useRosterChangesAllowed } from "#/components/roster-managed-on-live";
 
 type FormErrors = Partial<Record<keyof AdminTestAccountCreatePayload, string>>;
 
@@ -85,6 +86,7 @@ export function CreateTestAccountDialog({
 		useState<AdminTestAccountCreatePayload>(INITIAL_FORM_STATE);
 	const [errors, setErrors] = useState<FormErrors>({});
 	const createMutation = useAdminCreateTestAccountV2Mutation();
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const isSubmitting = createMutation.isPending;
 
 	const updateField = (
@@ -107,6 +109,10 @@ export function CreateTestAccountDialog({
 	};
 
 	const handleSubmit = async () => {
+		if (!rosterChangesAllowed) {
+			return;
+		}
+
 		const parsed = AdminTestAccountCreateSchema.safeParse({
 			...formData,
 			email: formData.email.trim(),
@@ -125,7 +131,9 @@ export function CreateTestAccountDialog({
 
 		try {
 			const user = await createMutation.mutateAsync(parsed.data);
-			toast.success(`Test account created. Sign-in details were emailed to ${user.email}`);
+			toast.success(
+				`Test account created. Sign-in details were emailed to ${user.email}`,
+			);
 			setFormData(INITIAL_FORM_STATE);
 			setErrors({});
 			onOpenChange(false);
@@ -173,7 +181,9 @@ export function CreateTestAccountDialog({
 								id="test-account-first-name"
 								icon={UserIcon}
 								value={formData.first_name}
-								onChange={(event) => updateField("first_name", event.target.value)}
+								onChange={(event) =>
+									updateField("first_name", event.target.value)
+								}
 								placeholder="John"
 								disabled={isSubmitting}
 							/>
@@ -187,7 +197,9 @@ export function CreateTestAccountDialog({
 								id="test-account-last-name"
 								icon={UserIcon}
 								value={formData.last_name}
-								onChange={(event) => updateField("last_name", event.target.value)}
+								onChange={(event) =>
+									updateField("last_name", event.target.value)
+								}
 								placeholder="Doe"
 								disabled={isSubmitting}
 							/>
@@ -215,7 +227,9 @@ export function CreateTestAccountDialog({
 							id="test-account-tenant-name"
 							icon={BuildingsIcon}
 							value={formData.tenant_name}
-							onChange={(event) => updateField("tenant_name", event.target.value)}
+							onChange={(event) =>
+								updateField("tenant_name", event.target.value)
+							}
 							placeholder="Acme Inc."
 							disabled={isSubmitting}
 						/>
@@ -232,7 +246,9 @@ export function CreateTestAccountDialog({
 							icon={EnvelopeSimpleIcon}
 							type="email"
 							value={formData.tenant_email}
-							onChange={(event) => updateField("tenant_email", event.target.value)}
+							onChange={(event) =>
+								updateField("tenant_email", event.target.value)
+							}
 							placeholder="Defaults to the user's email"
 							disabled={isSubmitting}
 						/>
@@ -256,7 +272,10 @@ export function CreateTestAccountDialog({
 						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={isSubmitting}>
+						<Button
+							type="submit"
+							disabled={isSubmitting || !rosterChangesAllowed}
+						>
 							<UserPlusIcon weight="bold" />
 							{isSubmitting ? "Creating..." : "Create Account"}
 						</Button>

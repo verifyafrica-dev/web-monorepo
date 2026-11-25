@@ -1,15 +1,9 @@
-import {
-	BriefcaseIcon,
-	EnvelopeSimpleIcon,
-} from "@phosphor-icons/react";
+import { BriefcaseIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { useEffect } from "react";
-import { toast } from "sonner";
 import { getV2ErrorMessage } from "@verifyafrica/api-client/http/shared";
-import { useCreateTenantInvitationV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
 import {
-	TenantInvitationCreateSchema,
 	type TenantInvitationCreatePayload,
+	TenantInvitationCreateSchema,
 	type TenantRole,
 	TenantRoleSchema,
 } from "@verifyafrica/api-client/http/v2/tenants/tenants.types";
@@ -21,6 +15,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@verifyafrica/ui/components/ui/dialog";
+import {
+	Field,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+} from "@verifyafrica/ui/components/ui/field";
 import { Input } from "@verifyafrica/ui/components/ui/input";
 import {
 	Select,
@@ -29,7 +29,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@verifyafrica/ui/components/ui/select";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@verifyafrica/ui/components/ui/field";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { useCreateTenantInvitationV2Mutation } from "#/api/http/v2/tenants/tenants.hooks";
+import { useRosterChangesAllowed } from "#/components/roster-managed-on-live";
 
 const ROLE_OPTIONS: { value: TenantRole; label: string }[] = [
 	{ value: "admin", label: "Admin" },
@@ -54,7 +57,9 @@ export function InviteUserDialog({
 	onOpenChange: (open: boolean) => void;
 	onSuccess?: () => void;
 }) {
-	const createInvitationMutation = useCreateTenantInvitationV2Mutation(tenantId);
+	const createInvitationMutation =
+		useCreateTenantInvitationV2Mutation(tenantId);
+	const rosterChangesAllowed = useRosterChangesAllowed();
 	const isSubmitting = createInvitationMutation.isPending;
 
 	const defaultValues: TenantInvitationCreatePayload = {
@@ -68,6 +73,10 @@ export function InviteUserDialog({
 			onSubmit: InviteUserFormSchema,
 		},
 		onSubmit: async ({ value }) => {
+			if (!rosterChangesAllowed) {
+				return;
+			}
+
 			try {
 				await createInvitationMutation.mutateAsync(value);
 				toast.success(`Invitation sent to ${value.email}`);
@@ -185,7 +194,10 @@ export function InviteUserDialog({
 						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={isSubmitting}>
+						<Button
+							type="submit"
+							disabled={isSubmitting || !rosterChangesAllowed}
+						>
 							{isSubmitting ? "Sending..." : "Send Invite"}
 						</Button>
 					</DialogFooter>
